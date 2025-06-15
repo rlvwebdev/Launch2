@@ -2,19 +2,24 @@
 
 import BottomNavigation from '@/components/navigation/BottomNavigation';
 import DesktopNavigation from '@/components/navigation/DesktopNavigation';
+import { SidebarProvider, useSidebar } from '@/components/context/SidebarContext';
 
 interface AppLayoutProps {
   children: React.ReactNode;
 }
 
-export default function AppLayout({ children }: AppLayoutProps) {
+function AppLayoutContent({ children }: AppLayoutProps) {
+  const { isCollapsed } = useSidebar();
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Desktop Navigation */}
       <DesktopNavigation />
       
       {/* Main Content */}
-      <div className="md:ml-64">
+      <div className={`transition-all duration-300 ${
+        isCollapsed ? 'md:ml-16' : 'md:ml-64'
+      }`}>
         <main className="pb-20 md:pb-0">
           {children}
         </main>
@@ -23,5 +28,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
       {/* Mobile Bottom Navigation */}
       <BottomNavigation />
     </div>
+  );
+}
+
+export default function AppLayout({ children }: AppLayoutProps) {
+  return (
+    <SidebarProvider>
+      <AppLayoutContent>{children}</AppLayoutContent>
+    </SidebarProvider>
   );
 }
