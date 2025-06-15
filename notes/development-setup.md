@@ -16,7 +16,7 @@ npm install -D @types/node
 
 ### 3. Project Structure
 ```
-frontend/
+tmops/
 ├── app/
 │   ├── drivers/
 │   ├── trucks/
