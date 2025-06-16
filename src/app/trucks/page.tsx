@@ -1,12 +1,12 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
-import { Truck, Plus, Search, Filter, Calendar, Wrench, User, AlertTriangle } from 'lucide-react';
+import { Truck, Plus, Search, Filter, Calendar, Wrench, User, AlertTriangle, FileText, Edit, UserCheck, Eye } from 'lucide-react';
 
 // Mock truck data
 const mockTrucks = [
   {
-    id: 'TRK-001',
+    id: '2812',
     make: 'Freightliner',
     model: 'Cascadia',
     year: 2021,
@@ -23,7 +23,7 @@ const mockTrucks = [
     insuranceExpiry: '2025-12-31'
   },
   {
-    id: 'TRK-002',
+    id: '2813A',
     make: 'Peterbilt',
     model: '579',
     year: 2020,
@@ -40,7 +40,7 @@ const mockTrucks = [
     insuranceExpiry: '2025-12-31'
   },
   {
-    id: 'TRK-003',
+    id: '2814',
     make: 'Kenworth',
     model: 'T680',
     year: 2019,
@@ -57,7 +57,7 @@ const mockTrucks = [
     insuranceExpiry: '2025-12-31'
   },
   {
-    id: 'TRK-004',
+    id: '2815A',
     make: 'Volvo',
     model: 'VNL 760',
     year: 2022,
@@ -155,14 +155,13 @@ export default function TrucksPage() {
           const registrationExpiring = new Date(truck.registrationExpiry) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
           
           return (
-            <Card key={truck.id} className="hover:shadow-md transition-shadow">
-              <CardHeader>
+            <Card key={truck.id} className="hover:shadow-md transition-shadow">              <CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">
-                      {truck.make} {truck.model}
+                      {truck.id}
                     </h3>
-                    <p className="text-sm text-gray-600">{truck.id} • {truck.year}</p>
+                    <p className="text-sm text-gray-600">{truck.make} {truck.model} • {truck.year}</p>
                   </div>
                   <div className="flex flex-col gap-1">
                     <Badge variant="status" status={truck.status}>
@@ -229,10 +228,19 @@ export default function TrucksPage() {
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-gray-500">
                       Last Service: {new Date(truck.lastMaintenance).toLocaleDateString()}
-                    </span>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline">Edit</Button>
-                      <Button size="sm" variant="outline">Assign</Button>
+                    </span>                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline">
+                        <Edit className="h-3 w-3 mr-1" />
+                        Edit
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <UserCheck className="h-3 w-3 mr-1" />
+                        Assign
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <FileText className="h-3 w-3 mr-1" />
+                        Documents
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -250,11 +258,10 @@ export default function TrucksPage() {
             Maintenance Alerts
           </h3>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
+        <CardContent>          <div className="space-y-3">
             <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
               <div>
-                <p className="font-medium text-orange-800">TRK-003 - Kenworth T680</p>
+                <p className="font-medium text-orange-800">2814 - Kenworth T680</p>
                 <p className="text-sm text-orange-600">Scheduled maintenance overdue by 5 days</p>
               </div>
               <Button size="sm" variant="outline">
@@ -263,7 +270,7 @@ export default function TrucksPage() {
             </div>
             <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
               <div>
-                <p className="font-medium text-yellow-800">TRK-002 - Peterbilt 579</p>
+                <p className="font-medium text-yellow-800">2813A - Peterbilt 579</p>
                 <p className="text-sm text-yellow-600">Registration expires in 15 days</p>
               </div>
               <Button size="sm" variant="outline">

@@ -7,7 +7,7 @@ export interface Driver {
   licenseNumber: string;
   licenseExpiry: Date;
   phoneNumber: string;
-  email: string;
+  fuelCard: string;
   assignedTruckId?: string;
   status: DriverStatus;
   hireDate: Date;
@@ -38,6 +38,8 @@ export interface Truck {
 export interface Load {
   id: string;
   loadNumber: string;
+  bolNumber: string; // Bill of Lading number
+  shipper: string;   // Shipper company name
   pickupLocation: Location;
   deliveryLocation: Location;
   assignedDriverId?: string;
@@ -82,8 +84,8 @@ export interface LoadEvent {
 // Status Enums
 export enum DriverStatus {
   ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  ON_BREAK = 'on-break'
+  IN_TRAINING = 'in-training',
+  OOS = 'oos'
 }
 
 export enum TruckStatus {
