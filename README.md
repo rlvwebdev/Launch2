@@ -9,7 +9,30 @@ A modern, mobile-first web application for managing transportation operations bu
 
 ## 🚀 Live Demo
 
-Experience Launch in action: [View Live Application](https://github.com/rlvwebdev/Launch2)
+Experience Launch in action: 
+
+### 🌟 **Live Application**
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/rlvwebdev/Launch2)
+
+- **📱 Demo Application**: Coming soon! (Deploy with button above)
+- **📂 GitHub Repository**: [https://github.com/rlvwebdev/Launch2](https://github.com/rlvwebdev/Launch2)
+- **📖 Demo Guide**: [DEMO_GUIDE.md](./DEMO_GUIDE.md)
+- **🎬 Demo Showcase**: [DEMO_SHOWCASE.md](./DEMO_SHOWCASE.md)
+
+### 🎯 **Quick Deploy Options**
+```bash
+# Option 1: One-click Vercel deployment (Recommended)
+# Click the "Deploy with Vercel" button above
+
+# Option 2: Local development
+git clone https://github.com/rlvwebdev/Launch2.git
+cd Launch2
+npm install && npm run dev
+
+# Option 3: Use deployment scripts
+./deploy.ps1    # Windows PowerShell
+./deploy.sh     # Linux/Mac Bash
+```
 
 ## 📱 Features
 
