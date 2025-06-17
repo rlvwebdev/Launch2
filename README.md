@@ -162,23 +162,35 @@ Launch/
 │   │   └── DataContext.tsx   # Main data management context
 │   ├── lib/                  # Utility functions
 │   └── types/                # TypeScript type definitions
+├── scripts/                  # Python scripts for data generation and validation
+│   ├── create_demo_data.py   # Demo data generation
+│   ├── create_excel_template.py # Excel template creation
+│   ├── create_simple_excel_template.py # Simplified templates
+│   ├── validate_demo.py      # Data validation
+│   └── README.md            # Scripts documentation
 ├── templates/                # Excel import/export templates
 │   ├── drivers_template.csv
 │   ├── trucks_template.csv
 │   ├── trailers_template.csv
 │   ├── loads_template.csv
 │   └── settings_template.csv
-├── notes/                    # Project documentation
-├── public/                   # Static assets
+├── demo/                     # Demo data and templates
 │   ├── Launch_Demo_Import_Data.xlsx    # Demo data file
 │   ├── Launch_Import_Template.xlsx     # Import template
+│   └── README.md            # Demo files documentation
+├── docs/                     # Project documentation
+│   ├── Demo_Data_Summary.md # Demo data overview
+│   ├── Excel_Template_README.md # Template documentation
+│   ├── Launch_Import_Template_Guide.md # Import guide
+│   ├── PROJECT_COMPLETION_SUMMARY.md # Project summary
+│   └── README.md            # Documentation index
+├── notes/                    # Development notes and planning
+├── public/                   # Static assets
+│   ├── Launch_Demo_Import_Data.xlsx    # Public demo data
+│   ├── Launch_Import_Template.xlsx     # Public template
 │   ├── favicon.svg          # Custom favicon
 │   └── rocket.svg           # Launch logo
-├── create_demo_data.py      # Demo data generation script
-├── validate_demo.py         # Demo data validation script
-├── Demo_Data_Summary.md     # Demo data documentation
-├── Excel_Template_README.md # Template documentation
-└── Launch_Import_Template_Guide.md # Import guide
+└── Configuration files       # Next.js, TypeScript, ESLint, etc.
 ```
 
 ## 💡 Key Implementation Highlights

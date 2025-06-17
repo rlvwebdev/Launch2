@@ -10,66 +10,67 @@ import { Load } from '@/types';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, BarChart as RechartsBarChart, Bar, Area, AreaChart } from 'recharts';
 
-export default function ReportsPage() {
-  const { drivers, trucks, loads } = useData();
+export default function ReportsPage() {  const { drivers, trucks, loads } = useData();
   const [selectedDateRange, setSelectedDateRange] = useState('today');
-  const [operationsTimeRange] = useState('30d');
   
   const today = new Date();
   const isToday = (date: Date | string) => {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
     return dateObj.toDateString() === today.toDateString();
-  };
-  // Filter data based on selected date range
+  };  // Filter data based on selected date range
   const getFilteredData = () => {
     const currentDate = new Date();
     let filteredLoads = loads;
 
     switch (selectedDateRange) {
       case 'today':
-        filteredLoads = loads.filter(load => 
-          isToday(load.pickupDate) || isToday(load.deliveryDate)
-        );
-        break;
-      case 'tomorrow':
-        const tomorrow = new Date(currentDate);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const isTomorrow = (date: Date | string) => {
-          const dateObj = typeof date === 'string' ? new Date(date) : date;
-          return dateObj.toDateString() === tomorrow.toDateString();
-        };
-        filteredLoads = loads.filter(load => 
-          isTomorrow(load.pickupDate) || isTomorrow(load.deliveryDate)
-        );
-        break;
-      case 'week':
-        const weekAgo = new Date(currentDate);
-        weekAgo.setDate(weekAgo.getDate() - 7);
+        // Today: yesterday + today + 4 days forward (6 days total)
+        const todayStart = new Date(currentDate);
+        todayStart.setDate(todayStart.getDate() - 1); // Yesterday
+        const todayEnd = new Date(currentDate);
+        todayEnd.setDate(todayEnd.getDate() + 4); // +4 days forward
         filteredLoads = loads.filter(load => {
           const pickupDate = typeof load.pickupDate === 'string' ? new Date(load.pickupDate) : load.pickupDate;
           const deliveryDate = typeof load.deliveryDate === 'string' ? new Date(load.deliveryDate) : load.deliveryDate;
-          return (pickupDate >= weekAgo && pickupDate <= currentDate) || 
-                 (deliveryDate >= weekAgo && deliveryDate <= currentDate);
+          return (pickupDate >= todayStart && pickupDate <= todayEnd) || 
+                 (deliveryDate >= todayStart && deliveryDate <= todayEnd);
+        });
+        break;
+      case 'tomorrow':
+        // Tomorrow: yesterday + tomorrow + 4 days forward (6 days total)
+        const tomorrowStart = new Date(currentDate);
+        tomorrowStart.setDate(tomorrowStart.getDate() - 1); // Yesterday
+        const tomorrowEnd = new Date(currentDate);
+        tomorrowEnd.setDate(tomorrowEnd.getDate() + 5); // +5 days forward (tomorrow + 4 more)
+        filteredLoads = loads.filter(load => {
+          const pickupDate = typeof load.pickupDate === 'string' ? new Date(load.pickupDate) : load.pickupDate;
+          const deliveryDate = typeof load.deliveryDate === 'string' ? new Date(load.deliveryDate) : load.deliveryDate;
+          return (pickupDate >= tomorrowStart && pickupDate <= tomorrowEnd) || 
+                 (deliveryDate >= tomorrowStart && deliveryDate <= tomorrowEnd);
+        });
+        break;
+      case 'week':
+        // This Week: Sunday through Saturday of current week
+        const weekStart = new Date(currentDate);
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay()); // Go to Sunday
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6); // Go to Saturday
+        filteredLoads = loads.filter(load => {
+          const pickupDate = typeof load.pickupDate === 'string' ? new Date(load.pickupDate) : load.pickupDate;
+          const deliveryDate = typeof load.deliveryDate === 'string' ? new Date(load.deliveryDate) : load.deliveryDate;
+          return (pickupDate >= weekStart && pickupDate <= weekEnd) || 
+                 (deliveryDate >= weekStart && deliveryDate <= weekEnd);
         });
         break;
       case 'month':
-        const monthAgo = new Date(currentDate);
-        monthAgo.setMonth(monthAgo.getMonth() - 1);
+        // This Month: First day to last day of current month
+        const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
         filteredLoads = loads.filter(load => {
           const pickupDate = typeof load.pickupDate === 'string' ? new Date(load.pickupDate) : load.pickupDate;
           const deliveryDate = typeof load.deliveryDate === 'string' ? new Date(load.deliveryDate) : load.deliveryDate;
-          return (pickupDate >= monthAgo && pickupDate <= currentDate) || 
-                 (deliveryDate >= monthAgo && deliveryDate <= currentDate);
-        });
-        break;
-      case 'quarter':
-        const quarterAgo = new Date(currentDate);
-        quarterAgo.setMonth(quarterAgo.getMonth() - 3);
-        filteredLoads = loads.filter(load => {
-          const pickupDate = typeof load.pickupDate === 'string' ? new Date(load.pickupDate) : load.pickupDate;
-          const deliveryDate = typeof load.deliveryDate === 'string' ? new Date(load.deliveryDate) : load.deliveryDate;
-          return (pickupDate >= quarterAgo && pickupDate <= currentDate) || 
-                 (deliveryDate >= quarterAgo && deliveryDate <= currentDate);
+          return (pickupDate >= monthStart && pickupDate <= monthEnd) || 
+                 (deliveryDate >= monthStart && deliveryDate <= monthEnd);
         });
         break;
       default:
@@ -99,18 +100,63 @@ export default function ReportsPage() {
   const todayLoads = loads.filter(load => 
     isToday(load.pickupDate) || isToday(load.deliveryDate)
   );
-
-  // Generate mock historical data for charts
+  // Generate mock historical data for charts based on selected date range
   const generateHistoricalData = () => {
     const data = [];
     const currentDate = new Date();
     
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date(currentDate);
-      date.setDate(date.getDate() - i);
+    let startDate, daysToGenerate;
+    
+    switch (selectedDateRange) {
+      case 'today':
+        // Yesterday + today + 4 days forward (6 days total)
+        startDate = new Date(currentDate);
+        startDate.setDate(startDate.getDate() - 1);
+        daysToGenerate = 6;
+        break;
+      case 'tomorrow':
+        // Yesterday + tomorrow + 4 days forward (6 days total)
+        startDate = new Date(currentDate);
+        startDate.setDate(startDate.getDate() - 1);
+        daysToGenerate = 6;
+        break;
+      case 'week':
+        // Sunday through Saturday of current week (7 days)
+        startDate = new Date(currentDate);
+        startDate.setDate(startDate.getDate() - startDate.getDay()); // Go to Sunday
+        daysToGenerate = 7;
+        break;
+      case 'month':
+        // Current month - generate data for each day of the month
+        startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+        daysToGenerate = lastDay.getDate();
+        break;
+      default:
+        // Default to 7 days
+        startDate = new Date(currentDate);
+        startDate.setDate(startDate.getDate() - 6);
+        daysToGenerate = 7;
+    }
+    
+    for (let i = 0; i < daysToGenerate; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+      
+      // Format date based on range
+      let dateLabel;
+      if (selectedDateRange === 'month') {
+        dateLabel = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      } else {
+        dateLabel = date.toLocaleDateString('en-US', { 
+          weekday: 'short', 
+          month: 'short', 
+          day: 'numeric' 
+        });
+      }
       
       data.push({
-        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        date: dateLabel,
         loads: Math.floor(Math.random() * 20) + 10,
         revenue: Math.floor(Math.random() * 50000) + 20000,
         delivered: Math.floor(Math.random() * 15) + 8,
@@ -121,16 +167,48 @@ export default function ReportsPage() {
     return data;
   };
   const chartData = generateHistoricalData();
-
-  // Generate operations data for the area chart
+  // Generate operations data for the area chart based on selected date range
   const generateOperationsData = () => {
     const data = [];
     const currentDate = new Date();
-    const days = operationsTimeRange === '7d' ? 7 : operationsTimeRange === '30d' ? 30 : 90;
     
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date(currentDate);
-      date.setDate(date.getDate() - i);
+    let startDate, daysToGenerate;
+    
+    switch (selectedDateRange) {
+      case 'today':
+        // Yesterday + today + 4 days forward (6 days total)
+        startDate = new Date(currentDate);
+        startDate.setDate(startDate.getDate() - 1);
+        daysToGenerate = 6;
+        break;
+      case 'tomorrow':
+        // Yesterday + tomorrow + 4 days forward (6 days total)
+        startDate = new Date(currentDate);
+        startDate.setDate(startDate.getDate() - 1);
+        daysToGenerate = 6;
+        break;
+      case 'week':
+        // Sunday through Saturday of current week (7 days)
+        startDate = new Date(currentDate);
+        startDate.setDate(startDate.getDate() - startDate.getDay()); // Go to Sunday
+        daysToGenerate = 7;
+        break;
+      case 'month':
+        // Current month - generate data for each day of the month
+        startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+        daysToGenerate = lastDay.getDate();
+        break;
+      default:
+        // Default to 7 days
+        startDate = new Date(currentDate);
+        startDate.setDate(startDate.getDate() - 6);
+        daysToGenerate = 7;
+    }
+    
+    for (let i = 0; i < daysToGenerate; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
       
       // Generate realistic data based on current metrics with some variation
       const baseOOSTrucks = oosTrucks;
@@ -149,7 +227,6 @@ export default function ReportsPage() {
     
     return data;
   };
-
   const operationsData = generateOperationsData();
   const operationsChartConfig = {
     oosTrucks: {
@@ -169,20 +246,6 @@ export default function ReportsPage() {
       color: "#2563eb", // blue-600 to match Users icon
     },
   };
-
-  const filteredOperationsData = operationsData.filter((item) => {
-    const date = new Date(item.date)
-    const referenceDate = new Date()
-    let daysToSubtract = 30
-    if (operationsTimeRange === "90d") {
-      daysToSubtract = 90
-    } else if (operationsTimeRange === "7d") {
-      daysToSubtract = 7
-    }
-    const startDate = new Date(referenceDate)
-    startDate.setDate(startDate.getDate() - daysToSubtract)
-    return date >= startDate
-  });
 
   const chartConfig = {
     loads: {
@@ -258,15 +321,13 @@ export default function ReportsPage() {
               })}
             </p>
           </div>
-          
-          {/* Date Range Tabs */}
+            {/* Date Range Tabs */}
           <div className="flex flex-wrap gap-1 mt-4 p-1 bg-gray-100 rounded-lg">
             {[
               { value: 'today', label: 'Today' },
               { value: 'tomorrow', label: 'Tomorrow' },
               { value: 'week', label: 'This Week' },
-              { value: 'month', label: 'This Month' },
-              { value: 'quarter', label: 'This Quarter' }
+              { value: 'month', label: 'This Month' }
             ].map((tab) => (
               <button
                 key={tab.value}
@@ -289,7 +350,7 @@ export default function ReportsPage() {
               config={operationsChartConfig}
               className="aspect-auto h-[250px] w-full"
             >
-              <AreaChart data={filteredOperationsData}>
+              <AreaChart data={operationsData}>
                 <defs>
                   <linearGradient id="fillOOSTrucks" x1="0" y1="0" x2="0" y2="1">
                     <stop
