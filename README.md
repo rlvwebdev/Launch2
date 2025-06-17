@@ -95,9 +95,10 @@ npm install && npm run dev
 ### Design & UX
 - **📱 Mobile-First Design** - Optimized for mobile devices with desktop scalability
 - **🎨 Modern UI** - Clean, professional interface with consistent design system
-- **⚡ Responsive Navigation** - Bottom navigation for mobile, collapsible sidebar for desktop
+- **⚡ Responsive Navigation** - Bottom navigation for mobile (6 items: Home, Drivers, Trucks, Loads, Reports, Settings), collapsible sidebar for desktop
+- **📊 Mobile Reports Access** - Full analytics and reporting functionality accessible from mobile navigation
 - **🔍 Advanced Search** - Powerful search and filtering across all modules
-- **📊 Real-time Stats** - Live dashboard with key performance indicators
+- **📈 Real-time Stats** - Live dashboard with key performance indicators
 
 ## 🛠️ Technology Stack
 
