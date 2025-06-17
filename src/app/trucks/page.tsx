@@ -1,136 +1,67 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
-import { Truck, Plus, Search, Filter, Calendar, Wrench, User, AlertTriangle, FileText, Edit, UserCheck, Eye } from 'lucide-react';
-
-// Mock truck data
-const mockTrucks = [
-  {
-    id: '2812',
-    make: 'Freightliner',
-    model: 'Cascadia',
-    year: 2021,
-    licensePlate: 'TMO-001',
-    vin: '1FUJGHDV8MLBX4501',
-    color: 'White',
-    assignedDriverId: '1',
-    assignedDriverName: 'John Smith',
-    status: 'in-use' as const,
-    mileage: 145000,
-    lastMaintenance: '2024-05-15',
-    nextMaintenanceDue: '2024-08-15',
-    registrationExpiry: '2025-06-30',
-    insuranceExpiry: '2025-12-31'
-  },
-  {
-    id: '2813A',
-    make: 'Peterbilt',
-    model: '579',
-    year: 2020,
-    licensePlate: 'TMO-002',
-    vin: '1XPWD40X1ED123456',
-    color: 'Blue',
-    assignedDriverId: '2',
-    assignedDriverName: 'Maria Garcia',
-    status: 'in-use' as const,
-    mileage: 189000,
-    lastMaintenance: '2024-04-20',
-    nextMaintenanceDue: '2024-07-20',
-    registrationExpiry: '2025-03-15',
-    insuranceExpiry: '2025-12-31'
-  },
-  {
-    id: '2814',
-    make: 'Kenworth',
-    model: 'T680',
-    year: 2019,
-    licensePlate: 'TMO-003',
-    vin: '1XKWD40X9EJ654321',
-    color: 'Red',
-    assignedDriverId: undefined,
-    assignedDriverName: undefined,
-    status: 'maintenance' as const,
-    mileage: 234000,
-    lastMaintenance: '2024-06-01',
-    nextMaintenanceDue: '2024-06-15',
-    registrationExpiry: '2025-09-20',
-    insuranceExpiry: '2025-12-31'
-  },
-  {
-    id: '2815A',
-    make: 'Volvo',
-    model: 'VNL 760',
-    year: 2022,
-    licensePlate: 'TMO-004',
-    vin: '4V4NC9EJ5EN123789',
-    color: 'Silver',
-    assignedDriverId: '4',
-    assignedDriverName: 'Sarah Davis',
-    status: 'available' as const,
-    mileage: 98000,
-    lastMaintenance: '2024-05-30',
-    nextMaintenanceDue: '2024-08-30',
-    registrationExpiry: '2025-11-10',
-    insuranceExpiry: '2025-12-31'
-  }
-];
+import { Truck, Plus, Search, Filter, Calendar, Wrench, User, AlertTriangle, FileText, Edit, UserCheck, List, Grid3X3 } from 'lucide-react';
+import { useData } from '@/context/DataContext';
+import { TruckStatus } from '@/types';
 
 export default function TrucksPage() {
-  const availableTrucks = mockTrucks.filter(t => t.status === 'available').length;
-  const inUseTrucks = mockTrucks.filter(t => t.status === 'in-use').length;
-  const maintenanceTrucks = mockTrucks.filter(t => t.status === 'maintenance').length;
-  const totalTrucks = mockTrucks.length;
-
+  const { trucks } = useData();
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
+  
+  const availableTrucks = trucks.filter(t => t.status === TruckStatus.AVAILABLE).length;
+  const inUseTrucks = trucks.filter(t => t.status === TruckStatus.IN_USE).length;
+  const maintenanceTrucks = trucks.filter(t => t.status === TruckStatus.MAINTENANCE).length;
+  const totalTrucks = trucks.length;
   return (
     <div className="p-4 md:p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* Header with Add Button and View Toggle */}
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Truck className="h-8 w-8 text-green-600" />
+            <Truck className="h-8 w-8 text-blue-600" />
             Trucks
           </h1>
           <p className="text-gray-600 mt-1">
-            Manage your fleet and maintenance schedules
+            Manage your fleet and vehicle assignments
           </p>
+        </div>        <div className="flex items-center gap-2">          <Button 
+            variant="primary"
+            onClick={() => router.push('/trucks/add')}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Truck
+          </Button>
         </div>
-        <Button className="self-start sm:self-auto">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Truck
-        </Button>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card padding="sm">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{totalTrucks}</div>
-            <div className="text-sm text-gray-600">Total Fleet</div>
-          </div>
-        </Card>
-        <Card padding="sm">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">{availableTrucks}</div>
-            <div className="text-sm text-gray-600">Available</div>
-          </div>
-        </Card>
-        <Card padding="sm">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{inUseTrucks}</div>
-            <div className="text-sm text-gray-600">In Use</div>
-          </div>
-        </Card>
-        <Card padding="sm">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-orange-600">{maintenanceTrucks}</div>
-            <div className="text-sm text-gray-600">Maintenance</div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Search and Filters */}
+      </div>      {/* Compact Stats and Search */}
       <Card>
-        <CardContent>
+        <CardContent className="p-4">
+          {/* Stats Row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-900">{totalTrucks}</div>
+              <div className="text-sm text-gray-600">Total</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{availableTrucks}</div>
+              <div className="text-sm text-gray-600">Available</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">{inUseTrucks}</div>
+              <div className="text-sm text-gray-600">In Use</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-600">{maintenanceTrucks}</div>
+              <div className="text-sm text-gray-600">Maintenance</div>
+            </div>
+          </div>
+            {/* Search and Filter Row */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -138,24 +69,40 @@ export default function TrucksPage() {
                 type="text"
                 placeholder="Search trucks by ID, make, model..."
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
-            </div>
-            <Button variant="outline">
+            </div>            <Button variant="primary">
               <Filter className="h-4 w-4 mr-2" />
               Filters
             </Button>
+            <div className="flex border border-gray-300 rounded-lg">
+              <button
+                onClick={() => setViewMode('grid')}
+                title="Grid view"
+                className={`p-2 ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+              >
+                <Grid3X3 className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                title="List view"
+                className={`p-2 border-l border-gray-300 ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+              >
+                <List className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </CardContent>
-      </Card>
-
-      {/* Trucks List */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {mockTrucks.map((truck) => {
-          const needsMaintenance = new Date(truck.nextMaintenanceDue) < new Date();
-          const registrationExpiring = new Date(truck.registrationExpiry) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-          
-          return (
-            <Card key={truck.id} className="hover:shadow-md transition-shadow">              <CardHeader>
+      </Card>      {/* Trucks List */}
+      {viewMode === 'grid' ? (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {trucks.map((truck) => {
+            const needsMaintenance = new Date(truck.nextMaintenanceDue) < new Date();
+            const registrationExpiring = new Date(truck.registrationExpiry) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+            
+            return (
+              <Card key={truck.id} className="hover:shadow-md transition-shadow"><CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">
@@ -196,10 +143,10 @@ export default function TrucksPage() {
                   </div>
                 </div>
 
-                {truck.assignedDriverName && (
+                {truck.assignedDriverId && (
                   <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded">
                     <User className="h-4 w-4 mr-2" />
-                    Assigned to: {truck.assignedDriverName}
+                    Assigned to: Driver {truck.assignedDriverId}
                   </div>
                 )}
 
@@ -229,26 +176,86 @@ export default function TrucksPage() {
                     <span className="text-xs text-gray-500">
                       Last Service: {new Date(truck.lastMaintenance).toLocaleDateString()}
                     </span>                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-50">
                         <Edit className="h-3 w-3 mr-1" />
                         Edit
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" className="border-green-300 text-green-600 hover:bg-green-50">
                         <UserCheck className="h-3 w-3 mr-1" />
                         Assign
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant="outline" className="border-gray-300 text-gray-600 hover:bg-gray-50">
                         <FileText className="h-3 w-3 mr-1" />
                         Documents
                       </Button>
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </CardContent>            </Card>
           );
         })}
-      </div>
+        </div>
+      ) : (
+        <Card>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Truck</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">License</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Status</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Driver</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Mileage</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {trucks.map((truck) => (
+                  <tr key={truck.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-3 px-4">
+                      <div className="font-medium text-gray-900">
+                        {truck.id}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {truck.make} {truck.model} • {truck.year}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-sm text-gray-600">{truck.licensePlate}</td>
+                    <td className="py-3 px-4">
+                      <Badge variant="status" status={truck.status} size="sm">
+                        {truck.status.charAt(0).toUpperCase() + truck.status.slice(1).replace('-', ' ')}
+                      </Badge>
+                    </td>
+                    <td className="py-3 px-4 text-sm text-gray-600">
+                      {truck.assignedDriverId ? (
+                        <span className="flex items-center">
+                          <User className="h-4 w-4 mr-1" />
+                          Driver {truck.assignedDriverId}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">Unassigned</span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-gray-600">{truck.mileage.toLocaleString()} mi</td>
+                    <td className="py-3 px-4">
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-50">
+                          <Edit className="h-3 w-3 mr-1" />
+                          Edit
+                        </Button>
+                        <Button size="sm" variant="outline" className="border-green-300 text-green-600 hover:bg-green-50">
+                          <UserCheck className="h-3 w-3 mr-1" />
+                          Assign
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
 
       {/* Maintenance Alerts */}
       <Card>

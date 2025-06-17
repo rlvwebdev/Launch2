@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AppLayout from "@/components/layout/AppLayout";
+import { DataProvider } from "@/context/DataContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,23 +15,29 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TMOps - Trucking Management Operations",
-  description: "Mobile-first web application for managing trucking operations including drivers, trucks, and loads.",
+  title: "Launch - Terminal Ops",
+  description: "Mobile-first web application for managing transportation operations including drivers, trucks, and loads. Propelling the logistics industry forward.",
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
-  return (
+}>) {  return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AppLayout>
-          {children}
-        </AppLayout>
+        <DataProvider>
+          <AppLayout>
+            {children}
+          </AppLayout>
+        </DataProvider>
       </body>
     </html>
   );

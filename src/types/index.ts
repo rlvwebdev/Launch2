@@ -1,4 +1,4 @@
-// Core data types for the TMOps trucking management application
+// Core data types for the Launch transportation management application
 
 export interface Driver {
   id: string;
@@ -81,6 +81,24 @@ export interface LoadEvent {
   notes?: string;
 }
 
+export interface Trailer {
+  id: string;
+  make: string;
+  model: string;
+  year: number;
+  licensePlate: string;
+  vin: string;
+  type: TrailerType;
+  capacity: number; // in pounds
+  length: number; // in feet
+  assignedTruckId?: string;
+  status: TrailerStatus;
+  lastMaintenance: Date;
+  nextMaintenanceDue: Date;
+  registrationExpiry: Date;
+  insuranceExpiry: Date;
+}
+
 // Status Enums
 export enum DriverStatus {
   ACTIVE = 'active',
@@ -120,6 +138,25 @@ export enum EventSeverity {
   MEDIUM = 'medium',
   HIGH = 'high',
   CRITICAL = 'critical'
+}
+
+export enum TrailerStatus {
+  AVAILABLE = 'available',
+  IN_USE = 'in-use',
+  MAINTENANCE = 'maintenance',
+  OUT_OF_SERVICE = 'out-of-service'
+}
+
+export enum TrailerType {
+  DRY_VAN = 'dry-van',
+  FLATBED = 'flatbed',
+  REFRIGERATED = 'refrigerated',
+  HOPPER = 'hopper',
+  TANKER = 'tanker',
+  LOWBOY = 'lowboy',
+  STEP_DECK = 'step-deck',
+  CONTAINER = 'container',
+  OTHER = 'other'
 }
 
 // UI Navigation Types

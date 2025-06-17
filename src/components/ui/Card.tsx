@@ -21,6 +21,16 @@ interface CardFooterProps {
   className?: string;
 }
 
+interface CardTitleProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+interface CardDescriptionProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
 const paddingVariants = {
   none: '',
   sm: 'p-3',
@@ -66,4 +76,20 @@ function CardFooter({ children, className }: CardFooterProps) {
   );
 }
 
-export { Card, CardHeader, CardContent, CardFooter };
+function CardTitle({ children, className }: CardTitleProps) {
+  return (
+    <h3 className={cn('text-lg font-semibold text-gray-900', className)}>
+      {children}
+    </h3>
+  );
+}
+
+function CardDescription({ children, className }: CardDescriptionProps) {
+  return (
+    <p className={cn('text-sm text-gray-600', className)}>
+      {children}
+    </p>
+  );
+}
+
+export { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription };

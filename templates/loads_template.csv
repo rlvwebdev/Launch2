@@ -1,0 +1,6 @@
+Load ID*,Load Number*,BOL Number,Shipper*,Pickup Address*,Pickup City*,Pickup State*,Pickup Zip Code*,Delivery Address*,Delivery City*,Delivery State*,Delivery Zip Code*,Assigned Driver ID,Assigned Truck ID,Assigned Trailer ID,Status*,Cargo Description*,Weight*,Pickup Date*,Delivery Date*,Rate*,Notes
+LD001,L2024001,BOL123456,ABC Manufacturing,123 Industrial Blvd,Dallas,TX,75201,456 Commerce St,Houston,TX,77002,DRV001,TRK001,TRL001,in-transit,Auto Parts,25000,12/15/2024,12/16/2024,1250.00,"Handle with care - fragile items"
+LD002,L2024002,BOL234567,XYZ Logistics,789 Warehouse Dr,Atlanta,GA,30309,321 Distribution Way,Miami,FL,33101,DRV002,TRK002,TRL002,assigned,Electronics,18000,12/16/2024,12/18/2024,1850.00,"Temperature sensitive cargo"
+LD003,L2024003,BOL345678,Global Shipping,555 Port Ave,Los Angeles,CA,90012,888 Freight Rd,Phoenix,AZ,85001,,,,pending,Textiles,32000,12/17/2024,12/19/2024,1650.00,
+LD004,L2024004,BOL456789,Midwest Supply,777 Factory St,Chicago,IL,60601,999 Industrial Pkwy,Detroit,MI,48201,DRV004,TRK004,TRL004,picked-up,Machinery,45000,12/16/2024,12/17/2024,2100.00,"Heavy machinery - special handling required"
+LD005,L2024005,BOL567890,Coast Transport,222 Marine Dr,Seattle,WA,98101,444 Dock St,Portland,OR,97201,,,,,pending,Food Products,28000,12/18/2024,12/20/2024,1450.00,"Perishable goods - refrigerated transport needed"

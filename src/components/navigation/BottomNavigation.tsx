@@ -7,6 +7,7 @@ import {
   Truck, 
   Package, 
   Settings,
+  Home,
   type LucideIcon 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -19,6 +20,12 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
+  {
+    id: 'dashboard',
+    label: 'Home',
+    icon: Home,
+    path: '/',
+  },
   {
     id: 'drivers',
     label: 'Drivers',

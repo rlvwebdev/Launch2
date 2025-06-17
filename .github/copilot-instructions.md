@@ -1,9 +1,9 @@
 <!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
 
-# TMOps - Trucking Management Operations
+# 🚀 Launch - Transportation Management Platform
 
 ## Project Context
-This is a mobile-first web application for managing trucking operations built with Next.js 15, TypeScript, and Tailwind CSS v4.
+This is a mobile-first web application for managing transportation operations built with Next.js 15, TypeScript, and Tailwind CSS v4. Launch propels the logistics industry forward with modern, efficient management tools.
 
 ## Architecture Guidelines
 - Use Next.js App Router with TypeScript

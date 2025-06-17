@@ -1,4 +1,4 @@
-# Git Workflow for TMOps Project
+# Git Workflow for Launch Project
 
 ## Current Repository State
 - **Repository**: https://github.com/rlvwebdev/Launch2
@@ -26,9 +26,9 @@ git checkout master
 git pull origin master
 
 # Create feature branch with descriptive name
-git checkout -b feature/TMOPS-124-load-filtering
+git checkout -b feature/LAUNCH-124-load-filtering
 # or
-git checkout -b enhancement/TMOPS-125-driver-search-improvements
+git checkout -b enhancement/LAUNCH-125-driver-search-improvements
 ```
 
 ### 2. Daily Development Workflow
@@ -38,12 +38,12 @@ git add .
 git commit -m "feat(loads): add date range filter component"
 
 # Push to remote regularly to backup your work
-git push origin feature/TMOPS-124-load-filtering
+git push origin feature/LAUNCH-124-load-filtering
 
 # If working for multiple days, sync with master occasionally
 git checkout master
 git pull origin master
-git checkout feature/TMOPS-124-load-filtering
+git checkout feature/LAUNCH-124-load-filtering
 git rebase master  # This keeps your feature branch up to date
 ```
 
@@ -52,7 +52,7 @@ git rebase master  # This keeps your feature branch up to date
 # Before merging, ensure your feature is up to date
 git checkout master
 git pull origin master
-git checkout feature/TMOPS-124-load-filtering
+git checkout feature/LAUNCH-124-load-filtering
 git rebase master
 
 # Test everything works correctly
@@ -61,14 +61,14 @@ npm run dev  # Test manually
 
 # Merge feature into master
 git checkout master
-git merge feature/TMOPS-124-load-filtering
+git merge feature/LAUNCH-124-load-filtering
 
 # Push updated master
 git push origin master
 
 # Clean up: delete the feature branch
-git branch -d feature/TMOPS-124-load-filtering
-git push origin --delete feature/TMOPS-124-load-filtering
+git branch -d feature/LAUNCH-124-load-filtering
+git push origin --delete feature/LAUNCH-124-load-filtering
 ```
 
 ### 4. Quick Updates (Small Changes)
@@ -127,7 +127,7 @@ git commit -m "refactor(components): extract common card component logic"
 git commit -m "chore(deps): update Next.js to version 15.1"
 ```
 
-## Best Practices for TMOps Development
+## Best Practices for Launch Development
 
 ### Do's ✅
 - **Keep commits focused**: One logical change per commit
@@ -144,7 +144,7 @@ git commit -m "chore(deps): update Next.js to version 15.1"
 - **Don't ignore warnings**: Fix TypeScript errors and linting warnings
 - **Don't leave branches hanging**: Complete or delete abandoned feature branches
 
-## Common Git Commands for TMOps
+## Common Git Commands for Launch
 
 ### Daily Workflow
 ```bash
@@ -203,15 +203,15 @@ When working on new features, consider these areas:
 ### Branch Naming for Future Features
 ```bash
 # New features
-feature/TMOPS-200-driver-profiles
-feature/TMOPS-201-load-tracking
-feature/TMOPS-202-maintenance-alerts
+feature/LAUNCH-200-driver-profiles
+feature/LAUNCH-201-load-tracking
+feature/LAUNCH-202-maintenance-alerts
 
 # Enhancements
-enhancement/TMOPS-210-improve-search
-enhancement/TMOPS-211-better-mobile-nav
+enhancement/LAUNCH-210-improve-search
+enhancement/LAUNCH-211-better-mobile-nav
 
 # Bug fixes
-bugfix/TMOPS-220-fix-date-display
-bugfix/TMOPS-221-resolve-loading-spinner
+bugfix/LAUNCH-220-fix-date-display
+bugfix/LAUNCH-221-resolve-loading-spinner
 ```

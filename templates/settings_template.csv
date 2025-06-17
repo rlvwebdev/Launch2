@@ -1,0 +1,21 @@
+Setting Name*,Setting Value*,Description,Category
+company_name,Launch Transportation Solutions,Official company name,Company
+company_address,123 Logistics Way,Company headquarters address,Company
+company_city,Houston,Company city,Company
+company_state,TX,Company state,Company
+company_zip,77001,Company ZIP code,Company
+company_phone,555-LAUNCH,Main company phone number,Company
+company_email,info@launch.com,Main company email,Company
+default_currency,USD,Default currency for rates and payments,System
+timezone,America/Chicago,Default timezone for the system,System
+mileage_unit,miles,Unit for distance measurements,System
+weight_unit,pounds,Unit for weight measurements,System
+fuel_card_prefix,FC,Prefix for fuel card numbers,System
+driver_id_prefix,DRV,Prefix for driver IDs,System
+truck_id_prefix,TRK,Prefix for truck IDs,System
+trailer_id_prefix,TRL,Prefix for trailer IDs,System
+load_id_prefix,LD,Prefix for load IDs,System
+maintenance_reminder_days,30,Days before maintenance due to send reminder,Notifications
+license_expiry_reminder_days,60,Days before license expiry to send reminder,Notifications
+registration_reminder_days,45,Days before registration expiry to send reminder,Notifications
+insurance_reminder_days,30,Days before insurance expiry to send reminder,Notifications

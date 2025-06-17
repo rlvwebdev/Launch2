@@ -4,89 +4,15 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
-import { Package, Search, Filter, MapPin, AlertTriangle, FileText, ArrowUpDown, Grid3X3, List, ChevronDown, Eye, Video, Truck, DollarSign, MessageSquare, UserCheck } from 'lucide-react';
-
-// Mock loads data with BOL numbers and shippers - Expanded for proper tab counts
-const products = ['PE LMR-600700', 'PVC Powder LH-98', 'BUTVARL LT63', 'Polyethylene A-60', 'Polypropylene 5600'];
-
-// Simple deterministic random function using seed
-const seededRandom = (seed: number) => {
-  const x = Math.sin(seed) * 10000;
-  return x - Math.floor(x);
-};
-
-const generateMockLoad = (id: number, dayOffset: number = 0) => {
-  // Use ID as seed for deterministic randomness
-  const seed = id * 12345;
-  
-  const pickupDate = new Date();
-  pickupDate.setDate(pickupDate.getDate() + dayOffset);
-  pickupDate.setHours(Math.floor(seededRandom(seed + 1) * 12) + 6, Math.floor(seededRandom(seed + 2) * 60), 0, 0);
-  
-  const deliveryDate = new Date(pickupDate);
-  deliveryDate.setDate(deliveryDate.getDate() + Math.floor(seededRandom(seed + 3) * 3) + 1);
-  deliveryDate.setHours(Math.floor(seededRandom(seed + 4) * 12) + 8, Math.floor(seededRandom(seed + 5) * 60), 0, 0);
-
-  const statuses = ['pending', 'assigned', 'picked-up', 'in-transit', 'delivered'] as const;
-  const cities = [
-    { city: 'Houston', state: 'TX' },
-    { city: 'Dallas', state: 'TX' },
-    { city: 'Phoenix', state: 'AZ' },
-    { city: 'Los Angeles', state: 'CA' },
-    { city: 'Chicago', state: 'IL' },
-    { city: 'Miami', state: 'FL' },
-    { city: 'Atlanta', state: 'GA' },
-    { city: 'Denver', state: 'CO' },
-    { city: 'Seattle', state: 'WA' },
-    { city: 'Boston', state: 'MA' }
-  ];
-  
-  const shippers = ['Ravago', 'Sysco Foods', 'MedSupply Corp', 'BuildCorp Materials', 'TechDistro Inc', 'AutoParts Plus', 'ChemCorp', 'PlastiCorp', 'PolyTech Industries'];
-  
-  const pickup = cities[Math.floor(seededRandom(seed + 6) * cities.length)];
-  const delivery = cities[Math.floor(seededRandom(seed + 7) * cities.length)];
-  
-  return {
-    id: `LD-${String(id).padStart(3, '0')}`,
-    loadNumber: String(6542530 + id),
-    bolNumber: `81033564258-${String(id).padStart(3, '0')}`,
-    shipper: shippers[Math.floor(seededRandom(seed + 8) * shippers.length)],
-    pickupLocation: {
-      address: `${Math.floor(seededRandom(seed + 9) * 9999)} Industrial Blvd`,
-      city: pickup.city,
-      state: pickup.state,
-      zipCode: String(Math.floor(seededRandom(seed + 10) * 90000) + 10000)
-    },
-    deliveryLocation: {
-      address: `${Math.floor(seededRandom(seed + 11) * 9999)} Commerce Dr`,
-      city: delivery.city,
-      state: delivery.state,
-      zipCode: String(Math.floor(seededRandom(seed + 12) * 90000) + 10000)
-    },
-    assignedDriverId: seededRandom(seed + 13) > 0.3 ? String(Math.floor(seededRandom(seed + 14) * 10) + 1) : undefined,
-    assignedDriverName: seededRandom(seed + 15) > 0.3 ? `Driver ${Math.floor(seededRandom(seed + 16) * 10) + 1}` : undefined,
-    assignedTruckId: seededRandom(seed + 17) > 0.3 ? `TRK-${String(Math.floor(seededRandom(seed + 18) * 20) + 1).padStart(3, '0')}` : undefined,
-    status: statuses[Math.floor(seededRandom(seed + 19) * statuses.length)],
-    cargoDescription: products[Math.floor(seededRandom(seed + 20) * products.length)],
-    weight: Math.floor(seededRandom(seed + 21) * 40000) + 15000,
-    pickupDate,
-    deliveryDate,
-    rate: Math.floor(seededRandom(seed + 22) * 4000) + 1500,
-    events: []
-  };
-};
-
-// Generate loads for different days
-const todayLoads = Array.from({ length: 26 }, (_, i) => generateMockLoad(i + 1, 0));
-const tomorrowLoads = Array.from({ length: 32 }, (_, i) => generateMockLoad(i + 27, 1));
-const futureLoads = Array.from({ length: 40 }, (_, i) => generateMockLoad(i + 59, Math.floor(seededRandom((i + 59) * 9999) * 30) + 2));
-
-const mockLoads = [...todayLoads, ...tomorrowLoads, ...futureLoads];
+import { Package, Search, Filter, MapPin, AlertTriangle, FileText, ArrowUpDown, Grid3X3, List, ChevronDown, Video, Truck, DollarSign, MessageSquare, UserCheck, Plus, Settings } from 'lucide-react';
+import { useData } from '@/context/DataContext';
+import { LoadStatus } from '@/types';
 
 type SortField = 'loadNumber' | 'shipper' | 'pickupDate' | 'deliveryDate' | 'status' | 'rate';
 type SortDirection = 'asc' | 'desc';
 
 export default function LoadsPage() {
+  const { loads } = useData();
   const [activeTab, setActiveTab] = useState<'today' | 'tomorrow' | 'all' | 'events'>('today');
   const [sortField, setSortField] = useState<SortField>('pickupDate');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
@@ -105,24 +31,23 @@ export default function LoadsPage() {
     tomorrow.setDate(tomorrow.getDate() + 1);
     return date.toDateString() === tomorrow.toDateString();
   };
-
   // Filter loads based on active tab
   const getFilteredLoads = () => {
-    let filtered = mockLoads;    // Filter by tab
+    let filtered = loads;    // Filter by tab
     if (activeTab === 'today') {
-      filtered = mockLoads.filter(load => 
+      filtered = loads.filter(load => 
         isToday(load.pickupDate) || 
         isToday(load.deliveryDate) ||
-        (load.status === 'in-transit' || load.status === 'picked-up')
+        (load.status === LoadStatus.IN_TRANSIT || load.status === LoadStatus.PICKED_UP)
       );
     } else if (activeTab === 'tomorrow') {
-      filtered = mockLoads.filter(load => 
+      filtered = loads.filter(load => 
         isTomorrow(load.pickupDate) || 
         isTomorrow(load.deliveryDate)
       );    } else if (activeTab === 'events') {
       // For events tab, show loads with specific statuses that might need attention
-      filtered = mockLoads.filter(load => 
-        load.status === 'pending' || 
+      filtered = loads.filter(load => 
+        load.status === LoadStatus.PENDING || 
         load.events.length > 0
       );
     }
@@ -157,13 +82,20 @@ export default function LoadsPage() {
         return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
       }
     });
-  };
+  };  const filteredLoads = getFilteredLoads();
 
-  const filteredLoads = getFilteredLoads();
-  const pendingLoads = mockLoads.filter(l => l.status === 'pending').length;
-  const inTransitLoads = mockLoads.filter(l => l.status === 'in-transit' || l.status === 'picked-up').length;
-  const deliveredLoads = mockLoads.filter(l => l.status === 'delivered').length;
-  const totalLoads = mockLoads.length;
+  // New metrics as requested
+  const totalLoadsAvailable = loads.filter(l => l.status === LoadStatus.PENDING || l.status === LoadStatus.ASSIGNED).length;
+  const totalLoadsShippingToday = loads.filter(l => 
+    isToday(l.pickupDate) && (l.status === LoadStatus.PICKED_UP || l.status === LoadStatus.IN_TRANSIT)
+  ).length;
+  const totalLoadsDeliveringToday = loads.filter(l => 
+    isToday(l.deliveryDate) && l.status === LoadStatus.IN_TRANSIT
+  ).length;
+  const totalOpenToday = loads.filter(l => 
+    (isToday(l.pickupDate) || isToday(l.deliveryDate)) && 
+    (l.status === LoadStatus.PENDING || l.status === LoadStatus.ASSIGNED)
+  ).length;
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -175,72 +107,46 @@ export default function LoadsPage() {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
+    <div className="p-4 md:p-6 space-y-6">      {/* Header with Add Button */}
+      <div className="flex justify-between items-center">        <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Package className="h-8 w-8 text-purple-600" />
+            <Package className="h-8 w-8 text-blue-600" />
             Loads
           </h1>
           <p className="text-gray-600 mt-1">
             Manage shipments and track delivery status
-          </p>        </div>
-        <div className="flex border border-gray-300 rounded-lg overflow-hidden">
-          <button
-            onClick={() => setViewMode('grid')}
-            className={`px-3 py-2 text-sm flex items-center gap-1 ${
-              viewMode === 'grid' 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-white text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            <Grid3X3 className="h-4 w-4" />
-            Grid
-          </button>
-          <button
-            onClick={() => setViewMode('rows')}
-            className={`px-3 py-2 text-sm flex items-center gap-1 border-l border-gray-300 ${
-              viewMode === 'rows' 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-white text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            <List className="h-4 w-4" />
-            Rows
-          </button>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
+          </p>
+        </div>        <Button className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          New Load
+        </Button>
+      </div>      {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card padding="sm">
           <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{totalLoads}</div>
-            <div className="text-sm text-gray-600">Total Loads</div>
+            <div className="text-2xl font-bold text-blue-600">{totalLoadsAvailable}</div>
+            <div className="text-sm text-gray-600">Total Loads Available</div>
           </div>
         </Card>
         <Card padding="sm">
           <div className="text-center">
-            <div className="text-2xl font-bold text-gray-600">{pendingLoads}</div>
-            <div className="text-sm text-gray-600">Pending</div>
+            <div className="text-2xl font-bold text-orange-600">{totalLoadsShippingToday}</div>
+            <div className="text-sm text-gray-600">Total Loads Shipping Today</div>
           </div>
         </Card>
         <Card padding="sm">
           <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">{inTransitLoads}</div>
-            <div className="text-sm text-gray-600">In Transit</div>
+            <div className="text-2xl font-bold text-purple-600">{totalLoadsDeliveringToday}</div>
+            <div className="text-sm text-gray-600">Total Loads Delivering Today</div>
           </div>
         </Card>
         <Card padding="sm">
           <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">{deliveredLoads}</div>
-            <div className="text-sm text-gray-600">Delivered</div>
+            <div className="text-2xl font-bold text-green-600">{totalOpenToday}</div>
+            <div className="text-sm text-gray-600">Total Open Today</div>
           </div>
         </Card>
-      </div>
-
-      {/* Search and Filters */}
+      </div>{/* Search and Filters */}
       <Card>
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4">
@@ -254,17 +160,33 @@ export default function LoadsPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button variant="outline">
+            <Button variant="primary">
               <Filter className="h-4 w-4 mr-2" />
               Filters
             </Button>
-            <Button variant="outline">
+            <div className="flex border border-gray-300 rounded-lg">
+              <button
+                onClick={() => setViewMode('grid')}
+                title="Grid view"
+                className={`p-2 ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+              >
+                <Grid3X3 className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('rows')}
+                title="List view"
+                className={`p-2 border-l border-gray-300 ${viewMode === 'rows' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+              >
+                <List className="h-4 w-4" />
+              </button>
+            </div>
+            <Button variant="primary">
               <FileText className="h-4 w-4 mr-2" />
               Reports
             </Button>
           </div>
         </CardContent>
-      </Card>      {/* Tabs - Responsive (Desktop tabs, Mobile dropdown) */}
+      </Card>{/* Tabs - Responsive (Desktop tabs, Mobile dropdown) */}
       <div className="border-b border-gray-200">
         {/* Desktop Tabs */}
         <nav className="hidden sm:flex -mb-px space-x-8">
@@ -518,11 +440,10 @@ export default function LoadsPage() {
                       <div>
                         <span className="text-gray-500">Product:</span>
                         <span className="ml-1 font-medium">{load.cargoDescription}</span>
-                      </div>
-                      {load.assignedDriverName && (
+                      </div>                      {load.assignedDriverId && (
                         <div>
                           <span className="text-gray-500">Driver:</span>
-                          <span className="ml-1 font-medium">{load.assignedDriverName}</span>
+                          <span className="ml-1 font-medium">{load.assignedDriverId}</span>
                         </div>
                       )}
                       {load.assignedTruckId && (
@@ -531,37 +452,56 @@ export default function LoadsPage() {
                           <span className="ml-1 font-medium">{load.assignedTruckId}</span>
                         </div>
                       )}
-                    </div>                    <div className="pt-2 border-t border-gray-200">                      <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-wrap gap-1">
-                        <Button size="sm" variant="outline">
+                    </div>                    <div className="pt-2 border-t border-gray-200">
+                      {/* Desktop View - Show all buttons */}
+                      <div className="hidden sm:flex sm:flex-wrap gap-1">
+                        <Button size="sm" variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-50">
                           <Video className="h-3 w-3 mr-1" />
                           View Lytx
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" className="border-green-300 text-green-600 hover:bg-green-50">
                           <Truck className="h-3 w-3 mr-1" />
                           View in Transflo
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" className="border-yellow-300 text-yellow-600 hover:bg-yellow-50">
                           <DollarSign className="h-3 w-3 mr-1" />
                           Misc Pay
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" className="border-orange-300 text-orange-600 hover:bg-orange-50">
                           <AlertTriangle className="h-3 w-3 mr-1" />
                           Report Event
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" className="border-gray-300 text-gray-600 hover:bg-gray-50">
                           <FileText className="h-3 w-3 mr-1" />
                           Documents
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" className="border-purple-300 text-purple-600 hover:bg-purple-50">
                           <MessageSquare className="h-3 w-3 mr-1" />
                           Comms
                         </Button>
                         {!load.assignedDriverId && (
-                          <Button size="sm">
+                          <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
                             <UserCheck className="h-3 w-3 mr-1" />
                             Assign
                           </Button>
                         )}
+                      </div>
+
+                      {/* Mobile View - Dropdown Menu */}
+                      <div className="sm:hidden relative">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => {
+                            // Toggle dropdown functionality could be added here
+                          }}
+                          className="w-full justify-center border-gray-300 text-gray-600 hover:bg-gray-50"
+                        >
+                          <Settings className="h-3 w-3 mr-1" />
+                          Actions
+                          <ChevronDown className="h-3 w-3 ml-1" />
+                        </Button>
+                        {/* Dropdown menu would be implemented here when needed */}
                       </div>
                     </div>
                   </div>
