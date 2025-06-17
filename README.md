@@ -1,11 +1,11 @@
 # 🚀 Launch - Transportation Management Platform
 
-A modern, mobile-first web application for managing transportation operations built with Next.js 15, TypeScript, and Tailwind CSS v4.
+A modern, mobile-first web application for managing transportation operations built with Next.js 15, TypeScript, and Tailwind CSS.
 
 ![Launch Dashboard](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
 ![Next.js](https://img.shields.io/badge/Next.js-15.3.3-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-v4-38bdf8)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-v3.4.17-38bdf8)
 
 ## 🚀 Live Demo
 
