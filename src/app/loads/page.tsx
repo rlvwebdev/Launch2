@@ -19,17 +19,20 @@ export default function LoadsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'rows'>('grid');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
   // Helper functions for date filtering
-  const isToday = (date: Date) => {
+  const isToday = (date: Date | string) => {
     const today = new Date();
-    return date.toDateString() === today.toDateString();
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(dateObj.getTime())) return false;
+    return dateObj.toDateString() === today.toDateString();
   };
 
-  const isTomorrow = (date: Date) => {
+  const isTomorrow = (date: Date | string) => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    return date.toDateString() === tomorrow.toDateString();
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(dateObj.getTime())) return false;
+    return dateObj.toDateString() === tomorrow.toDateString();
   };
   // Filter loads based on active tab
   const getFilteredLoads = () => {

@@ -111,6 +111,34 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const [trucks, setTrucks] = useState<Truck[]>(initialTrucks);
   const [loads, setLoads] = useState<Load[]>(initialLoads);
 
+  // Helper function to ensure dates are Date objects
+  const convertDriverDates = (driver: Driver): Driver => ({
+    ...driver,
+    licenseExpiry: new Date(driver.licenseExpiry),
+    hireDate: new Date(driver.hireDate)
+  });
+
+  const convertTruckDates = (truck: Truck): Truck => ({
+    ...truck,
+    lastMaintenance: new Date(truck.lastMaintenance),
+    nextMaintenanceDue: new Date(truck.nextMaintenanceDue),
+    registrationExpiry: new Date(truck.registrationExpiry),
+    insuranceExpiry: new Date(truck.insuranceExpiry)
+  });
+
+  const convertLoadDates = (load: Load): Load => ({
+    ...load,
+    pickupDate: new Date(load.pickupDate),
+    deliveryDate: new Date(load.deliveryDate),
+    createdAt: new Date(load.createdAt),
+    updatedAt: new Date(load.updatedAt),
+    events: load.events.map(event => ({
+      ...event,
+      timestamp: new Date(event.timestamp),
+      resolvedAt: event.resolvedAt ? new Date(event.resolvedAt) : undefined
+    }))
+  });
+
   // Load data from localStorage on mount
   useEffect(() => {
     const savedDrivers = localStorage.getItem('launch-drivers');
@@ -119,7 +147,9 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
     if (savedDrivers) {
       try {
-        setDrivers(JSON.parse(savedDrivers));
+        const parsedDrivers = JSON.parse(savedDrivers);
+        const driversWithDates = parsedDrivers.map(convertDriverDates);
+        setDrivers(driversWithDates);
       } catch (error) {
         console.error('Error loading drivers from localStorage:', error);
       }
@@ -127,7 +157,9 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
     if (savedTrucks) {
       try {
-        setTrucks(JSON.parse(savedTrucks));
+        const parsedTrucks = JSON.parse(savedTrucks);
+        const trucksWithDates = parsedTrucks.map(convertTruckDates);
+        setTrucks(trucksWithDates);
       } catch (error) {
         console.error('Error loading trucks from localStorage:', error);
       }
@@ -136,14 +168,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     if (savedLoads) {
       try {
         const parsedLoads = JSON.parse(savedLoads);
-        // Convert date strings back to Date objects
-        const loadsWithDates = parsedLoads.map((load: Load) => ({
-          ...load,
-          pickupDate: new Date(load.pickupDate),
-          deliveryDate: new Date(load.deliveryDate),
-          createdAt: new Date(load.createdAt),
-          updatedAt: new Date(load.updatedAt)
-        }));
+        const loadsWithDates = parsedLoads.map(convertLoadDates);
         setLoads(loadsWithDates);
       } catch (error) {
         console.error('Error loading loads from localStorage:', error);
@@ -164,16 +189,35 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     localStorage.setItem('launch-loads', JSON.stringify(loads));
   }, [loads]);
 
+  // Custom setters that ensure date conversion
+  const setDriversWithDateConversion = (drivers: Driver[]) => {
+    const driversWithDates = drivers.map(convertDriverDates);
+    setDrivers(driversWithDates);
+  };
+
+  const setTrucksWithDateConversion = (trucks: Truck[]) => {
+    const trucksWithDates = trucks.map(convertTruckDates);
+    setTrucks(trucksWithDates);
+  };
+
+  const setLoadsWithDateConversion = (loads: Load[]) => {
+    const loadsWithDates = loads.map(convertLoadDates);
+    setLoads(loadsWithDates);
+  };
+
   const addDrivers = (newDrivers: Driver[]) => {
-    setDrivers(prev => [...prev, ...newDrivers]);
+    const driversWithDates = newDrivers.map(convertDriverDates);
+    setDrivers(prev => [...prev, ...driversWithDates]);
   };
 
   const addTrucks = (newTrucks: Truck[]) => {
-    setTrucks(prev => [...prev, ...newTrucks]);
+    const trucksWithDates = newTrucks.map(convertTruckDates);
+    setTrucks(prev => [...prev, ...trucksWithDates]);
   };
 
   const addLoads = (newLoads: Load[]) => {
-    setLoads(prev => [...prev, ...newLoads]);
+    const loadsWithDates = newLoads.map(convertLoadDates);
+    setLoads(prev => [...prev, ...loadsWithDates]);
   };
 
   const clearAllData = () => {
@@ -191,9 +235,9 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         drivers,
         trucks,
         loads,
-        setDrivers,
-        setTrucks,
-        setLoads,
+        setDrivers: setDriversWithDateConversion,
+        setTrucks: setTrucksWithDateConversion,
+        setLoads: setLoadsWithDateConversion,
         addDrivers,
         addTrucks,
         addLoads,
