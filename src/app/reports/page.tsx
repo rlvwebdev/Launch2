@@ -138,10 +138,36 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
         startDate.setDate(startDate.getDate() - 6);
         daysToGenerate = 7;
     }
-    
-    for (let i = 0; i < daysToGenerate; i++) {
+      for (let i = 0; i < daysToGenerate; i++) {
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + i);
+      
+      // Count actual loads delivering on this specific day
+      const loadsDeliveringToday = loads.filter(load => {
+        const deliveryDate = typeof load.deliveryDate === 'string' ? new Date(load.deliveryDate) : load.deliveryDate;
+        return deliveryDate.toDateString() === date.toDateString();
+      }).length;
+      
+      // Count actual delivered loads on this specific day
+      const deliveredToday = loads.filter(load => {
+        const deliveryDate = typeof load.deliveryDate === 'string' ? new Date(load.deliveryDate) : load.deliveryDate;
+        return deliveryDate.toDateString() === date.toDateString() && load.status === 'delivered';
+      }).length;
+      
+      // Count pending loads for this day
+      const pendingToday = loads.filter(load => {
+        const deliveryDate = typeof load.deliveryDate === 'string' ? new Date(load.deliveryDate) : load.deliveryDate;
+        return deliveryDate.toDateString() === date.toDateString() && 
+               (load.status === 'pending' || load.status === 'assigned' || load.status === 'picked-up' || load.status === 'in-transit');
+      }).length;
+      
+      // Calculate revenue for delivered loads on this day
+      const revenueToday = loads
+        .filter(load => {
+          const deliveryDate = typeof load.deliveryDate === 'string' ? new Date(load.deliveryDate) : load.deliveryDate;
+          return deliveryDate.toDateString() === date.toDateString() && load.status === 'delivered';
+        })
+        .reduce((sum, load) => sum + (load.rate || 0), 0);
       
       // Format date based on range
       let dateLabel;
@@ -157,10 +183,10 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
       
       data.push({
         date: dateLabel,
-        loads: Math.floor(Math.random() * 20) + 10,
-        revenue: Math.floor(Math.random() * 50000) + 20000,
-        delivered: Math.floor(Math.random() * 15) + 8,
-        pending: Math.floor(Math.random() * 10) + 5
+        loads: loadsDeliveringToday, // Use actual loads delivering on this day
+        revenue: revenueToday, // Use actual revenue from delivered loads
+        delivered: deliveredToday, // Use actual delivered loads
+        pending: pendingToday // Use actual pending loads for this day
       });
     }
     
@@ -205,30 +231,33 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
         startDate.setDate(startDate.getDate() - 6);
         daysToGenerate = 7;
     }
-    
-    for (let i = 0; i < daysToGenerate; i++) {
+      for (let i = 0; i < daysToGenerate; i++) {
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + i);
+      
+      // Count actual loads delivering on this specific day
+      const loadsDeliveringToday = loads.filter(load => {
+        const deliveryDate = typeof load.deliveryDate === 'string' ? new Date(load.deliveryDate) : load.deliveryDate;
+        return deliveryDate.toDateString() === date.toDateString();
+      }).length;
       
       // Generate realistic data based on current metrics with some variation
       const baseOOSTrucks = oosTrucks;
       const baseOOSTrailers = Math.floor(oosTrucks * 0.8); // Assume 80% correlation
-      const baseLoadsCount = loads.length;
       const basePresentDrivers = presentDrivers;
       
       data.push({
         date: date.toISOString().split('T')[0],
         oosTrucks: Math.max(0, baseOOSTrucks + Math.floor(Math.random() * 6) - 3),
         oosTrailers: Math.max(0, baseOOSTrailers + Math.floor(Math.random() * 4) - 2),
-        loadsCount: Math.max(0, baseLoadsCount + Math.floor(Math.random() * 20) - 10),
+        loadsCount: loadsDeliveringToday, // Use actual loads delivering on this day
         presentDrivers: Math.max(0, basePresentDrivers + Math.floor(Math.random() * 8) - 4),
       });
     }
     
     return data;
   };
-  const operationsData = generateOperationsData();
-  const operationsChartConfig = {
+  const operationsData = generateOperationsData();  const operationsChartConfig = {
     oosTrucks: {
       label: "OOS Trucks",
       color: "#dc2626", // red-600 to match AlertTriangle icon
@@ -238,7 +267,7 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
       color: "#ea580c", // orange-600 to differentiate from trucks
     },
     loadsCount: {
-      label: "Total Loads",
+      label: "Loads Delivering",
       color: "#9333ea", // purple-600 to match Package icon
     },
     presentDrivers: {
