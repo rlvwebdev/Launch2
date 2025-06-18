@@ -102,15 +102,19 @@ export interface Trailer {
 // Status Enums
 export enum DriverStatus {
   ACTIVE = 'active',
+  AVAILABLE = 'available',
   IN_TRAINING = 'in-training',
-  OOS = 'oos'
+  LEAVE = 'leave',
+  OOS = 'oos',
+  APPLICATION = 'application'
 }
 
 export enum TruckStatus {
   AVAILABLE = 'available',
   IN_USE = 'in-use',
   MAINTENANCE = 'maintenance',
-  OUT_OF_SERVICE = 'out-of-service'
+  OUT_OF_SERVICE = 'out-of-service',
+  FOR_SALE = 'for-sale'
 }
 
 export enum LoadStatus {
@@ -118,6 +122,7 @@ export enum LoadStatus {
   ASSIGNED = 'assigned',
   PICKED_UP = 'picked-up',
   IN_TRANSIT = 'in-transit',
+  DELIVERING = 'delivering',
   DELIVERED = 'delivered',
   CANCELLED = 'cancelled'
 }
@@ -141,10 +146,10 @@ export enum EventSeverity {
 }
 
 export enum TrailerStatus {
-  AVAILABLE = 'available',
-  IN_USE = 'in-use',
-  MAINTENANCE = 'maintenance',
-  OUT_OF_SERVICE = 'out-of-service'
+  AT_TERMINAL = 'at-terminal',
+  IN_TRANSIT = 'in-transit',
+  OUT_OF_SERVICE = 'out-of-service',
+  DEDICATED = 'dedicated'
 }
 
 export enum TrailerType {

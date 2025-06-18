@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
-import { BarChart, FileText, Download, DollarSign, CheckCircle, AlertTriangle, Clock, RefreshCw, Users, UserCheck, Truck, Package, MapPin, FileUser, ParkingCircle, Pause } from 'lucide-react';
+import { BarChart, FileText, Download, DollarSign, CheckCircle, AlertTriangle, Clock, RefreshCw, Users, UserCheck, Truck, Package, MapPin, FileUser, ParkingCircle, Pause, UserPlus, Briefcase, Home, ShoppingCart, Navigation, Building, Truck as TruckIcon, AlertCircle } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { Load } from '@/types';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
@@ -80,19 +80,32 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
     return filteredLoads;
   };
 
-  const filteredLoads = getFilteredData();
-
-  // Current status metrics
-  const presentDrivers = drivers.filter(driver => driver.status === 'active').length;
+  const filteredLoads = getFilteredData();  // Current status metrics
+  // Driver metrics
+  const presentDrivers = drivers.filter(driver => driver.status === 'active').length; // Keep for backward compatibility
+  const availableDrivers = drivers.filter(driver => driver.status === 'available').length;
   const trainingDrivers = drivers.filter(driver => driver.status === 'in-training').length;
+  const leaveDrivers = drivers.filter(driver => driver.status === 'leave').length;
   const oosDrivers = drivers.filter(driver => driver.status === 'oos').length;
+  const applicationDrivers = drivers.filter(driver => driver.status === 'application').length;
 
+  // Truck metrics
   const assignedTrucks = trucks.filter(truck => truck.status === 'in-use').length;
   const unseatedTrucks = trucks.filter(truck => truck.status === 'available').length;
   const oosTrucks = trucks.filter(truck => truck.status === 'maintenance' || truck.status === 'out-of-service').length;
+  const forSaleTrucks = trucks.filter(truck => truck.status === 'for-sale').length;
+
+  // Trailer metrics (assuming we have trailers data similar to trucks)
+  // For now, we'll simulate trailer data based on truck data patterns
+  const totalTrailers = Math.floor(trucks.length * 1.2); // Assume 20% more trailers than trucks
+  const atTerminalTrailers = Math.floor(totalTrailers * 0.4);
+  const inTransitTrailers = Math.floor(totalTrailers * 0.45);
+  const oosTrailers = Math.floor(totalTrailers * 0.1);
+  const dedicatedTrailers = Math.floor(totalTrailers * 0.05);
 
   // Load metrics based on filtered data
   const displayLoadsShipping = filteredLoads.filter((load: Load) => load.status === 'picked-up' || load.status === 'in-transit').length;
+  const displayLoadsDelivering = filteredLoads.filter((load: Load) => load.status === 'delivering').length;
   const displayOpenLoads = filteredLoads.filter((load: Load) => load.status === 'pending' || load.status === 'assigned').length;
   const displayRevenue = filteredLoads.filter((load: Load) => load.status === 'delivered').reduce((sum: number, load: Load) => sum + (load.rate || 0), 0);
 
@@ -490,23 +503,20 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
                 <ChartLegend content={<ChartLegendContent />} />
               </AreaChart>
             </ChartContainer>
-          </div>
-
-          {/* Current Status Overview */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          </div>          {/* Current Status Overview */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {/* Drivers Status */}
             <div className="bg-gray-50 rounded-lg p-4">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
                 <Users className="h-5 w-5 text-blue-600" />
                 Driver Status
               </h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
+              <div className="space-y-3">                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <UserCheck className="h-4 w-4 text-green-600" />
-                    <span className="text-sm text-gray-600">Present</span>
+                    <span className="text-sm text-gray-600">Available</span>
                   </div>
-                  <Badge variant="status" status="active">{presentDrivers}</Badge>
+                  <Badge variant="status" status="active">{availableDrivers}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -517,10 +527,24 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
+                    <Home className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm text-gray-600">Leave</span>
+                  </div>
+                  <Badge variant="default">{leaveDrivers}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
                     <Pause className="h-4 w-4 text-red-600" />
-                    <span className="text-sm text-gray-600">OOS</span>
+                    <span className="text-sm text-gray-600">Out of Service</span>
                   </div>
                   <Badge variant="status" status="oos">{oosDrivers}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <UserPlus className="h-4 w-4 text-purple-600" />
+                    <span className="text-sm text-gray-600">Applications</span>
+                  </div>
+                  <Badge variant="default">{applicationDrivers}</Badge>
                 </div>
               </div>
             </div>
@@ -531,8 +555,7 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
                 <Truck className="h-5 w-5 text-green-600" />
                 Truck Status
               </h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
+              <div className="space-y-3">                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-green-600" />
                     <span className="text-sm text-gray-600">Assigned</span>
@@ -549,9 +572,53 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="h-4 w-4 text-red-600" />
-                    <span className="text-sm text-gray-600">OOS</span>
+                    <span className="text-sm text-gray-600">Out of Service</span>
                   </div>
                   <Badge variant="status" status="maintenance">{oosTrucks}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ShoppingCart className="h-4 w-4 text-orange-600" />
+                    <span className="text-sm text-gray-600">For Sale</span>
+                  </div>
+                  <Badge variant="default">{forSaleTrucks}</Badge>
+                </div>
+              </div>            </div>
+
+            {/* Trailers Status */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                <TruckIcon className="h-5 w-5 text-orange-600" />
+                Trailer Status
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Building className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm text-gray-600">At Terminal</span>
+                  </div>
+                  <Badge variant="default">{atTerminalTrailers}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Navigation className="h-4 w-4 text-green-600" />
+                    <span className="text-sm text-gray-600">In Transit</span>
+                  </div>
+                  <Badge variant="status" status="in-use">{inTransitTrailers}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <span className="text-sm text-gray-600">Out of Service</span>
+                  </div>
+                  <Badge variant="status" status="maintenance">{oosTrailers}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="h-4 w-4 text-purple-600" />
+                    <span className="text-sm text-gray-600">Dedicated</span>
+                  </div>
+                  <Badge variant="default">{dedicatedTrailers}</Badge>
                 </div>
               </div>
             </div>
@@ -564,14 +631,20 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
                 <Badge variant="default" className="ml-auto">
                   {selectedDateRange}
                 </Badge>
-              </h3>
-              <div className="space-y-3">
+              </h3>              <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <RefreshCw className="h-4 w-4 text-blue-600" />
                     <span className="text-sm text-gray-600">Shipping</span>
                   </div>
                   <Badge variant="status" status="in-transit">{displayLoadsShipping}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span className="text-sm text-gray-600">Delivering</span>
+                  </div>
+                  <Badge variant="status" status="delivered">{displayLoadsDelivering}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
