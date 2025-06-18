@@ -63,12 +63,9 @@ export default function LoadsPage() {
         load.shipper.toLowerCase().includes(searchQuery.toLowerCase()) ||
         `${load.pickupLocation.city}, ${load.pickupLocation.state}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
         `${load.deliveryLocation.city}, ${load.deliveryLocation.state}`.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }    // Sort loads
+      );    }    // Sort loads
     return filtered.sort((a, b) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let aValue = a[sortField as keyof typeof a] as any;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let bValue = b[sortField as keyof typeof b] as any;
 
       if (sortField === 'pickupDate' || sortField === 'deliveryDate') {
