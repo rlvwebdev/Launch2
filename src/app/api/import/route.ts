@@ -157,9 +157,7 @@ export async function POST(request: NextRequest) {
             if (!driverId || !firstName || !lastName) {
               result.errors.push(`Row ${index + 1} in Drivers sheet: Missing required fields (ID: ${driverId}, First: ${firstName}, Last: ${lastName})`);
               return;
-            }
-
-            const driver: Driver = {
+            }            const driver: Driver = {
               id: String(driverId),
               firstName: String(firstName),
               lastName: String(lastName),
@@ -174,7 +172,13 @@ export async function POST(request: NextRequest) {
               fuelCard: String(row['Fuel Card Number'] || row['FuelCard'] || row['Fuel Card'] || ''),
               assignedTruckId: row['Assigned Truck ID'] || row['AssignedTruckID'] || row['Truck ID'] ? String(row['Assigned Truck ID'] || row['AssignedTruckID'] || row['Truck ID']) : undefined,
               status: parseDriverStatus(String(row['Status'] || '')),
-              hireDate: row['Hire Date'] || row['HireDate'] ? new Date(String(row['Hire Date'] || row['HireDate'])) : new Date()
+              hireDate: row['Hire Date'] || row['HireDate'] ? new Date(String(row['Hire Date'] || row['HireDate'])) : new Date(),
+              // Add required organizational context properties
+              organizationalContext: {
+                companyId: 'default-company',
+                terminalId: 'default-terminal'
+              },
+              accessLevel: 'TERMINAL' as any
             };
 
             result.drivers.push(driver);
@@ -202,12 +206,11 @@ export async function POST(request: NextRequest) {
             if (!truckId || !make || !model) {
               result.errors.push(`Row ${index + 1} in Trucks sheet: Missing required fields (ID: ${truckId}, Make: ${make}, Model: ${model})`);
               return;
-            }
-
-            const truck: Truck = {
+            }            const truck: Truck = {
               id: String(truckId),
               make: String(make),
-              model: String(model),              year: Number(row['Year']) || new Date().getFullYear(),
+              model: String(model),
+              year: Number(row['Year']) || new Date().getFullYear(),
               licensePlate: String(row['License Plate'] || row['LicensePlate'] || ''),
               vin: String(row['VIN'] || ''),
               color: String(row['Color'] || ''),
@@ -217,7 +220,12 @@ export async function POST(request: NextRequest) {
               lastMaintenance: row['Last Maintenance'] || row['LastMaintenance'] ? new Date(String(row['Last Maintenance'] || row['LastMaintenance'])) : new Date(),
               nextMaintenanceDue: row['Next Maintenance Due'] || row['NextMaintenanceDue'] ? new Date(String(row['Next Maintenance Due'] || row['NextMaintenanceDue'])) : new Date(),
               registrationExpiry: row['Registration Expiry'] || row['RegistrationExpiry'] ? new Date(String(row['Registration Expiry'] || row['RegistrationExpiry'])) : new Date(),
-              insuranceExpiry: row['Insurance Expiry'] || row['InsuranceExpiry'] ? new Date(String(row['Insurance Expiry'] || row['InsuranceExpiry'])) : new Date()
+              insuranceExpiry: row['Insurance Expiry'] || row['InsuranceExpiry'] ? new Date(String(row['Insurance Expiry'] || row['InsuranceExpiry'])) : new Date(),
+              // Add required organizational context
+              organizationalContext: {
+                companyId: 'default-company',
+                terminalId: 'default-terminal'
+              }
             };
 
             result.trucks.push(truck);
@@ -245,13 +253,12 @@ export async function POST(request: NextRequest) {
             if (!loadId || !loadNumber || !shipper) {
               result.errors.push(`Row ${index + 1} in Loads sheet: Missing required fields (ID: ${loadId}, Number: ${loadNumber}, Shipper: ${shipper})`);
               return;
-            }
-
-            const load: Load = {
+            }            const load: Load = {
               id: String(loadId),
               loadNumber: String(loadNumber),
               bolNumber: String(row['BOL Number'] || row['BOLNumber'] || row['BOL'] || ''),
-              shipper: String(shipper),              pickupLocation: {
+              shipper: String(shipper),
+              pickupLocation: {
                 address: String(row['Pickup Address'] || ''),
                 city: String(row['Pickup City'] || ''),
                 state: String(row['Pickup State'] || ''),
@@ -274,7 +281,12 @@ export async function POST(request: NextRequest) {
               notes: row['Notes'] ? String(row['Notes']) : undefined,
               events: [],
               createdAt: new Date(),
-              updatedAt: new Date()
+              updatedAt: new Date(),
+              // Add required organizational context
+              organizationalContext: {
+                companyId: 'default-company',
+                terminalId: 'default-terminal'
+              }
             };
 
             result.loads.push(load);

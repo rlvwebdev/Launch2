@@ -46,7 +46,7 @@ export default function LoadDetailPage() {
         <Card>
           <CardContent className="p-8 text-center">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Load Not Found</h2>
-            <p className="text-gray-600 mb-4">The load you're looking for doesn't exist or may have been removed.</p>
+            <p className="text-gray-600 mb-4">The load you&apos;re looking for doesn&apos;t exist or may have been removed.</p>
             <Button onClick={() => router.push('/loads')} variant="primary">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Loads
@@ -129,7 +129,7 @@ export default function LoadDetailPage() {
               <Package className="h-8 w-8 text-blue-600" />
               Load #{load.id}
             </h1>
-            <p className="text-gray-600">{load.shipper} → {load.receiver}</p>
+            <p className="text-gray-600">{load.shipper} → {load.deliveryLocation.city}, {load.deliveryLocation.state}</p>
           </div>
         </div>
         

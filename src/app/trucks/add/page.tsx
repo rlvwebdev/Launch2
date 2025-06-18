@@ -55,14 +55,23 @@ export default function AddTruckPage() {
 
     setIsSubmitting(true);
 
-    try {
-      const newTruck = {
+    try {      const newTruck = {
         ...formData,
         assignedDriverId: formData.assignedDriverId || undefined,
         lastMaintenance: new Date(formData.lastMaintenance),
         nextMaintenanceDue: new Date(formData.nextMaintenanceDue),
         registrationExpiry: new Date(formData.registrationExpiry),
-        insuranceExpiry: new Date(formData.insuranceExpiry)
+        insuranceExpiry: new Date(formData.insuranceExpiry),
+        organizationalContext: {
+          companyId: 'launch-transport-company',
+          divisionId: 'southwest-division',
+          departmentId: 'operations-department',
+          terminalId: 'houston-terminal',
+          createdBy: 'demo.user',
+          createdAt: new Date(),
+          updatedBy: 'demo.user',
+          updatedAt: new Date()
+        }
       };
 
       addTrucks([newTruck]);

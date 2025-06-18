@@ -298,7 +298,7 @@ export default function TrailersPage() {
                     </div>
                     <div>
                       <span className="text-gray-500">Dimensions:</span>
-                      <div className="font-medium">{trailer.capacity.length}' x {trailer.capacity.width}'</div>
+                      <div className="font-medium">{trailer.capacity.length}&apos; x {trailer.capacity.width}&apos;</div>
                     </div>
                   </div>
 

@@ -123,8 +123,7 @@ export default function LSWDailyReportPage({ reportId }: LSWDailyReportPageProps
     return () => {
       window.removeEventListener('lsw-notification', handleNotification as EventListener);
     };
-  }, [terminalId]);
-  // Initialize report data
+  }, [terminalId]);  // Initialize report data
   useEffect(() => {
     if (reportId) {
       // Load existing report
@@ -133,6 +132,7 @@ export default function LSWDailyReportPage({ reportId }: LSWDailyReportPageProps
       // Generate new report with current data
       generateReportData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reportId, drivers, trucks, loads]);
 
   const loadExistingReport = async (id: string) => {
@@ -705,7 +705,7 @@ export default function LSWDailyReportPage({ reportId }: LSWDailyReportPageProps
           <CardHeader>
             <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <Activity className="h-5 w-5 text-orange-600" />
-              Today's Events & Incidents
+              Today&apos;s Events & Incidents
             </h3>
           </CardHeader>
           <CardContent>
@@ -779,7 +779,7 @@ export default function LSWDailyReportPage({ reportId }: LSWDailyReportPageProps
           <CardHeader>
             <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-blue-600" />
-              Today's Outlook
+              Today&apos;s Outlook
             </h3>
           </CardHeader>
           <CardContent>
@@ -813,7 +813,7 @@ export default function LSWDailyReportPage({ reportId }: LSWDailyReportPageProps
           <CardHeader>
             <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <Calendar className="h-5 w-5 text-green-600" />
-              Tomorrow's Outlook
+              Tomorrow&apos;s Outlook
             </h3>
           </CardHeader>
           <CardContent>

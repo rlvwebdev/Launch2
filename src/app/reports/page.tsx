@@ -353,8 +353,7 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">LSW Daily Status Reports</h2>
-              <p className="text-sm text-gray-600 mt-1">
+              <h2 className="text-xl font-bold text-gray-900">LSW Daily Status Reports</h2>              <p className="text-sm text-gray-600 mt-1">
                 Submit and manage daily operational status reports
               </p>
             </div>            <div className="flex flex-col sm:flex-row gap-3">
@@ -372,7 +371,7 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
                 onClick={() => window.open('/reports/lsw-daily', '_blank')}
               >
                 <FileText className="h-4 w-4" />
-                View Today's Report
+                View Today&apos;s Report
               </Button>
               <Button 
                 className="flex items-center gap-2"
@@ -388,7 +387,7 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {/* Report Status */}
             <div className="bg-blue-50 rounded-lg p-4">
-              <h3 className="font-semibold text-blue-900 mb-2">Today's Report Status</h3>
+              <h3 className="font-semibold text-blue-900 mb-2">Today&apos;s Report Status</h3>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-blue-700">Status</span>
@@ -444,7 +443,7 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle className="h-3 w-3 text-green-600" />
-                  Tomorrow's outlook
+                  Tomorrow&apos;s outlook
                 </li>
               </ul>
             </div>

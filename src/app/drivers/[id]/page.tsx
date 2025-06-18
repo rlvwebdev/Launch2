@@ -41,7 +41,7 @@ export default function DriverDetailPage() {
         <Card>
           <CardContent className="p-8 text-center">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Driver Not Found</h2>
-            <p className="text-gray-600 mb-4">The driver you're looking for doesn't exist or may have been removed.</p>
+            <p className="text-gray-600 mb-4">The driver you&apos;re looking for doesn&apos;t exist or may have been removed.</p>
             <Button onClick={() => router.push('/drivers')} variant="primary">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Drivers

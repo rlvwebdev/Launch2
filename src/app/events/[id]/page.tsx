@@ -118,7 +118,7 @@ export default function EventDetailPage() {
         <Card>
           <CardContent className="p-8 text-center">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Event Not Found</h2>
-            <p className="text-gray-600 mb-4">The event you're looking for doesn't exist or may have been removed.</p>
+            <p className="text-gray-600 mb-4">The event you&apos;re looking for doesn&apos;t exist or may have been removed.</p>
             <Button onClick={() => router.push('/events')} variant="primary">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Events

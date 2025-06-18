@@ -6,10 +6,12 @@ import { useOrganizational } from '@/context/OrganizationalContext';
 import { cn } from '@/lib/utils';
 
 export default function MobileHeader() {
-  const { currentOrganization, accessibleOrganizations, switchOrganization } = useOrganizational();
+  const { currentOrganization, getAccessibleOrganizations, switchOrganization } = useOrganizational();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   if (!currentOrganization) return null;
+
+  const accessibleOrganizations = getAccessibleOrganizations();
 
   return (
     <div className="md:hidden bg-white border-b border-gray-200 px-4 py-3 relative">

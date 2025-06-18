@@ -7,6 +7,8 @@ export interface Driver {
   licenseNumber: string;
   licenseExpiry: Date;
   phoneNumber: string;
+  email?: string;
+  address?: string;
   fuelCard: string;
   assignedTruckId?: string;
   status: DriverStatus;
@@ -35,9 +37,9 @@ export interface Truck {
   status: TruckStatus;
   mileage: number;
   lastMaintenance: Date;
-  nextMaintenanceDue: Date;
-  registrationExpiry: Date;
-  insuranceExpiry: Date;
+  nextMaintenanceDue: Date;  registrationExpiry: Date;  insuranceExpiry: Date;
+  maintenanceNotes?: string;
+  currentLoad?: string; // Current load ID
   // ORGANIZATIONAL CONTEXT
   organizationalContext: OrganizationalContext;
   homeTerminalId?: string;
@@ -49,17 +51,21 @@ export interface Load {
   loadNumber: string;
   bolNumber: string; // Bill of Lading number
   shipper: string;   // Shipper company name
+  receiver?: string; // Receiver company name
   pickupLocation: Location;
   deliveryLocation: Location;
   assignedDriverId?: string;
   assignedTruckId?: string;
   status: LoadStatus;
-  cargoDescription: string;
-  weight: number; // in pounds
+  cargoDescription: string;  weight: number; // in pounds
+  distance?: number; // in miles
+  origin?: string; // Origin address string
+  destination?: string; // Destination address string
+  estimatedTransitTime?: number; // in hours
   pickupDate: Date;
-  deliveryDate: Date;
-  rate: number;
-  notes?: string;
+  deliveryDate: Date;  rate: number;  notes?: string;
+  specialInstructions?: string;
+  hazmat?: boolean;
   events: LoadEvent[]; // Historic events (spills, contamination, NCR, etc.)
   createdAt: Date;
   updatedAt: Date;

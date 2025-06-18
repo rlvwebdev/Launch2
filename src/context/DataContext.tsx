@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Driver, Truck, Load, DriverStatus, TruckStatus, LoadStatus, LoadEventType, EventSeverity, OrganizationalContext } from '@/types';
+import { Driver, Truck, Load, DriverStatus, TruckStatus, LoadStatus, LoadEventType, EventSeverity, OrganizationalContext, PermissionScope } from '@/types';
 
 interface DataContextType {
   drivers: Driver[];
@@ -55,11 +55,11 @@ const initialDrivers: Driver[] = [
       name: 'Jane Smith',
       phone: '(555) 987-6543',
       relationship: 'Spouse'
-    },
-    fuelCard: 'FC001',
+    },    fuelCard: 'FC001',
     assignedTruckId: 'T001',
     status: DriverStatus.ACTIVE,
     hireDate: new Date('2023-01-15'),
+    accessLevel: PermissionScope.TERMINAL,
     organizationalContext: {
       companyId: 'comp-001',
       divisionId: 'div-001',
@@ -80,9 +80,9 @@ const initialDrivers: Driver[] = [
       relationship: 'Husband'
     },
     fuelCard: 'FC002',
-    assignedTruckId: 'T002',
-    status: DriverStatus.ACTIVE,
+    assignedTruckId: 'T002',    status: DriverStatus.ACTIVE,
     hireDate: new Date('2023-03-20'),
+    accessLevel: PermissionScope.TERMINAL,
     organizationalContext: {
       companyId: 'comp-001',
       divisionId: 'div-001',
@@ -103,9 +103,9 @@ const initialDrivers: Driver[] = [
       relationship: 'Wife'
     },
     fuelCard: 'FC003',
-    assignedTruckId: undefined,
-    status: DriverStatus.IN_TRAINING,
+    assignedTruckId: undefined,    status: DriverStatus.IN_TRAINING,
     hireDate: new Date('2024-01-10'),
+    accessLevel: PermissionScope.OWN,
     organizationalContext: {
       companyId: 'comp-001',
       divisionId: 'div-001',
@@ -312,11 +312,16 @@ const initialLoads: Load[] = [
     cargoDescription: 'Machinery',
     weight: 48000,
     pickupDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    deliveryDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    rate: 2200,
+    deliveryDate: new Date(Date.now() + 24 * 60 * 60 * 1000),    rate: 2200,
     events: [],
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
+    organizationalContext: {
+      companyId: 'comp-001',
+      divisionId: 'div-001',
+      departmentId: 'dept-001',
+      terminalId: 'term-001'
+    }
   },
   {
     id: 'L005',
@@ -354,10 +359,15 @@ const initialLoads: Load[] = [
         severity: EventSeverity.MEDIUM,
         resolved: false,
         resolvedAt: undefined
-      }
-    ],
+      }    ],
     createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    updatedAt: new Date()
+    updatedAt: new Date(),
+    organizationalContext: {
+      companyId: 'comp-001',
+      divisionId: 'div-001',
+      departmentId: 'dept-001',
+      terminalId: 'term-001'
+    }
   },
   {
     id: 'L006',
@@ -383,10 +393,15 @@ const initialLoads: Load[] = [
     weight: 18000,
     pickupDate: new Date(Date.now() - 48 * 60 * 60 * 1000),
     deliveryDate: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    rate: 3500,
-    events: [],
+    rate: 3500,    events: [],
     createdAt: new Date(Date.now() - 72 * 60 * 60 * 1000),
-    updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000)
+    updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+    organizationalContext: {
+      companyId: 'comp-001',
+      divisionId: 'div-001',
+      departmentId: 'dept-001',
+      terminalId: 'term-001'
+    }
   },
   {
     id: 'L007',
@@ -412,10 +427,15 @@ const initialLoads: Load[] = [
     weight: 44000,
     pickupDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
     deliveryDate: new Date(Date.now() + 72 * 60 * 60 * 1000),
-    rate: 2400,
-    events: [],
+    rate: 2400,    events: [],
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
+    organizationalContext: {
+      companyId: 'comp-001',
+      divisionId: 'div-001',
+      departmentId: 'dept-001',
+      terminalId: 'term-001'
+    }
   },
   {
     id: 'L008',
@@ -441,10 +461,15 @@ const initialLoads: Load[] = [
     weight: 39000,
     pickupDate: new Date(Date.now() - 12 * 60 * 60 * 1000),
     deliveryDate: new Date(),
-    rate: 2900,
-    events: [],
+    rate: 2900,    events: [],
     createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    updatedAt: new Date()
+    updatedAt: new Date(),
+    organizationalContext: {
+      companyId: 'comp-001',
+      divisionId: 'div-001',
+      departmentId: 'dept-001',
+      terminalId: 'term-001'
+    }
   }
 ];
 
