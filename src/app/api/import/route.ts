@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import * as XLSX from 'xlsx';
 import { Driver, Truck, Load, DriverStatus, TruckStatus, LoadStatus } from '@/types';
 
+// Interface definitions for Excel row parsing
 interface ExcelDriverRow {
   'Driver ID': string | number;
   'First Name': string;

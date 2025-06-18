@@ -13,12 +13,9 @@ import {
   FileText,
   UserPlus,
   Clock,
-  Calendar,
-  CheckCircle,
-  XCircle,
-  AlertCircle
+  CheckCircle
 } from 'lucide-react';
-import { DriverStatus, TruckStatus, LoadStatus, LoadEventType } from '@/types';
+import { DriverStatus, TruckStatus, LoadStatus } from '@/types';
 
 export default function HomePage() {
   const { drivers, trucks, loads } = useData();

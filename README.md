@@ -1,15 +1,38 @@
 # 🚀 Launch - Transportation Management Platform
 
-A modern, mobile-first web application for managing transportation operations built with Next.js 15, TypeScript, and Tailwind CSS v4.
+A modern, mobile-first web application for managing transportation operations built with Next.js 15, TypeScript, and Tailwind CSS.
 
 ![Launch Dashboard](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
 ![Next.js](https://img.shields.io/badge/Next.js-15.3.3-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-v4-38bdf8)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-v3.4.17-38bdf8)
 
 ## 🚀 Live Demo
 
-Experience Launch in action: [View Live Application](https://github.com/rlvwebdev/Launch2)
+Experience Launch in action: 
+
+### 🌟 **Live Application**
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/rlvwebdev/Launch2)
+
+- **📱 Demo Application**: Coming soon! (Deploy with button above)
+- **📂 GitHub Repository**: [https://github.com/rlvwebdev/Launch2](https://github.com/rlvwebdev/Launch2)
+- **📖 Demo Guide**: [DEMO_GUIDE.md](./DEMO_GUIDE.md)
+- **🎬 Demo Showcase**: [DEMO_SHOWCASE.md](./DEMO_SHOWCASE.md)
+
+### 🎯 **Quick Deploy Options**
+```bash
+# Option 1: One-click Vercel deployment (Recommended)
+# Click the "Deploy with Vercel" button above
+
+# Option 2: Local development
+git clone https://github.com/rlvwebdev/Launch2.git
+cd Launch2
+npm install && npm run dev
+
+# Option 3: Use deployment scripts
+./deploy.ps1    # Windows PowerShell
+./deploy.sh     # Linux/Mac Bash
+```
 
 ## 📱 Features
 
@@ -72,9 +95,10 @@ Experience Launch in action: [View Live Application](https://github.com/rlvwebde
 ### Design & UX
 - **📱 Mobile-First Design** - Optimized for mobile devices with desktop scalability
 - **🎨 Modern UI** - Clean, professional interface with consistent design system
-- **⚡ Responsive Navigation** - Bottom navigation for mobile, collapsible sidebar for desktop
+- **⚡ Responsive Navigation** - Bottom navigation for mobile (6 items: Home, Drivers, Trucks, Loads, Reports, Settings), collapsible sidebar for desktop
+- **📊 Mobile Reports Access** - Full analytics and reporting functionality accessible from mobile navigation
 - **🔍 Advanced Search** - Powerful search and filtering across all modules
-- **📊 Real-time Stats** - Live dashboard with key performance indicators
+- **📈 Real-time Stats** - Live dashboard with key performance indicators
 
 ## 🛠️ Technology Stack
 
