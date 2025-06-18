@@ -12,7 +12,7 @@ A modern, mobile-first web application for managing transportation operations bu
 Experience Launch in action: 
 
 ### 🌟 **Live Application**
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/rlvwebdev/Launch2)
+[![Deploy with Vercel](https://vercel.com/button)](https://launch2-chi.vercel.app)
 
 - **📱 Demo Application**: Coming soon! (Deploy with button above)
 - **📂 GitHub Repository**: [https://github.com/rlvwebdev/Launch2](https://github.com/rlvwebdev/Launch2)
