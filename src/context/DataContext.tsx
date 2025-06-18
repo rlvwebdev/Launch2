@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Driver, Truck, Load, DriverStatus, TruckStatus, LoadStatus } from '@/types';
+import { Driver, Truck, Load, DriverStatus, TruckStatus, LoadStatus, LoadEventType, EventSeverity } from '@/types';
 
 interface DataContextType {
   drivers: Driver[];
@@ -72,7 +72,7 @@ const initialTrucks: Truck[] = [
 const initialLoads: Load[] = [
   {
     id: 'L001',
-    loadNumber: 'LD240001',
+    loadNumber: 'LD250001',
     bolNumber: 'BOL123456',
     shipper: 'ABC Manufacturing',
     pickupLocation: {
@@ -92,14 +92,228 @@ const initialLoads: Load[] = [
     status: LoadStatus.IN_TRANSIT,
     cargoDescription: 'Steel coils',
     weight: 42000,
-    pickupDate: new Date('2024-06-16'),
-    deliveryDate: new Date('2024-06-17'),
+    pickupDate: new Date(),
+    deliveryDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
     rate: 2500,
     events: [],
-    createdAt: new Date('2024-06-15'),
-    updatedAt: new Date('2024-06-16')
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+    updatedAt: new Date()
   },
-  // Add more initial loads as needed
+  {
+    id: 'L002',
+    loadNumber: 'LD250002',
+    bolNumber: 'BOL234567',
+    shipper: 'XYZ Logistics',
+    pickupLocation: {
+      address: '789 Factory Ave',
+      city: 'Atlanta',
+      state: 'GA',
+      zipCode: '30301'
+    },
+    deliveryLocation: {
+      address: '321 Distribution Dr',
+      city: 'Miami',
+      state: 'FL',
+      zipCode: '33101'
+    },
+    assignedDriverId: undefined,
+    assignedTruckId: undefined,
+    status: LoadStatus.PENDING,
+    cargoDescription: 'Electronics',
+    weight: 28000,
+    pickupDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    deliveryDate: new Date(Date.now() + 48 * 60 * 60 * 1000),
+    rate: 3200,
+    events: [],
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 'L003',
+    loadNumber: 'LD250003',
+    bolNumber: 'BOL345678',
+    shipper: 'Global Supply Co',
+    pickupLocation: {
+      address: '555 Port Rd',
+      city: 'Los Angeles',
+      state: 'CA',
+      zipCode: '90001'
+    },
+    deliveryLocation: {
+      address: '777 Commerce St',
+      city: 'Phoenix',
+      state: 'AZ',
+      zipCode: '85001'
+    },
+    assignedDriverId: 'D001',
+    assignedTruckId: 'T001',
+    status: LoadStatus.PICKED_UP,
+    cargoDescription: 'Auto parts',
+    weight: 35000,
+    pickupDate: new Date(),
+    deliveryDate: new Date(),
+    rate: 1800,
+    events: [],
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+    updatedAt: new Date()
+  },
+  {
+    id: 'L004',
+    loadNumber: 'LD250004',
+    bolNumber: 'BOL456789',
+    shipper: 'Prime Materials',
+    pickupLocation: {
+      address: '111 Cargo Blvd',
+      city: 'Chicago',
+      state: 'IL',
+      zipCode: '60601'
+    },
+    deliveryLocation: {
+      address: '999 Delivery Way',
+      city: 'Detroit',
+      state: 'MI',
+      zipCode: '48201'
+    },
+    assignedDriverId: undefined,
+    assignedTruckId: undefined,
+    status: LoadStatus.ASSIGNED,
+    cargoDescription: 'Machinery',
+    weight: 48000,
+    pickupDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    deliveryDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    rate: 2200,
+    events: [],
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 'L005',
+    loadNumber: 'LD250005',
+    bolNumber: 'BOL567890',
+    shipper: 'Fresh Foods Inc',
+    pickupLocation: {
+      address: '222 Farm Rd',
+      city: 'Fresno',
+      state: 'CA',
+      zipCode: '93701'
+    },
+    deliveryLocation: {
+      address: '888 Market St',
+      city: 'Seattle',
+      state: 'WA',
+      zipCode: '98101'
+    },
+    assignedDriverId: undefined,
+    assignedTruckId: undefined,
+    status: LoadStatus.PENDING,
+    cargoDescription: 'Produce',
+    weight: 25000,
+    pickupDate: new Date(),
+    deliveryDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    rate: 2800,
+    events: [
+      {
+        id: 'E001',
+        loadId: 'L005',
+        type: LoadEventType.DELAY,
+        description: 'Weather delay at pickup location',
+        timestamp: new Date(),
+        reportedBy: 'dispatch',
+        severity: EventSeverity.MEDIUM,
+        resolved: false,
+        resolvedAt: undefined
+      }
+    ],
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+    updatedAt: new Date()
+  },
+  {
+    id: 'L006',
+    loadNumber: 'LD250006',
+    bolNumber: 'BOL678901',
+    shipper: 'Tech Solutions Corp',
+    pickupLocation: {
+      address: '101 Innovation Dr',
+      city: 'Austin',
+      state: 'TX',
+      zipCode: '78701'
+    },
+    deliveryLocation: {
+      address: '202 Tech Park Blvd',
+      city: 'San Jose',
+      state: 'CA',
+      zipCode: '95101'
+    },
+    assignedDriverId: 'D001',
+    assignedTruckId: 'T001',
+    status: LoadStatus.DELIVERED,
+    cargoDescription: 'Computer equipment',
+    weight: 18000,
+    pickupDate: new Date(Date.now() - 48 * 60 * 60 * 1000),
+    deliveryDate: new Date(Date.now() - 24 * 60 * 60 * 1000),
+    rate: 3500,
+    events: [],
+    createdAt: new Date(Date.now() - 72 * 60 * 60 * 1000),
+    updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000)
+  },
+  {
+    id: 'L007',
+    loadNumber: 'LD250007',
+    bolNumber: 'BOL789012',
+    shipper: 'Mountain Lumber Co',
+    pickupLocation: {
+      address: '500 Mill Rd',
+      city: 'Portland',
+      state: 'OR',
+      zipCode: '97201'
+    },
+    deliveryLocation: {
+      address: '300 Construction Ave',
+      city: 'Denver',
+      state: 'CO',
+      zipCode: '80201'
+    },
+    assignedDriverId: undefined,
+    assignedTruckId: undefined,
+    status: LoadStatus.PENDING,
+    cargoDescription: 'Lumber and building materials',
+    weight: 44000,
+    pickupDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    deliveryDate: new Date(Date.now() + 72 * 60 * 60 * 1000),
+    rate: 2400,
+    events: [],
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 'L008',
+    loadNumber: 'LD250008',
+    bolNumber: 'BOL890123',
+    shipper: 'Midwest Chemical',
+    pickupLocation: {
+      address: '700 Industrial Way',
+      city: 'Cleveland',
+      state: 'OH',
+      zipCode: '44101'
+    },
+    deliveryLocation: {
+      address: '800 Chemical Plant Rd',
+      city: 'Buffalo',
+      state: 'NY',
+      zipCode: '14201'
+    },
+    assignedDriverId: 'D001',
+    assignedTruckId: 'T001',
+    status: LoadStatus.DELIVERING,
+    cargoDescription: 'Chemical supplies',
+    weight: 39000,
+    pickupDate: new Date(Date.now() - 12 * 60 * 60 * 1000),
+    deliveryDate: new Date(),
+    rate: 2900,
+    events: [],
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+    updatedAt: new Date()
+  }
 ];
 
 interface DataProviderProps {

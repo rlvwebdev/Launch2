@@ -385,125 +385,90 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
             ))}
           </div>
         </CardHeader>
-        <CardContent className="px-2 pt-6 sm:px-6">
-          {/* Operations Chart */}
+        <CardContent className="px-2 pt-6 sm:px-6">          {/* Daily Load Status Chart - LineChart */}
           <div className="mb-8">
             <ChartContainer
               config={operationsChartConfig}
               className="aspect-auto h-[250px] w-full"
             >
-              <AreaChart data={operationsData}>
-                <defs>
-                  <linearGradient id="fillOOSTrucks" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--color-oosTrucks)"
-                      stopOpacity={0.8}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--color-oosTrucks)"
-                      stopOpacity={0.1}
-                    />
-                  </linearGradient>
-                  <linearGradient id="fillOOSTrailers" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--color-oosTrailers)"
-                      stopOpacity={0.8}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--color-oosTrailers)"
-                      stopOpacity={0.1}
-                    />
-                  </linearGradient>
-                  <linearGradient id="fillLoadsCount" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--color-loadsCount)"
-                      stopOpacity={0.8}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--color-loadsCount)"
-                      stopOpacity={0.1}
-                    />
-                  </linearGradient>
-                  <linearGradient id="fillPresentDrivers" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--color-presentDrivers)"
-                      stopOpacity={0.8}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--color-presentDrivers)"
-                      stopOpacity={0.1}
-                    />
-                  </linearGradient>
-                </defs>                <CartesianGrid vertical={false} />
+              <LineChart
+                data={operationsData}
+                margin={{
+                  top: 20,
+                  right: 30,
+                  left: 20,
+                  bottom: 20,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis
                   dataKey="date"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  minTickGap={32}
                   tickFormatter={(value) => {
-                    const date = new Date(value)
-                    return date.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    })
+                    const date = new Date(value);
+                    return date.toLocaleDateString('en-US', { 
+                      month: '2-digit', 
+                      day: '2-digit' 
+                    });
                   }}
+                  fontSize={12}
+                  stroke="#6b7280"
+                  interval="preserveStartEnd"
                 />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  width={40}
+                <YAxis 
+                  fontSize={12} 
+                  stroke="#6b7280"
+                  domain={[0, 'dataMax + 2']}
                 />
                 <ChartTooltip
-                  cursor={false}
                   content={
-                    <ChartTooltipContent
+                    <ChartTooltipContent 
                       labelFormatter={(value) => {
-                        return new Date(value).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })
+                        const date = new Date(value);
+                        return date.toLocaleDateString('en-US', { 
+                          weekday: 'short',
+                          month: 'short', 
+                          day: 'numeric' 
+                        });
                       }}
-                      indicator="dot"
                     />
                   }
-                />                <Area
-                  dataKey="oosTrucks"
-                  type="natural"
-                  fill="url(#fillOOSTrucks)"
-                  stroke="var(--color-oosTrucks)"
                 />
-                <Area
-                  dataKey="oosTrailers"
-                  type="natural"
-                  fill="url(#fillOOSTrailers)"
-                  stroke="var(--color-oosTrailers)"
-                />
-                <Area
-                  dataKey="loadsCount"
-                  type="natural"
-                  fill="url(#fillLoadsCount)"
-                  stroke="var(--color-loadsCount)"
-                />
-                <Area
+                <Line
+                  type="monotone"
                   dataKey="presentDrivers"
-                  type="natural"
-                  fill="url(#fillPresentDrivers)"
-                  stroke="var(--color-presentDrivers)"
+                  stroke={operationsChartConfig.presentDrivers.color}
+                  strokeWidth={2}
+                  dot={false}
+                  name={operationsChartConfig.presentDrivers.label}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="oosTrucks"
+                  stroke={operationsChartConfig.oosTrucks.color}
+                  strokeWidth={2}
+                  dot={false}
+                  name={operationsChartConfig.oosTrucks.label}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="oosTrailers"
+                  stroke={operationsChartConfig.oosTrailers.color}
+                  strokeWidth={2}
+                  dot={false}
+                  name={operationsChartConfig.oosTrailers.label}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="loadsCount"
+                  stroke={operationsChartConfig.loadsCount.color}
+                  strokeWidth={2}
+                  dot={false}
+                  name={operationsChartConfig.loadsCount.label}
                 />
                 <ChartLegend content={<ChartLegendContent />} />
-              </AreaChart>
+              </LineChart>
             </ChartContainer>
-          </div>          {/* Current Status Overview */}
+          </div>{/* Current Status Overview */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {/* Drivers Status */}
             <div className="bg-gray-50 rounded-lg p-4">
