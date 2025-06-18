@@ -1,14 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
-import { Users, UserPlus, Search, Filter, Phone, CreditCard, MapPin, Truck as TruckIcon, Grid3X3, List, Eye, Edit, Settings } from 'lucide-react';
-import { useData } from '@/context/DataContext';
+import OrganizationSelector from '@/components/ui/OrganizationSelector';
+import { Users, UserPlus, Search, Filter, Phone, CreditCard, MapPin, Truck as TruckIcon, Grid3X3, List, Eye, Edit, Settings, Building } from 'lucide-react';
+import { useOrganizational } from '@/context/OrganizationalContext';
+import useOrganizationalData from '@/hooks/useOrganizationalData';
 
 export default function DriversPage() {
-  const { drivers } = useData();
+  const { currentOrganization, getDataScope } = useOrganizational();
+  const { drivers, organizationalFilter } = useOrganizationalData();
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
@@ -29,14 +33,21 @@ export default function DriversPage() {
   return (    <div className="p-4 md:p-6 space-y-6">
       {/* Header with Add Button and View Toggle */}
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
+        <div>          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
             <Users className="h-8 w-8 text-blue-600" />
             Drivers
           </h1>
-          <p className="text-gray-600 mt-1">
-            Manage your driver roster and assignments
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-gray-600">
+              Manage your driver roster and assignments
+            </p>
+            {currentOrganization && (
+              <div className="flex items-center gap-1 text-sm text-gray-500">
+                <Building className="h-4 w-4" />
+                <span>{currentOrganization.name}</span>
+              </div>
+            )}
+          </div>
         </div>        <div className="flex items-center gap-2">          <Button variant="primary">
             <UserPlus className="h-4 w-4 mr-2" />
             Add Driver
@@ -99,24 +110,25 @@ export default function DriversPage() {
             </div>
           </div>
         </CardContent>
-      </Card>{/* Drivers List */}
+      </Card>      {/* Drivers List */}
       {viewMode === 'grid' ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredDrivers.map((driver) => (
-            <Card key={driver.id} className="hover:shadow-md transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {driver.firstName} {driver.lastName}
-                    </h3>
-                    <p className="text-sm text-gray-600">ID: {driver.id}</p>
+            <Link key={driver.id} href={`/drivers/${driver.id}`}>
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {driver.firstName} {driver.lastName}
+                      </h3>
+                      <p className="text-sm text-gray-600">ID: {driver.id}</p>
+                    </div>
+                    <Badge variant="status" status={driver.status}>
+                      {driver.status.charAt(0).toUpperCase() + driver.status.slice(1).replace('-', ' ')}
+                    </Badge>
                   </div>
-                  <Badge variant="status" status={driver.status}>
-                    {driver.status.charAt(0).toUpperCase() + driver.status.slice(1).replace('-', ' ')}
-                  </Badge>
-                </div>
-              </CardHeader>
+                </CardHeader>
               <CardContent className="space-y-3">
                 <div className="space-y-2">
                   <div className="flex items-center text-sm text-gray-600">
@@ -153,10 +165,10 @@ export default function DriversPage() {
                         View
                       </Button>
                     </div>
-                  </div>
-                </div>
+                  </div>                </div>
               </CardContent>
             </Card>
+            </Link>
           ))}
         </div>
       ) : (

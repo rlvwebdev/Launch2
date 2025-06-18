@@ -2,6 +2,7 @@
 
 import BottomNavigation from '@/components/navigation/BottomNavigation';
 import DesktopNavigation from '@/components/navigation/DesktopNavigation';
+import MobileHeader from '@/components/layout/MobileHeader';
 import { SidebarProvider, useSidebar } from '@/components/context/SidebarContext';
 
 interface AppLayoutProps {
@@ -10,11 +11,13 @@ interface AppLayoutProps {
 
 function AppLayoutContent({ children }: AppLayoutProps) {
   const { isCollapsed } = useSidebar();
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Desktop Navigation */}
       <DesktopNavigation />
+      
+      {/* Mobile Header */}
+      <MobileHeader />
       
       {/* Main Content */}
       <div className={`transition-all duration-300 ${

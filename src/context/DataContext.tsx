@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Driver, Truck, Load, DriverStatus, TruckStatus, LoadStatus, LoadEventType, EventSeverity } from '@/types';
+import { Driver, Truck, Load, DriverStatus, TruckStatus, LoadStatus, LoadEventType, EventSeverity, OrganizationalContext } from '@/types';
 
 interface DataContextType {
   drivers: Driver[];
@@ -15,6 +15,21 @@ interface DataContextType {
   addTrucks: (newTrucks: Truck[]) => void;
   addLoads: (newLoads: Load[]) => void;
   clearAllData: () => void;
+  // Individual CRUD operations
+  updateDriver: (id: string, updates: Partial<Driver>) => void;
+  deleteDriver: (id: string) => void;
+  updateTruck: (id: string, updates: Partial<Truck>) => void;
+  deleteTruck: (id: string) => void;
+  updateLoad: (id: string, updates: Partial<Load>) => void;
+  deleteLoad: (id: string) => void;
+  updateTrailer: (id: string, updates: Partial<any>) => void;
+  deleteTrailer: (id: string) => void;
+  updateEvent: (id: string, updates: Partial<any>) => void;
+  deleteEvent: (id: string) => void;
+  // Organizational filtering
+  getFilteredDrivers: (orgFilter?: Partial<OrganizationalContext>) => Driver[];
+  getFilteredTrucks: (orgFilter?: Partial<OrganizationalContext>) => Truck[];
+  getFilteredLoads: (orgFilter?: Partial<OrganizationalContext>) => Load[];
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -44,9 +59,60 @@ const initialDrivers: Driver[] = [
     fuelCard: 'FC001',
     assignedTruckId: 'T001',
     status: DriverStatus.ACTIVE,
-    hireDate: new Date('2023-01-15')
+    hireDate: new Date('2023-01-15'),
+    organizationalContext: {
+      companyId: 'comp-001',
+      divisionId: 'div-001',
+      departmentId: 'dept-001',
+      terminalId: 'term-001'
+    }
   },
-  // Add more initial drivers as needed
+  {
+    id: 'D002',
+    firstName: 'Maria',
+    lastName: 'Rodriguez',
+    licenseNumber: 'CDL789012',
+    licenseExpiry: new Date('2025-08-15'),
+    phoneNumber: '(555) 234-5678',
+    emergencyContact: {
+      name: 'Carlos Rodriguez',
+      phone: '(555) 876-5432',
+      relationship: 'Husband'
+    },
+    fuelCard: 'FC002',
+    assignedTruckId: 'T002',
+    status: DriverStatus.ACTIVE,
+    hireDate: new Date('2023-03-20'),
+    organizationalContext: {
+      companyId: 'comp-001',
+      divisionId: 'div-001',
+      departmentId: 'dept-001',
+      terminalId: 'term-002'
+    }
+  },
+  {
+    id: 'D003',
+    firstName: 'Robert',
+    lastName: 'Johnson',
+    licenseNumber: 'CDL345678',
+    licenseExpiry: new Date('2024-11-30'),
+    phoneNumber: '(555) 345-6789',
+    emergencyContact: {
+      name: 'Lisa Johnson',
+      phone: '(555) 765-4321',
+      relationship: 'Wife'
+    },
+    fuelCard: 'FC003',
+    assignedTruckId: undefined,
+    status: DriverStatus.IN_TRAINING,
+    hireDate: new Date('2024-01-10'),
+    organizationalContext: {
+      companyId: 'comp-001',
+      divisionId: 'div-001',
+      departmentId: 'dept-002',
+      terminalId: 'term-001'
+    }
+  }
 ];
 
 const initialTrucks: Truck[] = [
@@ -64,9 +130,58 @@ const initialTrucks: Truck[] = [
     lastMaintenance: new Date('2024-05-15'),
     nextMaintenanceDue: new Date('2024-08-15'),
     registrationExpiry: new Date('2025-06-30'),
-    insuranceExpiry: new Date('2025-03-31')
+    insuranceExpiry: new Date('2025-03-31'),
+    organizationalContext: {
+      companyId: 'comp-001',
+      divisionId: 'div-001',
+      departmentId: 'dept-001',
+      terminalId: 'term-001'
+    }
   },
-  // Add more initial trucks as needed
+  {
+    id: 'T002',
+    make: 'Peterbilt',
+    model: '579',
+    year: 2021,
+    licensePlate: 'TRK-2813',
+    vin: '1XPBDP9X1MD234567',
+    color: 'Blue',
+    assignedDriverId: 'D002',
+    status: TruckStatus.IN_USE,
+    mileage: 67000,
+    lastMaintenance: new Date('2024-04-20'),
+    nextMaintenanceDue: new Date('2024-07-20'),
+    registrationExpiry: new Date('2025-05-15'),
+    insuranceExpiry: new Date('2025-02-28'),
+    organizationalContext: {
+      companyId: 'comp-001',
+      divisionId: 'div-001',
+      departmentId: 'dept-001',
+      terminalId: 'term-002'
+    }
+  },
+  {
+    id: 'T003',
+    make: 'Kenworth',
+    model: 'T680',
+    year: 2023,
+    licensePlate: 'TRK-2814',
+    vin: '1XKDP9X1PN345678',
+    color: 'Red',
+    assignedDriverId: undefined,
+    status: TruckStatus.AVAILABLE,
+    mileage: 12000,
+    lastMaintenance: new Date('2024-06-01'),
+    nextMaintenanceDue: new Date('2024-09-01'),
+    registrationExpiry: new Date('2026-01-31'),
+    insuranceExpiry: new Date('2025-12-31'),
+    organizationalContext: {
+      companyId: 'comp-001',
+      divisionId: 'div-001',
+      departmentId: 'dept-002',
+      terminalId: 'term-001'
+    }
+  }
 ];
 
 const initialLoads: Load[] = [
@@ -94,10 +209,15 @@ const initialLoads: Load[] = [
     weight: 42000,
     pickupDate: new Date(),
     deliveryDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    rate: 2500,
-    events: [],
+    rate: 2500,    events: [],
     createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    updatedAt: new Date()
+    updatedAt: new Date(),
+    organizationalContext: {
+      companyId: 'comp-001',
+      divisionId: 'div-001',
+      departmentId: 'dept-001',
+      terminalId: 'term-001'
+    }
   },
   {
     id: 'L002',
@@ -126,7 +246,13 @@ const initialLoads: Load[] = [
     rate: 3200,
     events: [],
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
+    organizationalContext: {
+      companyId: 'comp-001',
+      divisionId: 'div-001',
+      departmentId: 'dept-001',
+      terminalId: 'term-002'
+    }
   },
   {
     id: 'L003',
@@ -155,7 +281,13 @@ const initialLoads: Load[] = [
     rate: 1800,
     events: [],
     createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    updatedAt: new Date()
+    updatedAt: new Date(),
+    organizationalContext: {
+      companyId: 'comp-001',
+      divisionId: 'div-001',
+      departmentId: 'dept-002',
+      terminalId: 'term-001'
+    }
   },
   {
     id: 'L004',
@@ -432,9 +564,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
   const addLoads = (newLoads: Load[]) => {
     const loadsWithDates = newLoads.map(convertLoadDates);
     setLoads(prev => [...prev, ...loadsWithDates]);
-  };
-
-  const clearAllData = () => {
+  };  const clearAllData = () => {
     setDrivers([]);
     setTrucks([]);
     setLoads([]);
@@ -443,6 +573,113 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     localStorage.removeItem('launch-loads');
   };
 
+  // Individual CRUD operations
+  const updateDriver = (id: string, updates: Partial<Driver>) => {
+    setDrivers(prevDrivers => 
+      prevDrivers.map(driver => 
+        driver.id === id ? { ...driver, ...updates } : driver
+      )
+    );
+  };
+
+  const deleteDriver = (id: string) => {
+    setDrivers(prevDrivers => prevDrivers.filter(driver => driver.id !== id));
+  };
+
+  const updateTruck = (id: string, updates: Partial<Truck>) => {
+    setTrucks(prevTrucks => 
+      prevTrucks.map(truck => 
+        truck.id === id ? { ...truck, ...updates } : truck
+      )
+    );
+  };
+
+  const deleteTruck = (id: string) => {
+    setTrucks(prevTrucks => prevTrucks.filter(truck => truck.id !== id));
+  };
+
+  const updateLoad = (id: string, updates: Partial<Load>) => {
+    setLoads(prevLoads => 
+      prevLoads.map(load => 
+        load.id === id ? { ...load, ...updates } : load
+      )
+    );
+  };
+
+  const deleteLoad = (id: string) => {
+    setLoads(prevLoads => prevLoads.filter(load => load.id !== id));
+  };
+
+  // Note: For trailers and events, we're using placeholder implementations
+  // since they're not part of the main data context yet
+  const updateTrailer = (id: string, updates: Partial<any>) => {
+    console.log('Update trailer:', id, updates);
+    // This would be implemented when trailers are added to the main data context
+  };
+
+  const deleteTrailer = (id: string) => {
+    console.log('Delete trailer:', id);
+    // This would be implemented when trailers are added to the main data context
+  };
+
+  const updateEvent = (id: string, updates: Partial<any>) => {
+    console.log('Update event:', id, updates);
+    // This would be implemented when events are added to the main data context
+  };
+
+  const deleteEvent = (id: string) => {
+    console.log('Delete event:', id);
+    // This would be implemented when events are added to the main data context
+  };
+
+  // Organizational filtering functions
+  const getFilteredDrivers = (orgFilter?: Partial<OrganizationalContext>): Driver[] => {
+    if (!orgFilter) return drivers;
+    
+    return drivers.filter(driver => {
+      // For demo purposes, we'll assume drivers without organizational context belong to the main company
+      const driverOrg = (driver as any).organizationalContext || { companyId: 'ORG001' };
+      
+      if (orgFilter.companyId && driverOrg.companyId !== orgFilter.companyId) return false;
+      if (orgFilter.divisionId && driverOrg.divisionId !== orgFilter.divisionId) return false;
+      if (orgFilter.departmentId && driverOrg.departmentId !== orgFilter.departmentId) return false;
+      if (orgFilter.terminalId && driverOrg.terminalId !== orgFilter.terminalId) return false;
+      
+      return true;
+    });
+  };
+
+  const getFilteredTrucks = (orgFilter?: Partial<OrganizationalContext>): Truck[] => {
+    if (!orgFilter) return trucks;
+    
+    return trucks.filter(truck => {
+      // For demo purposes, we'll assume trucks without organizational context belong to the main company
+      const truckOrg = (truck as any).organizationalContext || { companyId: 'ORG001' };
+      
+      if (orgFilter.companyId && truckOrg.companyId !== orgFilter.companyId) return false;
+      if (orgFilter.divisionId && truckOrg.divisionId !== orgFilter.divisionId) return false;
+      if (orgFilter.departmentId && truckOrg.departmentId !== orgFilter.departmentId) return false;
+      if (orgFilter.terminalId && truckOrg.terminalId !== orgFilter.terminalId) return false;
+      
+      return true;
+    });
+  };
+
+  const getFilteredLoads = (orgFilter?: Partial<OrganizationalContext>): Load[] => {
+    if (!orgFilter) return loads;
+    
+    return loads.filter(load => {
+      // For demo purposes, we'll assume loads without organizational context belong to the main company
+      const loadOrg = (load as any).organizationalContext || { companyId: 'ORG001' };
+      
+      if (orgFilter.companyId && loadOrg.companyId !== orgFilter.companyId) return false;
+      if (orgFilter.divisionId && loadOrg.divisionId !== orgFilter.divisionId) return false;
+      if (orgFilter.departmentId && loadOrg.departmentId !== orgFilter.departmentId) return false;
+      if (orgFilter.terminalId && loadOrg.terminalId !== orgFilter.terminalId) return false;
+      
+      return true;
+    });
+  };
   return (
     <DataContext.Provider
       value={{
@@ -455,7 +692,20 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
         addDrivers,
         addTrucks,
         addLoads,
-        clearAllData
+        clearAllData,
+        updateDriver,
+        deleteDriver,
+        updateTruck,
+        deleteTruck,
+        updateLoad,
+        deleteLoad,
+        updateTrailer,
+        deleteTrailer,
+        updateEvent,
+        deleteEvent,
+        getFilteredDrivers,
+        getFilteredTrucks,
+        getFilteredLoads
       }}
     >
       {children}

@@ -1,18 +1,21 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
-import { Package, Search, Filter, MapPin, AlertTriangle, FileText, ArrowUpDown, Grid3X3, List, ChevronDown, Video, Truck, DollarSign, MessageSquare, UserCheck, Plus, Settings } from 'lucide-react';
-import { useData } from '@/context/DataContext';
+import { Package, Search, Filter, MapPin, AlertTriangle, FileText, ArrowUpDown, Grid3X3, List, ChevronDown, Video, Truck, DollarSign, MessageSquare, UserCheck, Plus, Settings, Building } from 'lucide-react';
+import { useOrganizational } from '@/context/OrganizationalContext';
+import useOrganizationalData from '@/hooks/useOrganizationalData';
 import { LoadStatus } from '@/types';
 
 type SortField = 'loadNumber' | 'shipper' | 'pickupDate' | 'deliveryDate' | 'status' | 'rate';
 type SortDirection = 'asc' | 'desc';
 
 export default function LoadsPage() {
-  const { loads } = useData();
+  const { currentOrganization } = useOrganizational();
+  const { loads } = useOrganizationalData();
   const [activeTab, setActiveTab] = useState<'today' | 'tomorrow' | 'all' | 'events'>('today');
   const [sortField, setSortField] = useState<SortField>('pickupDate');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
@@ -113,10 +116,18 @@ export default function LoadsPage() {
             <Package className="h-8 w-8 text-blue-600" />
             Loads
           </h1>
-          <p className="text-gray-600 mt-1">
-            Manage shipments and track delivery status
-          </p>
-        </div>        <Button className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-gray-600">
+              Manage shipments and track delivery status
+            </p>
+            {currentOrganization && (
+              <div className="flex items-center gap-1 text-sm text-gray-500">
+                <Building className="h-4 w-4" />
+                <span>{currentOrganization.name}</span>
+              </div>
+            )}
+          </div>
+        </div><Button className="flex items-center gap-2">
           <Plus className="h-4 w-4" />
           New Load
         </Button>
@@ -365,7 +376,8 @@ export default function LoadsPage() {
           </Card>        ) : (
           filteredLoads.map((load) => {
             return (
-              <Card key={load.id} className="hover:shadow-md transition-shadow">
+              <Link key={load.id} href={`/loads/${load.id}`}>
+                <Card className="hover:shadow-md transition-shadow cursor-pointer">
                 <CardHeader>
                   <div className="flex flex-col gap-4">
                     {/* Load Header */}
@@ -503,10 +515,10 @@ export default function LoadsPage() {
                         </Button>
                         {/* Dropdown menu would be implemented here when needed */}
                       </div>
-                    </div>
-                  </div>
+                    </div>                  </div>
                 </CardContent>
               </Card>
+              </Link>
             );
           })
         )}

@@ -2,15 +2,18 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
-import { Truck, Plus, Search, Filter, Calendar, Wrench, User, AlertTriangle, FileText, Edit, UserCheck, List, Grid3X3 } from 'lucide-react';
-import { useData } from '@/context/DataContext';
+import { Truck, Plus, Search, Filter, Calendar, Wrench, User, AlertTriangle, FileText, Edit, UserCheck, List, Grid3X3, Building } from 'lucide-react';
+import { useOrganizational } from '@/context/OrganizationalContext';
+import useOrganizationalData from '@/hooks/useOrganizationalData';
 import { TruckStatus } from '@/types';
 
 export default function TrucksPage() {
-  const { trucks } = useData();
+  const { currentOrganization } = useOrganizational();
+  const { trucks } = useOrganizationalData();
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
@@ -19,18 +22,34 @@ export default function TrucksPage() {
   const inUseTrucks = trucks.filter(t => t.status === TruckStatus.IN_USE).length;
   const maintenanceTrucks = trucks.filter(t => t.status === TruckStatus.MAINTENANCE).length;
   const totalTrucks = trucks.length;
+
+  const filteredTrucks = trucks.filter(truck =>
+    searchTerm === '' ||
+    truck.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    truck.make.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    truck.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    truck.licensePlate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    truck.vin.toLowerCase().includes(searchTerm.toLowerCase())
+  );
   return (
     <div className="p-4 md:p-6 space-y-6">
       {/* Header with Add Button and View Toggle */}
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
+        <div>          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
             <Truck className="h-8 w-8 text-blue-600" />
             Trucks
           </h1>
-          <p className="text-gray-600 mt-1">
-            Manage your fleet and vehicle assignments
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-gray-600">
+              Manage your fleet and vehicle assignments
+            </p>
+            {currentOrganization && (
+              <div className="flex items-center gap-1 text-sm text-gray-500">
+                <Building className="h-4 w-4" />
+                <span>{currentOrganization.name}</span>
+              </div>
+            )}
+          </div>
         </div>        <div className="flex items-center gap-2">          <Button 
             variant="primary"
             onClick={() => router.push('/trucks/add')}
@@ -97,12 +116,13 @@ export default function TrucksPage() {
       </Card>      {/* Trucks List */}
       {viewMode === 'grid' ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {trucks.map((truck) => {
+          {filteredTrucks.map((truck) => {
             const needsMaintenance = new Date(truck.nextMaintenanceDue) < new Date();
             const registrationExpiring = new Date(truck.registrationExpiry) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
             
             return (
-              <Card key={truck.id} className="hover:shadow-md transition-shadow"><CardHeader>
+              <Link key={truck.id} href={`/trucks/${truck.id}`}>
+                <Card className="hover:shadow-md transition-shadow cursor-pointer"><CardHeader>
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">
@@ -189,9 +209,9 @@ export default function TrucksPage() {
                         Documents
                       </Button>
                     </div>
-                  </div>
-                </div>
+                  </div>                </div>
               </CardContent>            </Card>
+              </Link>
           );
         })}
         </div>
@@ -210,7 +230,7 @@ export default function TrucksPage() {
                 </tr>
               </thead>
               <tbody>
-                {trucks.map((truck) => (
+                {filteredTrucks.map((truck) => (
                   <tr key={truck.id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="py-3 px-4">
                       <div className="font-medium text-gray-900">

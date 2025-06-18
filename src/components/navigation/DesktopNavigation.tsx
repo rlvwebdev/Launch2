@@ -9,11 +9,15 @@ import {
   Settings,
   Menu,
   Home,
-  BarChart,
+  BarChart3,
+  Building,
+  Container,
+  AlertTriangle,
   type LucideIcon 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSidebar } from '@/components/context/SidebarContext';
+import OrganizationSelector from '@/components/ui/OrganizationSelector';
 
 interface NavItem {
   id: string;
@@ -23,11 +27,20 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
+  // Dashboard - Overview and starting point
   {
     id: 'dashboard',
     label: 'Dashboard',
     icon: Home,
     path: '/',
+  },
+  
+  // Core Operations - Daily workflow items
+  {
+    id: 'loads',
+    label: 'Loads',
+    icon: Package,
+    path: '/loads',
   },
   {
     id: 'drivers',
@@ -42,16 +55,32 @@ const navItems: NavItem[] = [
     path: '/trucks',
   },
   {
-    id: 'loads',
-    label: 'Loads',
-    icon: Package,
-    path: '/loads',
+    id: 'trailers',
+    label: 'Trailers',
+    icon: Container,
+    path: '/trailers',
+  },
+  
+  // Management & Monitoring
+  {
+    id: 'events',
+    label: 'Events',
+    icon: AlertTriangle,
+    path: '/events',
   },
   {
     id: 'reports',
     label: 'Reports',
-    icon: BarChart,
+    icon: BarChart3,
     path: '/reports',
+  },
+  
+  // Administration
+  {
+    id: 'organizations',
+    label: 'Organizations',
+    icon: Building,
+    path: '/organizations',
   },
 ];
 
@@ -200,14 +229,16 @@ export default function DesktopNavigation() {
           })}
         </ul>
       </div>
-      
-      <div className={cn(
+        <div className={cn(
         "border-t border-gray-200",
         isCollapsed ? "p-2" : "p-4"
       )}>
         {!isCollapsed && (
-          <div className="text-xs text-gray-500">
-            Version 1.0.0
+          <div className="space-y-3">
+            <OrganizationSelector className="w-full" showFullHierarchy={false} />
+            <div className="text-xs text-gray-500">
+              Version 1.0.0
+            </div>
           </div>
         )}
         {isCollapsed && (

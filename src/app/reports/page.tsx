@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
-import { BarChart, FileText, Download, DollarSign, CheckCircle, AlertTriangle, Clock, RefreshCw, Users, UserCheck, Truck, Package, MapPin, FileUser, ParkingCircle, Pause, UserPlus, Briefcase, Home, ShoppingCart, Navigation, Building, Truck as TruckIcon, AlertCircle } from 'lucide-react';
+import { BarChart, FileText, Download, DollarSign, CheckCircle, AlertTriangle, Clock, RefreshCw, Users, UserCheck, Truck, Package, MapPin, FileUser, ParkingCircle, Pause, UserPlus, Briefcase, Home, ShoppingCart, Navigation, Building, Truck as TruckIcon, AlertCircle, Send } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { Load } from '@/types';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
@@ -348,41 +348,165 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
             Export Report
           </Button>
         </div>
-      </div>      {/* Operations Overview with Status Cards */}
-      <Card>        <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <h2 className="text-xl font-bold text-gray-900">LSW Reporting</h2>
-            <p className="text-sm text-gray-500">
-              Last submitted: {new Date(Date.now() - 86400000 * 3).toLocaleDateString('en-US', { 
-                weekday: 'short',
-                month: 'short', 
-                day: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true
-              })}
-            </p>
-          </div>
-            {/* Date Range Tabs */}
-          <div className="flex flex-wrap gap-1 mt-4 p-1 bg-gray-100 rounded-lg">
-            {[
-              { value: 'today', label: 'Today' },
-              { value: 'tomorrow', label: 'Tomorrow' },
-              { value: 'week', label: 'This Week' },
-              { value: 'month', label: 'This Month' }
-            ].map((tab) => (
-              <button
-                key={tab.value}
-                onClick={() => setSelectedDateRange(tab.value)}
-                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  selectedDateRange === tab.value
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
+      </div>      {/* Daily Status Reports Section */}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">LSW Daily Status Reports</h2>
+              <p className="text-sm text-gray-600 mt-1">
+                Submit and manage daily operational status reports
+              </p>
+            </div>            <div className="flex flex-col sm:flex-row gap-3">
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2"
+                onClick={() => window.location.href = '/reports/lsw-history'}
               >
-                {tab.label}
-              </button>
-            ))}
+                <FileText className="h-4 w-4" />
+                View Report History
+              </Button>
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2"
+                onClick={() => window.open('/reports/lsw-daily', '_blank')}
+              >
+                <FileText className="h-4 w-4" />
+                View Today's Report
+              </Button>
+              <Button 
+                className="flex items-center gap-2"
+                onClick={() => window.location.href = '/reports/lsw-daily'}
+              >
+                <Send className="h-4 w-4" />
+                Submit Daily Report
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* Report Status */}
+            <div className="bg-blue-50 rounded-lg p-4">
+              <h3 className="font-semibold text-blue-900 mb-2">Today's Report Status</h3>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-blue-700">Status</span>
+                  <Badge variant="status" status="pending">NOT SUBMITTED</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-blue-700">Deadline</span>
+                  <span className="text-sm font-medium text-blue-900">09:30 AM</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-blue-700">Time Remaining</span>
+                  <span className="text-sm font-medium text-blue-900">
+                    {(() => {
+                      const now = new Date();
+                      const deadline = new Date();
+                      deadline.setHours(9, 30, 0, 0);
+                      if (deadline < now) {
+                        deadline.setDate(deadline.getDate() + 1);
+                      }
+                      const diff = deadline.getTime() - now.getTime();
+                      const hours = Math.floor(diff / (1000 * 60 * 60));
+                      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                      return `${hours}h ${minutes}m`;
+                    })()}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Report Requirements */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h3 className="font-semibold text-gray-900 mb-2">Report Requirements</h3>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-3 w-3 text-green-600" />
+                  Driver status & assignments
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-3 w-3 text-green-600" />
+                  Truck & trailer status
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-3 w-3 text-green-600" />
+                  Load status & revenue
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-3 w-3 text-green-600" />
+                  Events & incidents
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-3 w-3 text-green-600" />
+                  Compliance status
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-3 w-3 text-green-600" />
+                  Tomorrow's outlook
+                </li>
+              </ul>
+            </div>
+
+            {/* Recent Reports */}
+            <div className="bg-green-50 rounded-lg p-4">
+              <h3 className="font-semibold text-green-900 mb-2">Recent Submissions</h3>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-green-700">Yesterday</span>
+                  <Badge variant="status" status="delivered">SUBMITTED</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-green-700">2 days ago</span>
+                  <Badge variant="status" status="delivered">SUBMITTED</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-green-700">3 days ago</span>
+                  <Badge variant="status" status="oos">LATE</Badge>
+                </div>
+                <div className="text-xs text-green-600 mt-2">
+                  Last submitted: {new Date(Date.now() - 86400000).toLocaleDateString('en-US', { 
+                    weekday: 'short',
+                    month: 'short', 
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Operations Overview with Status Cards */}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <h2 className="text-xl font-bold text-gray-900">Current Operations Status</h2>
+            {/* Date Range Tabs */}
+            <div className="flex flex-wrap gap-1 p-1 bg-gray-100 rounded-lg">
+              {[
+                { value: 'today', label: 'Today' },
+                { value: 'tomorrow', label: 'Tomorrow' },
+                { value: 'week', label: 'This Week' },
+                { value: 'month', label: 'This Month' }
+              ].map((tab) => (
+                <button
+                  key={tab.value}
+                  onClick={() => setSelectedDateRange(tab.value)}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                    selectedDateRange === tab.value
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="px-2 pt-6 sm:px-6">          {/* Daily Load Status Chart - LineChart */}
@@ -629,16 +753,22 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
                 </div>              </div>
             </div>
           </div>
-          
-          {/* Action Buttons */}
+            {/* Action Buttons */}
           <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
-            <Button variant="outline" className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2"
+              onClick={() => window.location.href = '/reports/lsw-daily'}
+            >
               <FileText className="h-4 w-4" />
-              View Reports
+              View Daily Report
             </Button>
-            <Button className="flex items-center gap-2">
+            <Button 
+              onClick={downloadReport}
+              className="flex items-center gap-2"
+            >
               <Download className="h-4 w-4" />
-              Submit Report
+              Export Analytics
             </Button>
           </div>
         </CardContent>
