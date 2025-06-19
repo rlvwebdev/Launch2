@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
-import { Truck, Plus, Search, Filter, Calendar, Wrench, User, AlertTriangle, FileText, Edit, UserCheck, List, Grid3X3, Building } from 'lucide-react';
+import { Truck, Search, Filter, Calendar, Wrench, User, AlertTriangle, FileText, Edit, UserCheck, List, Grid3X3, Building } from 'lucide-react';
 import { useOrganizational } from '@/context/OrganizationalContext';
 import useOrganizationalData from '@/hooks/useOrganizationalData';
 import { TruckStatus } from '@/types';
@@ -42,21 +42,13 @@ export default function TrucksPage() {
           <div className="flex items-center gap-2 mt-1">
             <p className="text-gray-600">
               Manage your fleet and vehicle assignments
-            </p>
-            {currentOrganization && (
-              <div className="flex items-center gap-1 text-sm text-gray-500">
+            </p>            {currentOrganization && (
+              <div className="hidden md:flex items-center gap-1 text-sm text-gray-500">
                 <Building className="h-4 w-4" />
                 <span>{currentOrganization.name}</span>
               </div>
             )}
-          </div>
-        </div>        <div className="flex items-center gap-2">          <Button 
-            variant="primary"
-            onClick={() => router.push('/trucks/add')}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Truck
-          </Button>
+          </div>        </div>        <div className="flex items-center gap-2">
         </div>
       </div>      {/* Compact Stats and Search */}
       <Card>

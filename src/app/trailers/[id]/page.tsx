@@ -9,6 +9,7 @@ import { Container, ArrowLeft, Edit, Save, X, Trash2, Calendar, Wrench, AlertTri
 import { useOrganizational } from '@/context/OrganizationalContext';
 import useOrganizationalData from '@/hooks/useOrganizationalData';
 import { useData } from '@/context/DataContext';
+import MobileActionBar from '@/components/ui/MobileActionBar';
 
 // Trailer status enum (similar to TruckStatus)
 enum TrailerStatus {
@@ -131,9 +132,8 @@ export default function TrailerDetailPage() {
     thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
     return new Date(trailer.registrationExpiry) < thirtyDaysFromNow;
   };
-
   return (
-    <div className="p-4 md:p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-6 mobile-content-spacing">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -153,8 +153,8 @@ export default function TrailerDetailPage() {
             <p className="text-gray-600">{trailer.year} {trailer.type} - {trailer.length}</p>
           </div>
         </div>
-        
-        <div className="flex items-center gap-2">
+          {/* Desktop action buttons - hidden on mobile */}
+        <div className="hidden md:flex items-center gap-2">
           {isEditing ? (
             <>
               <Button variant="outline" onClick={handleCancel}>
@@ -506,7 +506,32 @@ export default function TrailerDetailPage() {
             )}
           </CardContent>
         </Card>
-      </div>
+      </div>      {/* Mobile Action Bar */}
+      <MobileActionBar>
+        {isEditing ? (
+          <>
+            <Button variant="outline" onClick={handleCancel} className="flex-1">
+              <X className="h-4 w-4 mr-2" />
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleSave} className="flex-1">
+              <Save className="h-4 w-4 mr-2" />
+              Save Changes
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button variant="outline" onClick={handleEdit} className="flex-1">
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+            <Button variant="danger" onClick={handleDelete} className="flex-1">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+          </>
+        )}
+      </MobileActionBar>
     </div>
   );
 }

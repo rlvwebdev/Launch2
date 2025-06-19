@@ -14,6 +14,7 @@ import {
   Container,
   AlertTriangle,
   X,
+  Home,
   type LucideIcon 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -28,6 +29,13 @@ interface NavItem {
 
 // Primary navigation items (always visible)
 const primaryNavItems: NavItem[] = [
+  {
+    id: 'dashboard',
+    label: 'Dashboard',
+    icon: Home,
+    path: '/',
+    isPrimary: true,
+  },
   {
     id: 'drivers',
     label: 'Drivers',

@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
-import { Package, Search, Filter, MapPin, AlertTriangle, FileText, ArrowUpDown, Grid3X3, List, ChevronDown, Video, Truck, DollarSign, MessageSquare, UserCheck, Plus, Settings, Building } from 'lucide-react';
+import { Package, Search, MapPin, AlertTriangle, ArrowUpDown, Grid3X3, List, ChevronDown, Video, Truck, DollarSign, MessageSquare, UserCheck, Settings, Building, FileText } from 'lucide-react';
 import { useOrganizational } from '@/context/OrganizationalContext';
-import useOrganizationalData from '@/hooks/useOrganizationalData';
+import { useData } from '@/context/DataContext';
+// import useOrganizationalData from '@/hooks/useOrganizationalData';
 import { LoadStatus } from '@/types';
 
 type SortField = 'loadNumber' | 'shipper' | 'pickupDate' | 'deliveryDate' | 'status' | 'rate';
@@ -15,13 +16,44 @@ type SortDirection = 'asc' | 'desc';
 
 export default function LoadsPage() {
   const { currentOrganization } = useOrganizational();
-  const { loads } = useOrganizationalData();
-  const [activeTab, setActiveTab] = useState<'today' | 'tomorrow' | 'all' | 'events'>('today');
-  const [sortField, setSortField] = useState<SortField>('pickupDate');
+  const dataContext = useData();
+  const { loads, drivers, trucks } = dataContext;
+    // Debug logging
+  console.log('LoadsPage - Total loads:', loads.length);
+  console.log('LoadsPage - Total drivers:', drivers.length);
+  console.log('LoadsPage - Total trucks:', trucks.length);
+  console.log('LoadsPage - Sample loads:', loads.slice(0, 3));
+  console.log('LoadsPage - Sample load dates:', loads.slice(0, 3).map(l => ({
+    id: l.id,
+    pickupDate: l.pickupDate,
+    isDate: l.pickupDate instanceof Date,
+    canFormat: typeof l.pickupDate?.toLocaleDateString === 'function'
+  })));
+  
+  // Test the fetch directly
+  useEffect(() => {
+    const testFetch = async () => {
+      try {
+        console.log('Testing direct fetch of comprehensive data...');
+        const response = await fetch('/comprehensive_loads_data.json');
+        console.log('Fetch response status:', response.status);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Direct fetch successful, loaded:', data.length, 'loads');
+        } else {
+          console.error('Fetch failed with status:', response.status);
+        }
+      } catch (error) {
+        console.error('Direct fetch error:', error);
+      }
+    };
+    testFetch();
+  }, []);  const [sortField, setSortField] = useState<SortField>('pickupDate');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'rows'>('grid');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);  const [activeTab, setActiveTab] = useState<'today' | 'tomorrow' | 'all' | 'events'>('all');
+  
   // Helper functions for date filtering
   const isToday = (date: Date | string) => {
     const today = new Date();
@@ -108,9 +140,8 @@ export default function LoadsPage() {
       setSortDirection('asc');
     }
   };
-
   return (
-    <div className="p-4 md:p-6 space-y-6">      {/* Header with Add Button */}
+    <div className="p-4 md:p-6 space-y-6 mobile-content-spacing">{/* Header with Add Button */}
       <div className="flex justify-between items-center">        <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
             <Package className="h-8 w-8 text-blue-600" />
@@ -119,19 +150,14 @@ export default function LoadsPage() {
           <div className="flex items-center gap-2 mt-1">
             <p className="text-gray-600">
               Manage shipments and track delivery status
-            </p>
-            {currentOrganization && (
-              <div className="flex items-center gap-1 text-sm text-gray-500">
+            </p>            {currentOrganization && (
+              <div className="hidden md:flex items-center gap-1 text-sm text-gray-500">
                 <Building className="h-4 w-4" />
                 <span>{currentOrganization.name}</span>
               </div>
-            )}
-          </div>
-        </div><Button className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          New Load
-        </Button>
-      </div>      {/* Stats Cards */}
+            )}          </div>
+        </div>
+      </div>{/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card padding="sm">
           <div className="text-center">
@@ -169,12 +195,9 @@ export default function LoadsPage() {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <Button variant="primary">
-              <Filter className="h-4 w-4 mr-2" />
-              Filters
-            </Button>
+              />            </div>
+            
+            {/* View Mode Toggle */}
             <div className="flex border border-gray-300 rounded-lg">
               <button
                 onClick={() => setViewMode('grid')}
@@ -191,10 +214,6 @@ export default function LoadsPage() {
                 <List className="h-4 w-4" />
               </button>
             </div>
-            <Button variant="primary">
-              <FileText className="h-4 w-4 mr-2" />
-              Reports
-            </Button>
           </div>
         </CardContent>
       </Card>{/* Tabs - Responsive (Desktop tabs, Mobile dropdown) */}

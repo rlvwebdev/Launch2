@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
-import OrganizationSelector from '@/components/ui/OrganizationSelector';
 import { Users, UserPlus, Search, Filter, Phone, CreditCard, MapPin, Truck as TruckIcon, Grid3X3, List, Eye, Edit, Settings, Building } from 'lucide-react';
 import { useOrganizational } from '@/context/OrganizationalContext';
 import useOrganizationalData from '@/hooks/useOrganizationalData';
@@ -40,18 +39,13 @@ export default function DriversPage() {
           <div className="flex items-center gap-2 mt-1">
             <p className="text-gray-600">
               Manage your driver roster and assignments
-            </p>
-            {currentOrganization && (
-              <div className="flex items-center gap-1 text-sm text-gray-500">
+            </p>            {currentOrganization && (
+              <div className="hidden md:flex items-center gap-1 text-sm text-gray-500">
                 <Building className="h-4 w-4" />
                 <span>{currentOrganization.name}</span>
               </div>
             )}
-          </div>
-        </div>        <div className="flex items-center gap-2">          <Button variant="primary">
-            <UserPlus className="h-4 w-4 mr-2" />
-            Add Driver
-          </Button>
+          </div>        </div>        <div className="flex items-center gap-2">
         </div>
       </div>
 

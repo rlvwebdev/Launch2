@@ -19,3 +19,32 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Mobile-first text contrast improvements */
+@layer utilities {
+  /* Improve text contrast on mobile devices */
+  @media (max-width: 768px) {
+    .text-gray-500 {
+      color: rgb(55 65 81) !important; /* text-gray-700 equivalent */
+    }
+    
+    .text-gray-400 {
+      color: rgb(75 85 99) !important; /* text-gray-600 equivalent */
+    }
+    
+    .text-gray-300 {
+      color: rgb(107 114 128) !important; /* text-gray-500 equivalent */
+    }
+  }
+  
+  /* Ensure proper spacing for mobile action bars */
+  .mobile-content-spacing {
+    padding-bottom: 6rem; /* 96px - space for fixed bottom actions */
+  }
+  
+  @media (min-width: 768px) {
+    .mobile-content-spacing {
+      padding-bottom: 0;
+    }
+  }
+}

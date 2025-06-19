@@ -280,9 +280,8 @@ export default function EventsPage() {
           <div className="flex items-center gap-2 mt-1">
             <p className="text-gray-600">
               Monitor and manage operational events and incidents
-            </p>
-            {currentOrganization && (
-              <div className="flex items-center gap-1 text-sm text-gray-500">
+            </p>            {currentOrganization && (
+              <div className="hidden md:flex items-center gap-1 text-sm text-gray-500">
                 <Building className="h-4 w-4" />
                 <span>{currentOrganization.name}</span>
               </div>

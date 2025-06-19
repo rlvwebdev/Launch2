@@ -7,6 +7,7 @@ import Button from '@/components/ui/Button';
 import { Truck, ArrowLeft, Save } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { TruckStatus } from '@/types';
+import MobileActionBar from '@/components/ui/MobileActionBar';
 
 export default function AddTruckPage() {
   const router = useRouter();
@@ -97,9 +98,8 @@ export default function AddTruckPage() {
       }));
     }
   };
-
   return (
-    <div className="p-4 md:p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-6 mobile-content-spacing">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button 
@@ -340,10 +340,8 @@ export default function AddTruckPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
-
-        {/* Submit Buttons */}
-        <div className="flex gap-4">
+        </Card>        {/* Desktop Submit Buttons - hidden on mobile */}
+        <div className="hidden md:flex gap-4">
           <Button
             type="button"
             variant="outline"
@@ -368,6 +366,34 @@ export default function AddTruckPage() {
           </Button>
         </div>
       </form>
+
+      {/* Mobile Action Bar */}
+      <MobileActionBar>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.back()}
+          disabled={isSubmitting}
+          className="flex-1"
+        >
+          Cancel
+        </Button>
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="bg-blue-600 hover:bg-blue-700 text-white flex-1"
+          onClick={handleSubmit}
+        >
+          {isSubmitting ? (
+            'Adding...'
+          ) : (
+            <>
+              <Save className="h-4 w-4 mr-2" />
+              Add Truck
+            </>
+          )}
+        </Button>
+      </MobileActionBar>
     </div>
   );
 }

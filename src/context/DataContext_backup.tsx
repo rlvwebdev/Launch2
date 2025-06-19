@@ -43,10 +43,6 @@ export const useData = () => {
 };
 
 // Initial mock data - we'll import the existing mock data here
-import comprehensiveLoadsData from '../../public/comprehensive_loads_data.json';
-
-console.log('📊 Importing comprehensive data:', comprehensiveLoadsData.length, 'loads');
-
 const initialDrivers: Driver[] = [
   {
     id: 'D001',
@@ -481,125 +477,93 @@ interface DataProviderProps {
   children: ReactNode;
 }
 
-// Helper functions to convert date strings to Date objects
-const convertLoadDates = (load: any): Load => {
-  // Safe date conversion function
-  const safeDate = (dateInput: any): Date => {
-    if (dateInput instanceof Date) {
-      return dateInput;
-    }
-    if (typeof dateInput === 'string' || typeof dateInput === 'number') {
-      const date = new Date(dateInput);
-      if (isNaN(date.getTime())) {
-        console.warn('Invalid date value:', dateInput, 'using current date as fallback');
-        return new Date();
-      }
-      return date;
-    }
-    console.warn('Unexpected date type:', typeof dateInput, dateInput, 'using current date as fallback');
-    return new Date();
-  };
-
-  return {
-    ...load,
-    assignedDriverId: load.assignedDriverId || undefined,
-    assignedTruckId: load.assignedTruckId || undefined,
-    pickupDate: safeDate(load.pickupDate),
-    deliveryDate: safeDate(load.deliveryDate),
-    createdAt: safeDate(load.createdAt),
-    updatedAt: safeDate(load.updatedAt),
-    events: load.events?.map((event: any) => ({
-      ...event,
-      timestamp: safeDate(event.timestamp),
-      resolvedAt: event.resolvedAt ? safeDate(event.resolvedAt) : undefined
-    })) || []
-  };
-};
-
-const convertDriverDates = (driver: any): Driver => {
-  // Safe date conversion function
-  const safeDate = (dateInput: any): Date => {
-    if (dateInput instanceof Date) {
-      return dateInput;
-    }
-    if (typeof dateInput === 'string' || typeof dateInput === 'number') {
-      const date = new Date(dateInput);
-      if (isNaN(date.getTime())) {
-        console.warn('Invalid date value:', dateInput, 'using current date as fallback');
-        return new Date();
-      }
-      return date;
-    }
-    console.warn('Unexpected date type:', typeof dateInput, dateInput, 'using current date as fallback');
-    return new Date();
-  };
-
-  return {
-    ...driver,
-    licenseExpiry: safeDate(driver.licenseExpiry),
-    hireDate: safeDate(driver.hireDate)
-  };
-};
-
-const convertTruckDates = (truck: any): Truck => {
-  // Safe date conversion function
-  const safeDate = (dateInput: any): Date => {
-    if (dateInput instanceof Date) {
-      return dateInput;
-    }
-    if (typeof dateInput === 'string' || typeof dateInput === 'number') {
-      const date = new Date(dateInput);
-      if (isNaN(date.getTime())) {
-        console.warn('Invalid date value:', dateInput, 'using current date as fallback');
-        return new Date();
-      }
-      return date;
-    }
-    console.warn('Unexpected date type:', typeof dateInput, dateInput, 'using current date as fallback');
-    return new Date();
-  };
-
-  return {
-    ...truck,
-    lastMaintenance: safeDate(truck.lastMaintenance),
-    nextMaintenanceDue: safeDate(truck.nextMaintenanceDue),
-    registrationExpiry: safeDate(truck.registrationExpiry),
-    insuranceExpiry: safeDate(truck.insuranceExpiry)
-  };
-};
-
 export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
-  console.log('🚀 DataProvider: Component instantiated');
   const [drivers, setDrivers] = useState<Driver[]>(initialDrivers);
   const [trucks, setTrucks] = useState<Truck[]>(initialTrucks);
-  const [loads, setLoads] = useState<Load[]>(initialLoads);
-  
-  console.log('🚀 DataProvider: State initialized with', loads.length, 'loads');  // Test useEffect to see if useEffect works at all
+  const [loads, setLoads] = useState<Load[]>([]);
+
+  // Helper functions to ensure dates are Date objects
+  const convertDriverDates = (driver: Driver): Driver => ({
+    ...driver,
+    licenseExpiry: new Date(driver.licenseExpiry),
+    hireDate: new Date(driver.hireDate)
+  });
+
+  const convertTruckDates = (truck: Truck): Truck => ({
+    ...truck,
+    lastMaintenance: new Date(truck.lastMaintenance),
+    nextMaintenanceDue: new Date(truck.nextMaintenanceDue),
+    registrationExpiry: new Date(truck.registrationExpiry),
+    insuranceExpiry: new Date(truck.insuranceExpiry)
+  });
+
+  const convertLoadDates = (load: Load): Load => ({
+    ...load,
+    pickupDate: new Date(load.pickupDate),
+    deliveryDate: new Date(load.deliveryDate),
+    createdAt: new Date(load.createdAt),
+    updatedAt: new Date(load.updatedAt),
+    events: load.events.map(event => ({
+      ...event,
+      timestamp: new Date(event.timestamp),
+      resolvedAt: event.resolvedAt ? new Date(event.resolvedAt) : undefined
+    }))
+  });
+
+  // Force load comprehensive data on first render
   useEffect(() => {
-    console.log('🧪 TEST: useEffect is working!');
-  }, []);  // Load comprehensive data on first render
-  useEffect(() => {
-    console.log('🔄 DataProvider: Loading comprehensive data...');
-    
-    try {
-      const loadsWithDates = (comprehensiveLoadsData as any[]).map((load, index) => {
-        try {
-          const converted = convertLoadDates(load);
-          return converted;
-        } catch (error) {
-          console.error('❌ DataProvider: Error converting load', index, ':', error);
-          throw error;
+    const loadData = async () => {
+      try {
+        console.log('🔄 DataProvider: Starting comprehensive data load...');
+        const response = await fetch('/comprehensive_loads_data.json');
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('✅ DataProvider: Successfully loaded', data.length, 'loads');
+          
+          // Convert dates and set loads
+          const loadsWithDates = data.map(convertLoadDates);
+          setLoads(loadsWithDates);
+        } else {
+          console.error('❌ DataProvider: Fetch failed', response.status);
+          setLoads(initialLoads);
         }
-      });
-      
-      console.log('✅ DataProvider: Successfully converted', loadsWithDates.length, 'loads from comprehensive data');
-      setLoads(loadsWithDates);
-    } catch (error) {
-      console.error('❌ DataProvider: Error loading comprehensive data:', error);
-      console.log('⚠️ DataProvider: Falling back to initial loads:', initialLoads.length);
-      setLoads(initialLoads);
-    }
+      } catch (error) {
+        console.error('❌ DataProvider: Error loading comprehensive data:', error);
+        setLoads(initialLoads);
+      }
+    };
+
+    loadData();
   }, []);
+
+  // Helper function to ensure dates are Date objects
+  const convertDriverDates = (driver: Driver): Driver => ({
+    ...driver,
+    licenseExpiry: new Date(driver.licenseExpiry),
+    hireDate: new Date(driver.hireDate)
+  });
+
+  const convertTruckDates = (truck: Truck): Truck => ({
+    ...truck,
+    lastMaintenance: new Date(truck.lastMaintenance),
+    nextMaintenanceDue: new Date(truck.nextMaintenanceDue),
+    registrationExpiry: new Date(truck.registrationExpiry),
+    insuranceExpiry: new Date(truck.insuranceExpiry)
+  });
+  const convertLoadDates = (load: Load): Load => ({
+    ...load,
+    pickupDate: new Date(load.pickupDate),
+    deliveryDate: new Date(load.deliveryDate),
+    createdAt: new Date(load.createdAt),
+    updatedAt: new Date(load.updatedAt),
+    events: load.events.map(event => ({
+      ...event,
+      timestamp: new Date(event.timestamp),
+      resolvedAt: event.resolvedAt ? new Date(event.resolvedAt) : undefined
+    }))
+  });
+
   // Load data from localStorage on mount (for drivers and trucks only)
   useEffect(() => {
     const savedDrivers = localStorage.getItem('launch-drivers');

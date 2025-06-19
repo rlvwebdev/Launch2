@@ -1,7 +1,6 @@
 'use client';
 
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import { useData } from '@/context/DataContext';
 import { 
@@ -10,8 +9,6 @@ import {
   Package, 
   Activity,
   AlertTriangle,
-  FileText,
-  UserPlus,
   Clock,
   CheckCircle
 } from 'lucide-react';
@@ -28,23 +25,44 @@ export default function HomePage() {
     l.status === LoadStatus.PICKED_UP || 
     l.status === LoadStatus.IN_TRANSIT
   ).length;
-  const inTransitLoads = loads.filter(l => l.status === LoadStatus.IN_TRANSIT).length;
-
-  // Get recent loads and events
+  const inTransitLoads = loads.filter(l => l.status === LoadStatus.IN_TRANSIT).length;  // Get recent loads and events - using stable sort by ID to prevent hydration mismatch
   const recentLoads = loads
-    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    .sort((a, b) => {
+      // First sort by status priority (active loads first)
+      const statusPriority: Record<LoadStatus, number> = {
+        [LoadStatus.IN_TRANSIT]: 1,
+        [LoadStatus.PICKED_UP]: 2,
+        [LoadStatus.ASSIGNED]: 3,
+        [LoadStatus.PENDING]: 4,
+        [LoadStatus.DELIVERING]: 5,
+        [LoadStatus.DELIVERED]: 6,
+        [LoadStatus.CANCELLED]: 7
+      };
+      
+      const statusDiff = statusPriority[a.status] - statusPriority[b.status];
+      if (statusDiff !== 0) return statusDiff;
+      
+      // Then sort by load ID for stable sorting (prevents hydration mismatch)
+      return b.id.localeCompare(a.id);
+    })
     .slice(0, 5);
 
   const recentDrivers = drivers
     .filter(d => d.status === DriverStatus.ACTIVE)
     .slice(0, 5);
-
-  // Get load events for the Load Events section
+  // Get load events for the Load Events section - using stable sort to prevent hydration mismatch
   const allLoadEvents = loads.flatMap(load => 
-    load.events?.map(event => ({ ...event, loadNumber: load.loadNumber })) || []
+    load.events?.map(event => ({ ...event, loadNumber: load.loadNumber, loadId: load.id })) || []
   );
   const recentEvents = allLoadEvents
-    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .sort((a, b) => {
+      // Sort by resolved status first (unresolved events first)
+      if (a.resolved !== b.resolved) {
+        return a.resolved ? 1 : -1;
+      }
+      // Then by load ID for stable sorting (prevents hydration mismatch)
+      return b.loadId.localeCompare(a.loadId);
+    })
     .slice(0, 5);
 
   return (
@@ -110,7 +128,7 @@ export default function HomePage() {
           </div>
         </Card>
       </div>      {/* New Dashboard Section Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* Load Events */}
         <Card>
           <CardHeader>
@@ -149,54 +167,7 @@ export default function HomePage() {
                 <p className="text-sm">No recent events</p>
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        {/* Report Event */}
-        <Card>
-          <CardHeader>
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <FileText className="h-5 w-5 text-blue-500" />
-              Report Event
-            </h3>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600 mb-4">
-              Report an incident or open load issue
-            </p>
-            <div className="space-y-2">
-              <Button variant="outline" size="sm" className="w-full">
-                Report Open Load
-              </Button>
-              <Button variant="outline" size="sm" className="w-full">
-                Report Incident
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Driver Recruitment */}
-        <Card>
-          <CardHeader>
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-              <UserPlus className="h-5 w-5 text-green-500" />
-              Recruitment
-            </h3>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600 mb-4">
-              Manage driver recruitment requests
-            </p>
-            <div className="space-y-2">
-              <Button variant="outline" size="sm" className="w-full">
-                Request Driver
-              </Button>
-              <Button variant="outline" size="sm" className="w-full">
-                View Applications
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          </CardContent>        </Card>
 
         {/* Tasks */}
         <Card>
@@ -296,19 +267,7 @@ export default function HomePage() {
                 <p className="text-sm">No active drivers</p>
               </div>
             )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="mt-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="flex flex-wrap gap-3">
-          <Button>Add New Load</Button>
-          <Button variant="outline">Assign Driver</Button>
-          <Button variant="outline">Schedule Maintenance</Button>
-          <Button variant="outline">Generate Report</Button>
-        </div>
+          </CardContent>        </Card>
       </div>
     </div>
   );

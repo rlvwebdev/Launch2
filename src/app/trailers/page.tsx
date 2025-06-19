@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
-import { Container, Plus, Search, Filter, Edit, Eye, Truck, Calendar, Wrench, AlertTriangle, Building } from 'lucide-react';
+import { Container, Search, Filter, Edit, Eye, Truck, Calendar, Wrench, AlertTriangle, Building } from 'lucide-react';
 import { useOrganizational } from '@/context/OrganizationalContext';
 
 // Trailer interface
@@ -188,20 +188,13 @@ export default function TrailersPage() {
           <div className="flex items-center gap-2 mt-1">
             <p className="text-gray-600">
               Manage your trailer fleet and assignments
-            </p>
-            {currentOrganization && (
-              <div className="flex items-center gap-1 text-sm text-gray-500">
+            </p>            {currentOrganization && (
+              <div className="hidden md:flex items-center gap-1 text-sm text-gray-500">
                 <Building className="h-4 w-4" />
                 <span>{currentOrganization.name}</span>
               </div>
             )}
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="primary">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Trailer
-          </Button>
         </div>
       </div>
 

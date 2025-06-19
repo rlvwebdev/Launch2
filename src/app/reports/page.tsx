@@ -10,77 +10,134 @@ import { Load } from '@/types';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, BarChart as RechartsBarChart, Bar, Area, AreaChart } from 'recharts';
 
-export default function ReportsPage() {  const { drivers, trucks, loads } = useData();
-  const [selectedDateRange, setSelectedDateRange] = useState('today');
+export default function ReportsPage() {
+  const { drivers, trucks, loads } = useData();
+  const [selectedDateRange, setSelectedDateRange] = useState('comprehensive');
   
+  // Safe date conversion utility
+  const safeDate = (dateInput: any): Date => {
+    if (dateInput instanceof Date) {
+      return dateInput;
+    }
+    if (typeof dateInput === 'string' || typeof dateInput === 'number') {
+      const date = new Date(dateInput);
+      if (isNaN(date.getTime())) {
+        console.warn('Invalid date in reports:', dateInput);
+        return new Date();
+      }
+      return date;
+    }
+    console.warn('Unexpected date type in reports:', typeof dateInput, dateInput);
+    return new Date();
+  };
+    // Debug logging
+  console.log('📊 ReportsPage: Received data:', {
+    drivers: drivers.length,
+    trucks: trucks.length,
+    loads: loads.length,
+    sampleLoadValid: loads[0] ? (loads[0].pickupDate instanceof Date) : null
+  });  
   const today = new Date();
+  console.log('📅 ReportsPage: Today is:', today.toISOString().split('T')[0]);
+  console.log('📅 ReportsPage: Selected date range:', selectedDateRange);
+  
   const isToday = (date: Date | string) => {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toDateString() === today.toDateString();
-  };  // Filter data based on selected date range
+    try {
+      const dateObj = safeDate(date);
+      return dateObj.toDateString() === today.toDateString();
+    } catch (error) {
+      console.error('Error in isToday:', error, date);
+      return false;
+    }
+  };// Filter data based on selected date range
   const getFilteredData = () => {
     const currentDate = new Date();
-    let filteredLoads = loads;
-
-    switch (selectedDateRange) {
-      case 'today':
-        // Today: yesterday + today + 4 days forward (6 days total)
-        const todayStart = new Date(currentDate);
-        todayStart.setDate(todayStart.getDate() - 1); // Yesterday
-        const todayEnd = new Date(currentDate);
-        todayEnd.setDate(todayEnd.getDate() + 4); // +4 days forward
-        filteredLoads = loads.filter(load => {
-          const pickupDate = typeof load.pickupDate === 'string' ? new Date(load.pickupDate) : load.pickupDate;
-          const deliveryDate = typeof load.deliveryDate === 'string' ? new Date(load.deliveryDate) : load.deliveryDate;
-          return (pickupDate >= todayStart && pickupDate <= todayEnd) || 
-                 (deliveryDate >= todayStart && deliveryDate <= todayEnd);
-        });
-        break;
-      case 'tomorrow':
-        // Tomorrow: yesterday + tomorrow + 4 days forward (6 days total)
-        const tomorrowStart = new Date(currentDate);
-        tomorrowStart.setDate(tomorrowStart.getDate() - 1); // Yesterday
-        const tomorrowEnd = new Date(currentDate);
-        tomorrowEnd.setDate(tomorrowEnd.getDate() + 5); // +5 days forward (tomorrow + 4 more)
-        filteredLoads = loads.filter(load => {
-          const pickupDate = typeof load.pickupDate === 'string' ? new Date(load.pickupDate) : load.pickupDate;
-          const deliveryDate = typeof load.deliveryDate === 'string' ? new Date(load.deliveryDate) : load.deliveryDate;
-          return (pickupDate >= tomorrowStart && pickupDate <= tomorrowEnd) || 
-                 (deliveryDate >= tomorrowStart && deliveryDate <= tomorrowEnd);
-        });
-        break;
-      case 'week':
-        // This Week: Sunday through Saturday of current week
-        const weekStart = new Date(currentDate);
-        weekStart.setDate(weekStart.getDate() - weekStart.getDay()); // Go to Sunday
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 6); // Go to Saturday
-        filteredLoads = loads.filter(load => {
-          const pickupDate = typeof load.pickupDate === 'string' ? new Date(load.pickupDate) : load.pickupDate;
-          const deliveryDate = typeof load.deliveryDate === 'string' ? new Date(load.deliveryDate) : load.deliveryDate;
-          return (pickupDate >= weekStart && pickupDate <= weekEnd) || 
-                 (deliveryDate >= weekStart && deliveryDate <= weekEnd);
-        });
-        break;
-      case 'month':
-        // This Month: First day to last day of current month
-        const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-        const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-        filteredLoads = loads.filter(load => {
-          const pickupDate = typeof load.pickupDate === 'string' ? new Date(load.pickupDate) : load.pickupDate;
-          const deliveryDate = typeof load.deliveryDate === 'string' ? new Date(load.deliveryDate) : load.deliveryDate;
-          return (pickupDate >= monthStart && pickupDate <= monthEnd) || 
-                 (deliveryDate >= monthStart && deliveryDate <= monthEnd);
-        });
-        break;
-      default:
-        filteredLoads = loads;
+    let filteredLoads = loads;    try {
+      switch (selectedDateRange) {
+        case 'comprehensive':
+          // Show comprehensive data range: June 5-19, 2025 (exact range of our data)
+          const comprehensiveStart = new Date('2025-06-05');
+          const comprehensiveEnd = new Date('2025-06-19');
+          filteredLoads = loads.filter(load => {
+            const pickupDate = safeDate(load.pickupDate);
+            const deliveryDate = safeDate(load.deliveryDate);
+            return (pickupDate >= comprehensiveStart && pickupDate <= comprehensiveEnd) || 
+                   (deliveryDate >= comprehensiveStart && deliveryDate <= comprehensiveEnd);
+          });
+          break;
+        case 'today':
+          // Today: Show loads from the past 14 days to include our historical data
+          const todayStart = new Date(currentDate);
+          todayStart.setDate(todayStart.getDate() - 14); // Past 14 days
+          const todayEnd = new Date(currentDate);
+          todayEnd.setDate(todayEnd.getDate() + 1); // +1 day forward
+          filteredLoads = loads.filter(load => {
+            const pickupDate = safeDate(load.pickupDate);
+            const deliveryDate = safeDate(load.deliveryDate);
+            return (pickupDate >= todayStart && pickupDate <= todayEnd) || 
+                   (deliveryDate >= todayStart && deliveryDate <= todayEnd);
+          });
+          break;
+        case 'tomorrow':
+          // Tomorrow: Show loads from the past 14 days to include our historical data
+          const tomorrowStart = new Date(currentDate);
+          tomorrowStart.setDate(tomorrowStart.getDate() - 14); // Past 14 days
+          const tomorrowEnd = new Date(currentDate);
+          tomorrowEnd.setDate(tomorrowEnd.getDate() + 2); // +2 days forward
+          filteredLoads = loads.filter(load => {
+            const pickupDate = safeDate(load.pickupDate);
+            const deliveryDate = safeDate(load.deliveryDate);
+            return (pickupDate >= tomorrowStart && pickupDate <= tomorrowEnd) || 
+                   (deliveryDate >= tomorrowStart && deliveryDate <= tomorrowEnd);
+          });
+          break;case 'week':
+          // This Week: Sunday through Saturday of current week
+          const weekStart = new Date(currentDate);
+          weekStart.setDate(weekStart.getDate() - weekStart.getDay()); // Go to Sunday
+          const weekEnd = new Date(weekStart);
+          weekEnd.setDate(weekStart.getDate() + 6); // Go to Saturday
+          filteredLoads = loads.filter(load => {
+            const pickupDate = safeDate(load.pickupDate);
+            const deliveryDate = safeDate(load.deliveryDate);
+            return (pickupDate >= weekStart && pickupDate <= weekEnd) || 
+                   (deliveryDate >= weekStart && deliveryDate <= weekEnd);
+          });
+          break;
+        case 'month':
+          // This Month: First day to last day of current month
+          const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+          const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+          filteredLoads = loads.filter(load => {
+            const pickupDate = safeDate(load.pickupDate);
+            const deliveryDate = safeDate(load.deliveryDate);
+            return (pickupDate >= monthStart && pickupDate <= monthEnd) || 
+                   (deliveryDate >= monthStart && deliveryDate <= monthEnd);
+          });
+          break;
+        default:
+          filteredLoads = loads;
+      }
+    } catch (error) {
+      console.error('Error filtering loads by date:', error);
+      filteredLoads = loads; // Fallback to all loads
     }
 
     return filteredLoads;
   };
 
-  const filteredLoads = getFilteredData();  // Current status metrics
+  const filteredLoads = getFilteredData();
+    console.log(`📊 ReportsPage: Filtered loads for ${selectedDateRange}:`, {
+    total: loads.length,
+    filtered: filteredLoads.length,
+    ratio: `${((filteredLoads.length / loads.length) * 100).toFixed(1)}%`,
+    dateRange: selectedDateRange === 'today' ? 'Past 14 days + today' : 
+               selectedDateRange === 'tomorrow' ? 'Past 14 days + today + tomorrow' : selectedDateRange,
+    sampleDates: filteredLoads.slice(0, 3).map(load => ({
+      id: load.id,
+      pickup: load.pickupDate.toISOString().split('T')[0],
+      delivery: load.deliveryDate.toISOString().split('T')[0]
+    }))
+  });// Current status metrics
   // Driver metrics
   const presentDrivers = drivers.filter(driver => driver.status === 'active').length; // Keep for backward compatibility
   const availableDrivers = drivers.filter(driver => driver.status === 'available').length;
@@ -102,18 +159,49 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
   const inTransitTrailers = Math.floor(totalTrailers * 0.45);
   const oosTrailers = Math.floor(totalTrailers * 0.1);
   const dedicatedTrailers = Math.floor(totalTrailers * 0.05);
-
   // Load metrics based on filtered data
   const displayLoadsShipping = filteredLoads.filter((load: Load) => load.status === 'picked-up' || load.status === 'in-transit').length;
   const displayLoadsDelivering = filteredLoads.filter((load: Load) => load.status === 'delivering').length;
   const displayOpenLoads = filteredLoads.filter((load: Load) => load.status === 'pending' || load.status === 'assigned').length;
   const displayRevenue = filteredLoads.filter((load: Load) => load.status === 'delivered').reduce((sum: number, load: Load) => sum + (load.rate || 0), 0);
 
+  console.log('📊 ReportsPage: Load metrics:', {
+    shipping: displayLoadsShipping,
+    delivering: displayLoadsDelivering,
+    open: displayOpenLoads,
+    revenue: displayRevenue,
+    statusBreakdown: filteredLoads.reduce((acc, load) => {
+      acc[load.status] = (acc[load.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>)
+  });
+
   // Today's loads for activity section
   const todayLoads = loads.filter(load => 
     isToday(load.pickupDate) || isToday(load.deliveryDate)
-  );
-  // Generate mock historical data for charts based on selected date range
+  );  // Generate shipper distribution data for customer analysis
+  const generateShipperDistributionData = () => {
+    // Group loads by shipper and count them for the selected date range
+    const shipperCounts: Record<string, number> = {};
+    
+    filteredLoads.forEach(load => {
+      const shipper = load.shipper || 'Unknown';
+      shipperCounts[shipper] = (shipperCounts[shipper] || 0) + 1;
+    });
+    
+    // Sort shippers by load count (descending) and take top 10
+    const sortedShippers = Object.entries(shipperCounts)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 10);
+    
+    // Format data for the chart
+    return sortedShippers.map(([shipper, count]) => ({
+      shipper: shipper.length > 20 ? shipper.substring(0, 20) + '...' : shipper, // Truncate long names
+      loads: count,
+      fullName: shipper // Keep full name for tooltip
+    }));
+  };
+  // Generate mock historical data for time-based charts
   const generateHistoricalData = () => {
     const data = [];
     const currentDate = new Date();
@@ -121,17 +209,22 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
     let startDate, daysToGenerate;
     
     switch (selectedDateRange) {
+      case 'comprehensive':
+        // June 5-19, 2025 (15 days) - exact range of our data
+        startDate = new Date('2025-06-05');
+        daysToGenerate = 15;
+        break;
       case 'today':
-        // Yesterday + today + 4 days forward (6 days total)
+        // Past 14 days to show our historical data
         startDate = new Date(currentDate);
-        startDate.setDate(startDate.getDate() - 1);
-        daysToGenerate = 6;
+        startDate.setDate(startDate.getDate() - 14);
+        daysToGenerate = 15; // 14 days + today
         break;
       case 'tomorrow':
-        // Yesterday + tomorrow + 4 days forward (6 days total)
+        // Past 14 days to show our historical data
         startDate = new Date(currentDate);
-        startDate.setDate(startDate.getDate() - 1);
-        daysToGenerate = 6;
+        startDate.setDate(startDate.getDate() - 14);
+        daysToGenerate = 16; // 14 days + today + tomorrow
         break;
       case 'week':
         // Sunday through Saturday of current week (7 days)
@@ -154,31 +247,27 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
       for (let i = 0; i < daysToGenerate; i++) {
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + i);
-      
-      // Count actual loads delivering on this specific day
+        // Count actual loads delivering on this specific day
       const loadsDeliveringToday = loads.filter(load => {
-        const deliveryDate = typeof load.deliveryDate === 'string' ? new Date(load.deliveryDate) : load.deliveryDate;
-        return deliveryDate.toDateString() === date.toDateString();
-      }).length;
-      
-      // Count actual delivered loads on this specific day
-      const deliveredToday = loads.filter(load => {
-        const deliveryDate = typeof load.deliveryDate === 'string' ? new Date(load.deliveryDate) : load.deliveryDate;
-        return deliveryDate.toDateString() === date.toDateString() && load.status === 'delivered';
-      }).length;
-      
-      // Count pending loads for this day
-      const pendingToday = loads.filter(load => {
-        const deliveryDate = typeof load.deliveryDate === 'string' ? new Date(load.deliveryDate) : load.deliveryDate;
-        return deliveryDate.toDateString() === date.toDateString() && 
-               (load.status === 'pending' || load.status === 'assigned' || load.status === 'picked-up' || load.status === 'in-transit');
+        try {
+          const deliveryDate = safeDate(load.deliveryDate);
+          return deliveryDate.toDateString() === date.toDateString();
+        } catch (error) {
+          console.error('Error filtering loads by delivery date:', error, load);
+          return false;
+        }
       }).length;
       
       // Calculate revenue for delivered loads on this day
       const revenueToday = loads
         .filter(load => {
-          const deliveryDate = typeof load.deliveryDate === 'string' ? new Date(load.deliveryDate) : load.deliveryDate;
-          return deliveryDate.toDateString() === date.toDateString() && load.status === 'delivered';
+          try {
+            const deliveryDate = safeDate(load.deliveryDate);
+            return deliveryDate.toDateString() === date.toDateString() && load.status === 'delivered';
+          } catch (error) {
+            console.error('Error filtering loads by revenue date:', error, load);
+            return false;
+          }
         })
         .reduce((sum, load) => sum + (load.rate || 0), 0);
       
@@ -197,16 +286,22 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
       data.push({
         date: dateLabel,
         loads: loadsDeliveringToday, // Use actual loads delivering on this day
-        revenue: revenueToday, // Use actual revenue from delivered loads
-        delivered: deliveredToday, // Use actual delivered loads
-        pending: pendingToday // Use actual pending loads for this day
+        revenue: revenueToday // Use actual revenue from delivered loads
       });
     }
     
     return data;
   };
-  const chartData = generateHistoricalData();
-  // Generate operations data for the area chart based on selected date range
+    const chartData = generateHistoricalData();
+  const shipperData = generateShipperDistributionData();
+    console.log('📊 ReportsPage: Chart data generated:', {
+    chartDataPoints: chartData.length,
+    shipperDataPoints: shipperData.length,
+    hasChartData: chartData.length > 0,
+    hasShipperData: shipperData.length > 0,
+    sampleChartData: chartData.slice(0, 3),
+    sampleShipperData: shipperData.slice(0, 3)
+  });  // Generate operations data for the area chart based on selected date range
   const generateOperationsData = () => {
     const data = [];
     const currentDate = new Date();
@@ -214,17 +309,22 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
     let startDate, daysToGenerate;
     
     switch (selectedDateRange) {
+      case 'comprehensive':
+        // June 5-19, 2025 (15 days) - exact range of our data
+        startDate = new Date('2025-06-05');
+        daysToGenerate = 15;
+        break;
       case 'today':
-        // Yesterday + today + 4 days forward (6 days total)
+        // Past 14 days to show our historical data
         startDate = new Date(currentDate);
-        startDate.setDate(startDate.getDate() - 1);
-        daysToGenerate = 6;
+        startDate.setDate(startDate.getDate() - 14);
+        daysToGenerate = 15; // 14 days + today
         break;
       case 'tomorrow':
-        // Yesterday + tomorrow + 4 days forward (6 days total)
+        // Past 14 days to show our historical data
         startDate = new Date(currentDate);
-        startDate.setDate(startDate.getDate() - 1);
-        daysToGenerate = 6;
+        startDate.setDate(startDate.getDate() - 14);
+        daysToGenerate = 16; // 14 days + today + tomorrow
         break;
       case 'week':
         // Sunday through Saturday of current week (7 days)
@@ -247,11 +347,15 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
       for (let i = 0; i < daysToGenerate; i++) {
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + i);
-      
-      // Count actual loads delivering on this specific day
+        // Count actual loads delivering on this specific day
       const loadsDeliveringToday = loads.filter(load => {
-        const deliveryDate = typeof load.deliveryDate === 'string' ? new Date(load.deliveryDate) : load.deliveryDate;
-        return deliveryDate.toDateString() === date.toDateString();
+        try {
+          const deliveryDate = safeDate(load.deliveryDate);
+          return deliveryDate.toDateString() === date.toDateString();
+        } catch (error) {
+          console.error('Error filtering operations loads by date:', error, load);
+          return false;
+        }
       }).length;
       
       // Generate realistic data based on current metrics with some variation
@@ -288,7 +392,6 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
       color: "#2563eb", // blue-600 to match Users icon
     },
   };
-
   const chartConfig = {
     loads: {
       label: "Loads",
@@ -305,6 +408,13 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
     pending: {
       label: "Pending",
       color: "hsl(var(--chart-4))",
+    },
+  };
+
+  const shipperChartConfig = {
+    loads: {
+      label: "Loads",
+      color: "hsl(var(--chart-1))",
     },
   };
 
@@ -485,9 +595,9 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <h2 className="text-xl font-bold text-gray-900">Current Operations Status</h2>
-            {/* Date Range Tabs */}
-            <div className="flex flex-wrap gap-1 p-1 bg-gray-100 rounded-lg">
+            {/* Date Range Tabs */}            <div className="flex flex-wrap gap-1 p-1 bg-gray-100 rounded-lg">
               {[
+                { value: 'comprehensive', label: 'Comprehensive' },
                 { value: 'today', label: 'Today' },
                 { value: 'tomorrow', label: 'Tomorrow' },
                 { value: 'week', label: 'This Week' },
@@ -846,47 +956,62 @@ export default function ReportsPage() {  const { drivers, trucks, loads } = useD
             </ChartContainer>
           </CardContent>
         </Card>
-      </div>
-
-      {/* Load Status Distribution */}
+      </div>      {/* Load Distribution by Shipper */}
       <Card>
         <CardHeader>
-          <h3 className="text-lg font-semibold text-gray-900">Load Status Distribution</h3>
-          <p className="text-sm text-gray-600">Breakdown of load statuses over the past week</p>
+          <h3 className="text-lg font-semibold text-gray-900">Top Shippers ({selectedDateRange})</h3>
+          <p className="text-sm text-gray-600">Load count by shipper - identify your largest customers</p>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig}>
-            <RechartsBarChart data={chartData} layout="horizontal" width={600} height={300}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                type="number"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-              />
-              <YAxis 
-                type="category"
-                dataKey="date" 
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-              />
-              <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-              <ChartLegend content={<ChartLegendContent />} />
-              <Bar 
-                dataKey="delivered" 
-                fill="var(--color-delivered)" 
-                radius={[0, 4, 4, 0]}
-                stackId="status"
-              />
-              <Bar 
-                dataKey="pending" 
-                fill="var(--color-pending)" 
-                radius={[0, 4, 4, 0]}
-                stackId="status"
-              />
-            </RechartsBarChart>
-          </ChartContainer>
+          {shipperData.length > 0 ? (
+            <ChartContainer config={shipperChartConfig}>
+              <RechartsBarChart data={shipperData} layout="horizontal" width={600} height={Math.max(300, shipperData.length * 40)}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  type="number"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                />
+                <YAxis 
+                  type="category"
+                  dataKey="shipper" 
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  width={120}
+                />
+                <ChartTooltip 
+                  cursor={false} 
+                  content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+                          <p className="font-medium text-gray-900">{data.fullName}</p>
+                          <p className="text-sm text-gray-600">
+                            <span className="font-medium text-blue-600">{data.loads}</span> loads
+                          </p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Bar 
+                  dataKey="loads" 
+                  fill="var(--color-loads)" 
+                  radius={[0, 4, 4, 0]}
+                />
+              </RechartsBarChart>
+            </ChartContainer>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <Package className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+              <p>No load data available for the selected period</p>
+              <p className="text-sm">Try selecting a different date range</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
