@@ -28,7 +28,7 @@ django-extensions==3.2.3
 
 # Testing
 pytest-django==4.8.0
-factory-boy==3.3.0
+factory-boy==3.3.3
 
 # Utilities
 python-dateutil==2.9.0
