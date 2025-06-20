@@ -5,7 +5,7 @@
 # Django Backend Requirements for Launch TMS
 # Core Django
 Django==5.0.4
-djangorestframework==3.14.0
+djangorestframework==3.16.0
 django-cors-headers==4.3.1
 
 # Database
