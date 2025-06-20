@@ -1,0 +1,6 @@
+Driver ID*,First Name*,Last Name*,License Number*,License Expiry*,Phone Number*,Email,Fuel Card Number,Assigned Truck ID,Status*,Hire Date*,Emergency Contact Name*,Emergency Contact Phone*,Emergency Contact Relationship*
+DRV001,John,Smith,CDL123456789,12/31/2025,555-123-4567,john.smith@email.com,FC001,TRK001,active,01/15/2023,Jane Smith,555-987-6543,Spouse
+DRV002,Maria,Garcia,CDL987654321,06/30/2026,555-234-5678,maria.garcia@email.com,FC002,TRK002,active,03/22/2023,Carlos Garcia,555-876-5432,Spouse
+DRV003,Michael,Johnson,CDL456789123,03/15/2025,555-345-6789,mike.johnson@email.com,FC003,,in-training,11/10/2024,Sarah Johnson,555-765-4321,Wife
+DRV004,David,Brown,CDL321654987,09/20/2025,555-456-7890,david.brown@email.com,FC004,TRK004,active,07/18/2022,Lisa Brown,555-654-3210,Sister
+DRV005,Jennifer,Wilson,CDL789123456,11/12/2024,555-567-8901,jen.wilson@email.com,FC005,,oos,02/14/2023,Robert Wilson,555-543-2109,Father
