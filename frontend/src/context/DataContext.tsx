@@ -7,7 +7,7 @@
  */
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Driver, Truck, Trailer, Load, DriverStatus, TruckStatus, LoadStatus } from '@/types';
 import { apiClient } from '@/lib/api-client';
 
@@ -250,8 +250,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {  //
     } finally {
       setLoadingState('loads', false);
     }
-  };
-  const refreshData = async () => {
+  };  const refreshData = async () => {
     console.log('🔄 Refreshing all data from API...');
     await Promise.all([
       refreshDrivers(),
@@ -443,12 +442,11 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {  //
     setTrailers([]);
     setLoads([]);
     setErrors({ drivers: null, trucks: null, trailers: null, loads: null });
-  };
-
-  // Load initial data on mount
+  };  // Load initial data on mount
   useEffect(() => {
     console.log('🚀 DataProvider: Initializing with Django backend API');
     refreshData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const contextValue: DataContextType = {    // Data state

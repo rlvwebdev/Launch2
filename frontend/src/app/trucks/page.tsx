@@ -19,7 +19,7 @@ export default function TrucksPage() {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
   
   const availableTrucks = trucks.filter(t => t.status === TruckStatus.AVAILABLE).length;
-  const inUseTrucks = trucks.filter(t => t.status === TruckStatus.IN_USE).length;
+  const inUseTrucks = trucks.filter(t => t.status === TruckStatus.ASSIGNED).length;
   const maintenanceTrucks = trucks.filter(t => t.status === TruckStatus.MAINTENANCE).length;
   const totalTrucks = trucks.length;
 

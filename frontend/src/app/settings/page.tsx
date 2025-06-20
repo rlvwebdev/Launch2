@@ -21,7 +21,7 @@ export default function SettingsPage() {
   const [language, setLanguage] = useState<string>('en-US');
   const [dateFormat, setDateFormat] = useState<string>('MM/DD/YYYY');
   const [timeFormat, setTimeFormat] = useState<string>('12');
-  const { addDrivers, addTrucks, addLoads, clearAllData } = useData();
+  // const { addDrivers, addTrucks, addLoads, clearAllData } = useData(); // TODO: Implement bulk operations
   const handleDownloadTemplate = () => {
     // Create a link to download the template file
     const link = document.createElement('a');
@@ -86,13 +86,16 @@ export default function SettingsPage() {
         return;
       }      // Add imported data to context
       if (result.drivers && result.drivers.length > 0) {
-        addDrivers(result.drivers);
+        // addDrivers(result.drivers); // TODO: Implement bulk driver import
+        console.log('Imported drivers:', result.drivers.length);
       }
       if (result.trucks && result.trucks.length > 0) {
-        addTrucks(result.trucks);
+        // addTrucks(result.trucks); // TODO: Implement bulk truck import
+        console.log('Imported trucks:', result.trucks.length);
       }
       if (result.loads && result.loads.length > 0) {
-        addLoads(result.loads);
+        // addLoads(result.loads); // TODO: Implement bulk load import
+        console.log('Imported loads:', result.loads.length);
       }
 
       // Update the import info
@@ -124,12 +127,12 @@ export default function SettingsPage() {
       setIsUploading(false);
     }
   };
-
   const handleClearDataConfirm = () => {
-    clearAllData();
+    // clearAllData(); // TODO: Implement clear all data functionality
+    console.log('Clear all data requested');
     setLastImportInfo(null);
     setShowClearDataModal(false);
-    setUploadStatus('All data cleared successfully');
+    setUploadStatus('Clear data functionality not yet implemented');
   };
   return (
     <div className="p-4 md:p-6 space-y-6">

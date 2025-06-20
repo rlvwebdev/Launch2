@@ -288,7 +288,7 @@ export default function HomePage() {
       <Card className="mb-8">
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-1">{getTerminalName().replace(' Terminal', '')}'s Outlook</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-1">{getTerminalName().replace(' Terminal', '')}&apos;s Outlook</h2>
               <p className="text-sm text-gray-600">{new Date().toLocaleDateString('en-US', { 
                 weekday: 'long', 
                 year: 'numeric', 

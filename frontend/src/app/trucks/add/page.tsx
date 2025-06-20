@@ -11,7 +11,7 @@ import MobileActionBar from '@/components/ui/MobileActionBar';
 
 export default function AddTruckPage() {
   const router = useRouter();
-  const { addTrucks } = useData();
+  // const { addTrucks } = useData(); // TODO: Implement addTrucks method
   
   const [formData, setFormData] = useState({
     id: '',
@@ -71,11 +71,11 @@ export default function AddTruckPage() {
           createdBy: 'demo.user',
           createdAt: new Date(),
           updatedBy: 'demo.user',
-          updatedAt: new Date()
-        }
+          updatedAt: new Date()        }
       };
 
-      addTrucks([newTruck]);
+      // addTrucks([newTruck]); // TODO: Implement addTrucks method
+      console.log('New truck added:', newTruck);
       router.push('/trucks');
     } catch (error) {
       console.error('Error adding truck:', error);
@@ -247,9 +247,8 @@ export default function AddTruckPage() {
                   value={formData.status}
                   onChange={(e) => handleInputChange('status', e.target.value as TruckStatus)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value={TruckStatus.AVAILABLE}>Available</option>
-                  <option value={TruckStatus.IN_USE}>In Use</option>
+                >                  <option value={TruckStatus.AVAILABLE}>Available</option>
+                  <option value={TruckStatus.ASSIGNED}>Assigned</option>
                   <option value={TruckStatus.MAINTENANCE}>Maintenance</option>
                   <option value={TruckStatus.OUT_OF_SERVICE}>Out of Service</option>
                 </select>

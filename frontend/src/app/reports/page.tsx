@@ -6,7 +6,7 @@ import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import { BarChart, FileText, Download, DollarSign, CheckCircle, AlertTriangle, Clock, RefreshCw, Users, UserCheck, Truck, Package, MapPin, FileUser, ParkingCircle, Pause, UserPlus, Briefcase, Home, ShoppingCart, Navigation, Building, Truck as TruckIcon, AlertCircle, Send } from 'lucide-react';
 import { useData } from '@/context/DataContext';
-import { Load } from '@/types';
+import { Load, DriverStatus, TruckStatus } from '@/types';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, BarChart as RechartsBarChart, Bar, Area, AreaChart } from 'recharts';
 
@@ -136,21 +136,19 @@ export default function ReportsPage() {
       id: load.id,
       pickup: load.pickupDate.toISOString().split('T')[0],
       delivery: load.deliveryDate.toISOString().split('T')[0]
-    }))
-  });// Current status metrics
+    }))  });// Current status metrics
   // Driver metrics
-  const presentDrivers = drivers.filter(driver => driver.status === 'active').length; // Keep for backward compatibility
-  const availableDrivers = drivers.filter(driver => driver.status === 'available').length;
-  const trainingDrivers = drivers.filter(driver => driver.status === 'in-training').length;
-  const leaveDrivers = drivers.filter(driver => driver.status === 'leave').length;
-  const oosDrivers = drivers.filter(driver => driver.status === 'oos').length;
-  const applicationDrivers = drivers.filter(driver => driver.status === 'application').length;
-
+  const presentDrivers = drivers.filter(driver => driver.status === DriverStatus.ACTIVE).length;
+  const availableDrivers = drivers.filter(driver => driver.status === DriverStatus.ACTIVE).length; // Active drivers are available
+  const trainingDrivers = drivers.filter(driver => driver.status === DriverStatus.IN_TRAINING).length;
+  const leaveDrivers = drivers.filter(driver => driver.status === DriverStatus.ON_LEAVE).length;
+  const oosDrivers = drivers.filter(driver => driver.status === DriverStatus.TERMINATED).length; // Terminated instead of OOS
+  const applicationDrivers = drivers.filter(driver => driver.status === DriverStatus.INACTIVE).length; // Use inactive for applications
   // Truck metrics
-  const assignedTrucks = trucks.filter(truck => truck.status === 'in-use').length;
-  const unseatedTrucks = trucks.filter(truck => truck.status === 'available').length;
-  const oosTrucks = trucks.filter(truck => truck.status === 'maintenance' || truck.status === 'out-of-service').length;
-  const forSaleTrucks = trucks.filter(truck => truck.status === 'for-sale').length;
+  const assignedTrucks = trucks.filter(truck => truck.status === TruckStatus.ASSIGNED).length;
+  const unseatedTrucks = trucks.filter(truck => truck.status === TruckStatus.AVAILABLE).length;
+  const oosTrucks = trucks.filter(truck => truck.status === TruckStatus.MAINTENANCE || truck.status === TruckStatus.OUT_OF_SERVICE).length;
+  const forSaleTrucks = trucks.filter(truck => truck.status === TruckStatus.OUT_OF_SERVICE).length; // Use OUT_OF_SERVICE for for-sale
 
   // Trailer metrics (assuming we have trailers data similar to trucks)
   // For now, we'll simulate trailer data based on truck data patterns

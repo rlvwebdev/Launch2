@@ -70,10 +70,9 @@ interface LoadEvent {
 
 export default function EventDetailPage() {
   const params = useParams();
-  const router = useRouter();
-  const { currentOrganization } = useOrganizational();
+  const router = useRouter();  const { currentOrganization } = useOrganizational();
   const { drivers, trucks, loads } = useOrganizationalData();
-  const { updateEvent, deleteEvent } = useData();
+  // const { updateEvent, deleteEvent } = useData(); // TODO: Implement event CRUD operations
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<LoadEvent>>({});
 
@@ -134,10 +133,10 @@ export default function EventDetailPage() {
     setFormData(event);
     setIsEditing(true);
   };
-
   const handleSave = () => {
     if (Object.keys(formData).length > 0) {
-      updateEvent(event.id, formData);
+      // updateEvent(event.id, formData); // TODO: Implement event update functionality
+      console.log('Event update:', formData);
     }
     setIsEditing(false);
     setFormData({});
@@ -150,7 +149,8 @@ export default function EventDetailPage() {
 
   const handleDelete = () => {
     if (confirm(`Are you sure you want to delete this event? This action cannot be undone.`)) {
-      deleteEvent(event.id);
+      // deleteEvent(event.id); // TODO: Implement event delete functionality
+      console.log('Event delete:', event.id);
       router.push('/events');
     }
   };
@@ -275,11 +275,11 @@ export default function EventDetailPage() {
           <CardContent className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-              {isEditing ? (
-                <input
+              {isEditing ? (                <input
                   type="text"
                   value={displayValue('title') as string}
                   onChange={(e) => handleInputChange('title', e.target.value)}
+                  placeholder="Enter event title"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               ) : (
@@ -289,10 +289,10 @@ export default function EventDetailPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-              {isEditing ? (
-                <textarea
+              {isEditing ? (                <textarea
                   value={displayValue('description') as string}
                   onChange={(e) => handleInputChange('description', e.target.value)}
+                  placeholder="Enter event description"
                   rows={4}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 />

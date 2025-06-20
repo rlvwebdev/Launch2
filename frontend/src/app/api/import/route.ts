@@ -178,7 +178,9 @@ export async function POST(request: NextRequest) {
                 companyId: 'default-company',
                 terminalId: 'default-terminal'
               },
-              accessLevel: 'TERMINAL' as any
+              accessLevel: 'TERMINAL' as any,
+              createdAt: new Date(),
+              updatedAt: new Date()
             };
 
             result.drivers.push(driver);
@@ -225,7 +227,9 @@ export async function POST(request: NextRequest) {
               organizationalContext: {
                 companyId: 'default-company',
                 terminalId: 'default-terminal'
-              }
+              },
+              createdAt: new Date(),
+              updatedAt: new Date()
             };
 
             result.trucks.push(truck);
@@ -327,7 +331,13 @@ function parseDriverStatus(status: string): DriverStatus {
     case 'oos':
     case 'out-of-service':
     case 'out of service':
-      return DriverStatus.OOS;
+    case 'terminated':
+      return DriverStatus.TERMINATED;
+    case 'inactive':
+      return DriverStatus.INACTIVE;
+    case 'on-leave':
+    case 'on leave':
+      return DriverStatus.ON_LEAVE;
     default:
       return DriverStatus.ACTIVE;
   }
@@ -340,7 +350,8 @@ function parseTruckStatus(status: string): TruckStatus {
       return TruckStatus.AVAILABLE;
     case 'in-use':
     case 'in use':
-      return TruckStatus.IN_USE;
+    case 'assigned':
+      return TruckStatus.ASSIGNED;
     case 'maintenance':
       return TruckStatus.MAINTENANCE;
     case 'out-of-service':

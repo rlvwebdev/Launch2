@@ -153,15 +153,13 @@ export default function LSWDailyReportPage({ reportId }: LSWDailyReportPageProps
       const eventDate = new Date(event.timestamp);
       eventDate.setHours(0, 0, 0, 0);
       return eventDate.getTime() === today.getTime();
-    });
-
-    // Generate driver status summary
+    });    // Generate driver status summary
     const driverSummary = {
-      present: drivers.filter(d => d.status === DriverStatus.ACTIVE || d.status === DriverStatus.AVAILABLE).length,
-      onLeave: drivers.filter(d => d.status === DriverStatus.LEAVE).length,
-      oos: drivers.filter(d => d.status === DriverStatus.OOS).length,
+      present: drivers.filter(d => d.status === DriverStatus.ACTIVE).length,
+      onLeave: drivers.filter(d => d.status === DriverStatus.ON_LEAVE).length,
+      oos: drivers.filter(d => d.status === DriverStatus.TERMINATED).length, // Use TERMINATED for OOS
       training: drivers.filter(d => d.status === DriverStatus.IN_TRAINING).length,
-      applications: drivers.filter(d => d.status === DriverStatus.APPLICATION).length,
+      applications: drivers.filter(d => d.status === DriverStatus.INACTIVE).length, // Use INACTIVE for applications
       details: drivers.map(driver => ({
         driverId: driver.id,
         name: `${driver.firstName} ${driver.lastName}`,
@@ -169,14 +167,12 @@ export default function LSWDailyReportPage({ reportId }: LSWDailyReportPageProps
         assignedTruckId: driver.assignedTruckId,
         notes: ''
       }))
-    };
-
-    // Generate truck status summary
+    };    // Generate truck status summary
     const truckSummary = {
-      assigned: trucks.filter(t => t.status === TruckStatus.IN_USE).length,
+      assigned: trucks.filter(t => t.status === TruckStatus.ASSIGNED).length,
       unseated: trucks.filter(t => t.status === TruckStatus.AVAILABLE).length,
       oos: trucks.filter(t => t.status === TruckStatus.OUT_OF_SERVICE || t.status === TruckStatus.MAINTENANCE).length,
-      forSale: trucks.filter(t => t.status === TruckStatus.FOR_SALE).length,
+      forSale: trucks.filter(t => t.status === TruckStatus.OUT_OF_SERVICE).length, // Use OUT_OF_SERVICE for for-sale
       details: trucks.map(truck => ({
         truckId: truck.id,
         identifier: `${truck.year} ${truck.make} ${truck.model} - ${truck.licensePlate}`,

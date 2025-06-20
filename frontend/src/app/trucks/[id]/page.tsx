@@ -250,12 +250,10 @@ export default function TruckDetailPage() {
                   value={displayValue('status') as string}
                   onChange={(e) => handleInputChange('status', e.target.value as TruckStatus)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value={TruckStatus.AVAILABLE}>Available</option>
-                  <option value={TruckStatus.IN_USE}>In Use</option>
-                  <option value={TruckStatus.MAINTENANCE}>Maintenance</option>
-                  <option value={TruckStatus.OUT_OF_SERVICE}>Out of Service</option>
-                  <option value={TruckStatus.FOR_SALE}>For Sale</option>
+                >                <option value={TruckStatus.AVAILABLE}>Available</option>
+                <option value={TruckStatus.ASSIGNED}>Assigned</option>
+                <option value={TruckStatus.MAINTENANCE}>Maintenance</option>
+                <option value={TruckStatus.OUT_OF_SERVICE}>Out of Service</option>
                 </select>
               ) : (
                 <Badge variant="status" status={truck.status}>

@@ -81,10 +81,9 @@ export default function BackendTestPage() {
               )}
               
               {!drivers && (
-                <div className="bg-yellow-50 rounded-md p-4">
-                  <h3 className="font-medium text-yellow-900 mb-2">Note:</h3>
+                <div className="bg-yellow-50 rounded-md p-4">                  <h3 className="font-medium text-yellow-900 mb-2">Note:</h3>
                   <p className="text-sm text-yellow-700">
-                    Connection successful but couldn't fetch data. This may be due to authentication requirements or empty database.
+                    Connection successful but couldn&apos;t fetch data. This may be due to authentication requirements or empty database.
                   </p>
                 </div>
               )}
