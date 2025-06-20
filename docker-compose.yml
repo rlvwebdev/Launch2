@@ -1,0 +1,38 @@
+# Docker Compose for Launch TMS PostgreSQL
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: launch_tms_db
+    environment:
+      POSTGRES_DB: launch_tms
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: launch123
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: pgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: launch_tms_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@launch.com
+      PGADMIN_DEFAULT_PASSWORD: launch123
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
