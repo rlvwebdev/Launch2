@@ -1,0 +1,57 @@
+version: 2
+updates:
+  # Frontend dependencies
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+    assignees:
+      - "@me"
+    reviewers:
+      - "@me"
+    commit-message:
+      prefix: "feat"
+      prefix-development: "chore"
+      include: "scope"
+
+  # Backend dependencies
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+    assignees:
+      - "@me"
+    reviewers:
+      - "@me"
+    commit-message:
+      prefix: "feat"
+      prefix-development: "chore"
+      include: "scope"
+
+  # Docker dependencies
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    assignees:
+      - "@me"
+    reviewers:
+      - "@me"
+    commit-message:
+      prefix: "feat"
+      prefix-development: "chore"
+      include: "scope"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    assignees:
+      - "@me"
+    reviewers:
+      - "@me"
+    commit-message:
+      prefix: "feat"
+      prefix-development: "chore"
+      include: "scope"
