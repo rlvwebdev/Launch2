@@ -1,41 +1,106 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Launch - Transportation Management Platform
+# Global .gitignore for the entire project
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
+# ====================
+# OS and Editor Files
+# ====================
 .DS_Store
-*.pem
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*~
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+.vscode/.ropeproject
+*.swp
+*.swo
+*~
 
-# debug
+# ====================
+# Environment Files
+# ====================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.example
+
+# ====================
+# Logs
+# ====================
+*.log
+logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# ====================
+# Database Files
+# ====================
+*.db
+*.sqlite3
+*.sqlite
+db.sqlite3
 
-# vercel
-.vercel
+# ====================
+# Docker
+# ====================
+docker-compose.override.yml
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# ====================
+# Build and Distribution
+# ====================
+dist/
+build/
+out/
+
+# ====================
+# IDE and Editor
+# ====================
+.idea/
+*.iml
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# ====================
+# Temporary Files
+# ====================
+*.tmp
+*.temp
+.cache/
+.temp/
+
+# ====================
+# SSL/TLS Certificates
+# ====================
+*.pem
+*.key
+*.crt
+*.cert
+
+# ====================
+# Documentation Build
+# ====================
+docs/build/
+site/
+
+# ====================
+# Node.js Dependencies
+# ====================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ====================
+# Next.js Build Artifacts
+# ====================
+.next/
+out/
