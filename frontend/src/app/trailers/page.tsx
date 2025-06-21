@@ -7,135 +7,43 @@ import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import { Container, Search, Filter, Edit, Eye, Truck, Calendar, Wrench, AlertTriangle, Building } from 'lucide-react';
 import { useOrganizational } from '@/context/OrganizationalContext';
-
-// Trailer interface
-interface Trailer {
-  id: string;
-  type: 'dry_van' | 'reefer' | 'flatbed' | 'tank' | 'lowboy';
-  make: string;
-  model: string;
-  year: number;
-  licensePlate: string;
-  vin: string;
-  status: 'available' | 'in_use' | 'maintenance' | 'out_of_service';
-  assignedTruckId?: string;
-  assignedDriverId?: string;
-  capacity: {
-    weight: number; // in lbs
-    volume?: number; // in cubic feet for dry vans
-    length: number; // in feet
-    width: number; // in feet
-    height: number; // in feet
-  };
-  lastMaintenance: Date;
-  nextMaintenanceDue: Date;
-  registrationExpiry: Date;
-  insuranceExpiry: Date;
-  organizationalContext: {
-    companyId: string;
-    divisionId: string;
-    departmentId: string;
-    terminalId: string;
-  };
-}
-
-// Demo trailer data
-const demoTrailers: Trailer[] = [
-  {
-    id: 'TR001',
-    type: 'dry_van',
-    make: 'Utility',
-    model: '3000R',
-    year: 2022,
-    licensePlate: 'TRL-001',
-    vin: '1UYVS2538NL123456',
-    status: 'in_use',
-    assignedTruckId: 'T001',
-    assignedDriverId: 'D001',
-    capacity: {
-      weight: 80000,
-      volume: 3400,
-      length: 53,
-      width: 8.5,
-      height: 13.5
-    },
-    lastMaintenance: new Date('2024-05-15'),
-    nextMaintenanceDue: new Date('2024-08-15'),
-    registrationExpiry: new Date('2025-06-30'),
-    insuranceExpiry: new Date('2025-03-31'),
-    organizationalContext: {
-      companyId: 'comp-001',
-      divisionId: 'div-001',
-      departmentId: 'dept-001',
-      terminalId: 'term-001'
-    }
-  },
-  {
-    id: 'TR002',
-    type: 'reefer',
-    make: 'Great Dane',
-    model: 'Everest',
-    year: 2021,
-    licensePlate: 'TRL-002',
-    vin: '1GRAA0628MF234567',
-    status: 'available',
-    capacity: {
-      weight: 80000,
-      volume: 3200,
-      length: 53,
-      width: 8.5,
-      height: 13.5
-    },
-    lastMaintenance: new Date('2024-04-20'),
-    nextMaintenanceDue: new Date('2024-07-20'),
-    registrationExpiry: new Date('2025-05-15'),
-    insuranceExpiry: new Date('2025-02-28'),
-    organizationalContext: {
-      companyId: 'comp-001',
-      divisionId: 'div-001',
-      departmentId: 'dept-001',
-      terminalId: 'term-002'
-    }
-  },
-  {
-    id: 'TR003',
-    type: 'flatbed',
-    make: 'Fontaine',
-    model: 'Revolution',
-    year: 2023,
-    licensePlate: 'TRL-003',
-    vin: '1F9FS4828PF345678',
-    status: 'maintenance',
-    capacity: {
-      weight: 80000,
-      length: 48,
-      width: 8.5,
-      height: 5
-    },
-    lastMaintenance: new Date('2024-06-01'),
-    nextMaintenanceDue: new Date('2024-09-01'),
-    registrationExpiry: new Date('2026-01-31'),
-    insuranceExpiry: new Date('2025-12-31'),
-    organizationalContext: {
-      companyId: 'comp-001',
-      divisionId: 'div-001',
-      departmentId: 'dept-002',
-      terminalId: 'term-001'
-    }
-  }
-];
+import { useData } from '@/context/DataContext';
+import { TrailerStatus } from '@/types';
+import PageHeader from '@/components/layout/PageHeader';
 
 export default function TrailersPage() {
-  const { currentOrganization } = useOrganizational();
+  const { currentOrganization, getOrganizationalFilter } = useOrganizational();
+  const { trailers } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  
-  const availableTrailers = demoTrailers.filter(t => t.status === 'available').length;
-  const inUseTrailers = demoTrailers.filter(t => t.status === 'in_use').length;
-  const maintenanceTrailers = demoTrailers.filter(t => t.status === 'maintenance').length;
-  const totalTrailers = demoTrailers.length;
 
-  const filteredTrailers = demoTrailers.filter(trailer =>
+  // Get organizational filter for current context
+  const organizationalFilter = getOrganizationalFilter();
+
+  // Filter data by selected terminal/organization first
+  const organizationFilteredTrailers = trailers.filter(trailer => {
+    if (!trailer.organizationalContext) return true;
+    
+    if (organizationalFilter.terminalId) {
+      return trailer.organizationalContext.terminalId === organizationalFilter.terminalId;
+    }
+    if (organizationalFilter.departmentId) {
+      return trailer.organizationalContext.departmentId === organizationalFilter.departmentId;
+    }
+    if (organizationalFilter.divisionId) {
+      return trailer.organizationalContext.divisionId === organizationalFilter.divisionId;
+    }
+    if (organizationalFilter.companyId) {
+      return trailer.organizationalContext.companyId === organizationalFilter.companyId;
+    }
+    return true; // Show all if no filter
+  });
+
+  const availableTrailers = organizationFilteredTrailers.filter(t => t.status === TrailerStatus.AT_TERMINAL).length;
+  const inUseTrailers = organizationFilteredTrailers.filter(t => t.status === TrailerStatus.IN_TRANSIT).length;
+  const maintenanceTrailers = organizationFilteredTrailers.filter(t => t.status === TrailerStatus.OUT_OF_SERVICE).length;
+  const totalTrailers = organizationFilteredTrailers.length;
+  const filteredTrailers = organizationFilteredTrailers.filter(trailer =>
     searchTerm === '' ||
     trailer.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
     trailer.make.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -175,28 +83,16 @@ export default function TrailersPage() {
         return 'text-gray-600 bg-gray-100';
     }
   };
-
   return (
-    <div className="p-4 md:p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Container className="h-8 w-8 text-blue-600" />
-            Trailers
-          </h1>
-          <div className="flex items-center gap-2 mt-1">
-            <p className="text-gray-600">
-              Manage your trailer fleet and assignments
-            </p>            {currentOrganization && (
-              <div className="hidden md:flex items-center gap-1 text-sm text-gray-500">
-                <Building className="h-4 w-4" />
-                <span>{currentOrganization.name}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+    <div className="space-y-6">
+      {/* Page Header with Terminal Selector */}
+      <PageHeader 
+        title="Trailers"
+        subtitle="Manage your trailer fleet and assignments"
+        icon={<Container className="h-8 w-8 text-blue-600" />}
+      />
+
+      <div className="p-4 md:p-6 space-y-6">
 
       {/* Stats and Search */}
       <Card>
@@ -284,14 +180,13 @@ export default function TrailersPage() {
                     <div>
                       <span className="text-gray-500">License:</span>
                       <div className="font-medium">{trailer.licensePlate}</div>
-                    </div>
-                    <div>
+                    </div>                    <div>
                       <span className="text-gray-500">Capacity:</span>
-                      <div className="font-medium">{trailer.capacity.weight.toLocaleString()} lbs</div>
+                      <div className="font-medium">{trailer.capacity.toLocaleString()} lbs</div>
                     </div>
                     <div>
-                      <span className="text-gray-500">Dimensions:</span>
-                      <div className="font-medium">{trailer.capacity.length}&apos; x {trailer.capacity.width}&apos;</div>
+                      <span className="text-gray-500">Length:</span>
+                      <div className="font-medium">{trailer.length}&apos;</div>
                     </div>
                   </div>
 
@@ -312,8 +207,8 @@ export default function TrailersPage() {
                 </CardContent>
               </Card>
             </Link>
-          );
-        })}
+          );        })}
+      </div>
       </div>
     </div>
   );

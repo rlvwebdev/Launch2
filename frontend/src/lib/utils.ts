@@ -98,26 +98,26 @@ export function formatCurrency(amount: number): string {
 }
 
 /**
- * Get status color classes for UI components
+ * Get status color classes for UI components using Launch color palette
  */
 export function getStatusColor(status: string): string {
   const statusColors: Record<string, string> = {
-    active: 'bg-green-100 text-green-800',
-    inactive: 'bg-gray-100 text-gray-800',
-    'on-break': 'bg-yellow-100 text-yellow-800',
-    available: 'bg-green-100 text-green-800',
-    'in-use': 'bg-blue-100 text-blue-800',
-    maintenance: 'bg-orange-100 text-orange-800',
-    'out-of-service': 'bg-red-100 text-red-800',
-    pending: 'bg-gray-100 text-gray-800',
-    assigned: 'bg-blue-100 text-blue-800',
-    'picked-up': 'bg-yellow-100 text-yellow-800',
-    'in-transit': 'bg-purple-100 text-purple-800',
-    delivered: 'bg-green-100 text-green-800',
-    cancelled: 'bg-red-100 text-red-800',
+    active: 'bg-launch-mint text-launch-navy',
+    inactive: 'bg-launch-gray/30 text-launch-navy',
+    'on-break': 'bg-warning-100 text-warning-800',
+    available: 'bg-launch-mint text-launch-navy',
+    'in-use': 'bg-launch-teal/20 text-launch-teal',
+    maintenance: 'bg-warning-100 text-warning-800',
+    'out-of-service': 'bg-danger-100 text-danger-800',
+    pending: 'bg-launch-gray/30 text-launch-navy',
+    assigned: 'bg-launch-teal/20 text-launch-teal',
+    'picked-up': 'bg-warning-100 text-warning-800',
+    'in-transit': 'bg-primary-100 text-primary-800',
+    delivered: 'bg-launch-mint text-launch-navy',
+    cancelled: 'bg-danger-100 text-danger-800',
   };
   
-  return statusColors[status] || 'bg-gray-100 text-gray-800';
+  return statusColors[status] || 'bg-launch-gray/30 text-launch-navy';
 }
 
 /**

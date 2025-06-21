@@ -1,0 +1,12 @@
+# Login Background Image Placeholder
+
+Please save the attached highway intersection image as 'login-background.jpg' in this location (/frontend/public/).
+
+The image should be the black and white aerial view of highway intersections that was provided.
+
+Current styling applied:
+- Background size: cover
+- Background position: center  
+- Mix blend mode: multiply
+- Opacity: 80%
+- Combined with accent color overlay at 46% opacity

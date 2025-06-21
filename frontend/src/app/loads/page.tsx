@@ -8,21 +8,40 @@ import Badge from '@/components/ui/Badge';
 import { Package, Search, MapPin, AlertTriangle, ArrowUpDown, Grid3X3, List, ChevronDown, Video, Truck, DollarSign, MessageSquare, UserCheck, Settings, Building, FileText } from 'lucide-react';
 import { useOrganizational } from '@/context/OrganizationalContext';
 import { useData } from '@/context/DataContext';
-// import useOrganizationalData from '@/hooks/useOrganizationalData';
+import PageHeader from '@/components/layout/PageHeader';
 import { LoadStatus } from '@/types';
 
 type SortField = 'loadNumber' | 'shipper' | 'pickupDate' | 'deliveryDate' | 'status' | 'rate';
 type SortDirection = 'asc' | 'desc';
 
-export default function LoadsPage() {
-  const { currentOrganization } = useOrganizational();
-  const dataContext = useData();
-  const { loads, drivers, trucks } = dataContext;
-    // Debug logging
-  console.log('LoadsPage - Total loads:', loads.length);
+export default function LoadsPage() {  const { currentOrganization, getOrganizationalFilter } = useOrganizational();
+  const { loads, drivers, trucks } = useData();
+
+  // Get organizational filter for current context
+  const organizationalFilter = getOrganizationalFilter();
+
+  // Filter data by selected terminal/organization first
+  const organizationFilteredLoads = loads.filter(load => {
+    if (!load.organizationalContext) return true;
+    
+    if (organizationalFilter.terminalId) {
+      return load.organizationalContext.terminalId === organizationalFilter.terminalId;
+    }
+    if (organizationalFilter.departmentId) {
+      return load.organizationalContext.departmentId === organizationalFilter.departmentId;
+    }
+    if (organizationalFilter.divisionId) {
+      return load.organizationalContext.divisionId === organizationalFilter.divisionId;
+    }
+    if (organizationalFilter.companyId) {
+      return load.organizationalContext.companyId === organizationalFilter.companyId;
+    }
+    return true; // Show all if no filter
+  });  // Debug logging
+  console.log('LoadsPage - Total loads:', organizationFilteredLoads.length);
   console.log('LoadsPage - Total drivers:', drivers.length);
   console.log('LoadsPage - Total trucks:', trucks.length);
-  console.log('LoadsPage - Sample loads:', loads.slice(0, 3));
+  console.log('LoadsPage - Sample loads:', organizationFilteredLoads.slice(0, 3));
   console.log('LoadsPage - Sample load dates:', loads.slice(0, 3).map(l => ({
     id: l.id,
     pickupDate: l.pickupDate,
@@ -139,25 +158,16 @@ export default function LoadsPage() {
       setSortField(field);
       setSortDirection('asc');
     }
-  };
-  return (
-    <div className="p-4 md:p-6 space-y-6 mobile-content-spacing">{/* Header with Add Button */}
-      <div className="flex justify-between items-center">        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Package className="h-8 w-8 text-blue-600" />
-            Loads
-          </h1>
-          <div className="flex items-center gap-2 mt-1">
-            <p className="text-gray-600">
-              Manage shipments and track delivery status
-            </p>            {currentOrganization && (
-              <div className="hidden md:flex items-center gap-1 text-sm text-gray-500">
-                <Building className="h-4 w-4" />
-                <span>{currentOrganization.name}</span>
-              </div>
-            )}          </div>
-        </div>
-      </div>{/* Stats Cards */}
+  };  return (
+    <div className="space-y-6">
+      {/* Page Header with Terminal Selector */}
+      <PageHeader 
+        title="Loads"
+        subtitle="Manage shipments and track delivery status"
+        icon={<Package className="h-8 w-8 text-blue-600" />}
+      />
+
+      <div className="p-4 md:p-6 space-y-6 mobile-content-spacing">{/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card padding="sm">
           <div className="text-center">
@@ -557,7 +567,7 @@ export default function LoadsPage() {
             Use the Reports button above to generate detailed event histories.
           </div>
         </CardContent>
-      </Card>
+      </Card>      </div>
     </div>
   );
 }

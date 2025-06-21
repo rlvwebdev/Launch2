@@ -6,30 +6,34 @@
 ## 📁 Documentation Structure
 
 ### 🎯 [Project Overview](./project/)
-- [Project Requirements](./project/requirements.md)
-- [Architecture Overview](./project/architecture.md)
-- [Development Setup](./project/development-setup.md)
-- [Git Workflow](./project/git-workflow.md)
+- Project Requirements and Specifications
+- Architecture Overview and Design Decisions
+- Development Setup and Guidelines
+- Git Workflow and Contribution Guide
 
 ### 🖥️ [Backend Documentation](./backend/)
-- [Django API Documentation](./backend/api.md)
-- [Database Models](./backend/models.md)
-- [Authentication & Authorization](./backend/auth.md)
-- [API Endpoints](./backend/endpoints.md)
-- [Testing](./backend/testing.md)
+- [Complete Backend Guide](./backend/README.md) - Django API, models, authentication, and deployment
+- Django 5.0.4 REST API with multi-tenant architecture
+- PostgreSQL database with hierarchical organization structure
+- JWT authentication and role-based permissions
 
 ### 🌐 [Frontend Documentation](./frontend/)
-- [Next.js Application](./frontend/nextjs.md)
-- [Component Library](./frontend/components.md)
-- [Data Models & Types](./frontend/data-models.md)
-- [State Management](./frontend/state-management.md)
-- [UI/UX Guidelines](./frontend/ui-guidelines.md)
+- [Complete Frontend Guide](./frontend/README.md) - Next.js app, components, and state management
+- Next.js 15.3.3 with React 19 and TypeScript
+- Mobile-first responsive design with Tailwind CSS
+- Context-based state management and API integration
+
+### 🔌 [API Documentation](./api.md)
+- [Complete API Reference](./api.md) - All endpoints, authentication, and usage examples
+- RESTful API endpoints with full CRUD operations
+- Authentication flows and token management
+- Request/response examples and error handling
 
 ### 🚀 [Deployment](./deployment/)
-- [Frontend Deployment (Vercel)](./deployment/frontend.md)
-- [Backend Deployment](./deployment/backend.md)
-- [Database Setup](./deployment/database.md)
-- [Environment Configuration](./deployment/environment.md)
+- Frontend Deployment (Vercel)
+- Backend Deployment Guide
+- Database Setup and Configuration
+- Environment Variables and Security
 
 ## 🏗️ Tech Stack
 
@@ -84,5 +88,5 @@ For questions or issues, please refer to the specific documentation sections or 
 
 ---
 
-**Last Updated:** June 19, 2025  
+**Last Updated:** December 19, 2024  
 **Version:** 1.0.0

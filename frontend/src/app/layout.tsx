@@ -10,6 +10,10 @@ import "./globals.css";
 import AppLayout from "@/components/layout/AppLayout";
 import { DataProvider } from "@/context/DataContext";
 import { OrganizationalProvider } from "@/context/OrganizationalContext";
+import { ThemeProvider } from "@/context/ThemeContext";
+import { SettingsProvider } from "@/context/SettingsContext";
+import { AuthProvider } from "@/context/AuthContext";
+import { RouteProtection } from "@/components/auth/RouteProtection";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,14 +42,21 @@ export default function RootLayout({
 }>) {  return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}      >
-        <OrganizationalProvider>
-          <DataProvider>
-            <AppLayout>
-              {children}
-            </AppLayout>
-          </DataProvider>
-        </OrganizationalProvider>
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}      >        <ThemeProvider>
+          <AuthProvider>
+            <RouteProtection>
+              <SettingsProvider>
+                <OrganizationalProvider>
+                  <DataProvider>
+                    <AppLayout>
+                      {children}
+                    </AppLayout>
+                  </DataProvider>
+                </OrganizationalProvider>
+              </SettingsProvider>
+            </RouteProtection>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -112,7 +112,7 @@ export default function AuthTestPage() {
                 disabled={isLoading}
                 className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? '🔄 Testing...' : '🚀 Test Login'}
+                {isLoading ? '🔄 Testing...' : '✅ Test Login'}
               </button>
 
               {authStatus === 'success' && authData && (

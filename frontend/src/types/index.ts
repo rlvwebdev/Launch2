@@ -275,16 +275,29 @@ export interface Company extends Organization {
   operatingHours: OperatingHours;
 }
 
+export interface Region extends Organization {
+  type: OrganizationType.REGION;
+  companyId: string;
+  manager: UserReference;
+  geographicArea: {
+    states: string[];
+    cities: string[];
+    zipCodes?: string[];
+  };
+  operatingRadius: number; // in miles
+}
+
 export interface Division extends Organization {
   type: OrganizationType.DIVISION;
   companyId: string;
-  region: string;
+  regionId: string;
   manager: UserReference;
 }
 
 export interface Department extends Organization {
   type: OrganizationType.DEPARTMENT;
   divisionId: string;
+  regionId: string;
   companyId: string;
   function: DepartmentFunction;
   supervisor: UserReference;
@@ -294,6 +307,7 @@ export interface Terminal extends Organization {
   type: OrganizationType.TERMINAL;
   departmentId: string;
   divisionId: string;
+  regionId: string;
   companyId: string;
   terminalCode: string;
   dockCount: number;
@@ -356,6 +370,7 @@ export interface Permission {
 // ===== ORGANIZATIONAL CONTEXT FOR EXISTING ENTITIES =====
 export interface OrganizationalContext {
   companyId: string;
+  regionId?: string;
   divisionId?: string;
   departmentId?: string;
   terminalId?: string;
@@ -364,6 +379,7 @@ export interface OrganizationalContext {
 // ===== NEW ORGANIZATIONAL ENUMS =====
 export enum OrganizationType {
   COMPANY = 'company',
+  REGION = 'region',
   DIVISION = 'division',
   DEPARTMENT = 'department',
   TERMINAL = 'terminal'

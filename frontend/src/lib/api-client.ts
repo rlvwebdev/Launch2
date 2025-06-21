@@ -4,7 +4,7 @@
  * This software is proprietary and confidential.
  */
 
-import { Driver, Truck, Trailer, Load, Company, Organization } from '@/types'
+import { Driver, Truck, Trailer, Load, Company, Organization, Terminal } from '@/types'
 
 // API Configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
@@ -43,29 +43,33 @@ class ApiClient {
   constructor() {
     this.baseURL = API_BASE_URL
     this.loadTokensFromStorage()
-  }
-
-  // Token management
+  }  // Token management
   private loadTokensFromStorage() {
     if (typeof window !== 'undefined') {
-      this.accessToken = localStorage.getItem('access_token')
-      this.refreshToken = localStorage.getItem('refresh_token')
+      this.accessToken = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token')
+      this.refreshToken = localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token')
     }
   }
 
+  // Public method to reload tokens (useful after login)
+  public reloadTokens() {
+    this.loadTokensFromStorage();
+    console.log('🔄 API Client: Tokens reloaded. Access token available:', !!this.accessToken);
+  }
   private saveTokensToStorage(access: string, refresh: string) {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('access_token', access)
+      localStorage.setItem('auth_token', access)
       localStorage.setItem('refresh_token', refresh)
     }
     this.accessToken = access
     this.refreshToken = refresh
   }
-
   private clearTokensFromStorage() {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('access_token')
+      localStorage.removeItem('auth_token')
       localStorage.removeItem('refresh_token')
+      sessionStorage.removeItem('auth_token')
+      sessionStorage.removeItem('refresh_token')
     }
     this.accessToken = null
     this.refreshToken = null
@@ -191,10 +195,20 @@ class ApiClient {
       return { status: 'error', message: `Connection failed: ${error}` }
     }
   }
-
   // Driver API methods
   async getDrivers(): Promise<PaginatedResponse<Driver>> {
-    return this.request<PaginatedResponse<Driver>>('/drivers/')
+    console.log('🚀 API Client: Fetching drivers...');
+    console.log('🔑 API Client: Access token available:', !!this.accessToken);
+    console.log('🔑 API Client: Token preview:', this.accessToken?.substring(0, 50) + '...');
+    
+    try {
+      const result = await this.request<PaginatedResponse<Driver>>('/drivers/');
+      console.log('✅ API Client: Drivers fetch successful:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ API Client: Drivers fetch failed:', error);
+      throw error;
+    }
   }
 
   async getDriver(id: string): Promise<Driver> {
@@ -322,6 +336,15 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify(company),
     })
+  }
+
+  // Terminal API methods
+  async getTerminals(): Promise<PaginatedResponse<Terminal>> {
+    return this.request<PaginatedResponse<Terminal>>('/terminals/')
+  }
+
+  async getTerminal(id: string): Promise<Terminal> {
+    return this.request<Terminal>(`/terminals/${id}/`)
   }
 
   // Utility methods

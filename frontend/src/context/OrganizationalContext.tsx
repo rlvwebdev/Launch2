@@ -1,6 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { apiClient } from '@/lib/api-client';
+import { useAuth } from '@/context/AuthContext';
 import { 
   Organization, 
   User, 
@@ -349,7 +351,34 @@ const demoUser: User = {
       isDefault: true,
       assignedAt: new Date('2020-01-01'),
       assignedBy: 'SYSTEM'
-    }
+    },
+    // Add access to all terminals (IDs 1-27)
+    ...Array.from({ length: 27 }, (_, i) => ({
+      organizationId: String(i + 1),
+      organizationType: OrganizationType.TERMINAL,
+      roles: [
+        {
+          id: `ROLE_TERMINAL_${i + 1}`,
+          name: 'Terminal User',
+          code: 'TERMINAL_USER',
+          description: 'Access to terminal resources',
+          level: 'terminal_user' as any,
+          permissions: [
+            {
+              id: `PERM_TERMINAL_${i + 1}`,
+              name: 'Terminal Resources Access',
+              resource: ResourceType.DRIVERS,
+              actions: [ActionType.READ, ActionType.UPDATE],
+              scope: PermissionScope.TERMINAL
+            }
+          ]
+        }
+      ],
+      permissions: [],
+      isDefault: false,
+      assignedAt: new Date('2020-01-01'),
+      assignedBy: 'SYSTEM'
+    }))
   ],
   currentOrganizationId: 'ORG001',
   roles: [],
@@ -380,6 +409,7 @@ interface OrganizationalProviderProps {
 }
 
 export const OrganizationalProvider: React.FC<OrganizationalProviderProps> = ({ children }) => {
+  const { isAuthenticated } = useAuth();
   const [currentUser, setCurrentUser] = useState<User | null>(demoUser);
   const [currentOrganization, setCurrentOrganizationState] = useState<Organization | null>(null);
   const [organizationHierarchy, setOrganizationHierarchy] = useState<Organization[]>(demoOrganizations);
@@ -395,6 +425,97 @@ export const OrganizationalProvider: React.FC<OrganizationalProviderProps> = ({ 
       }
     }
   }, [currentUser, currentOrganization, organizationHierarchy]);
+  // Load terminals from API
+  useEffect(() => {
+    const loadTerminals = async () => {
+      // Only load terminals if user is authenticated
+      if (!isAuthenticated) {
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const response = await apiClient.getTerminals();
+        
+        if (response.results && response.results.length > 0) {// Convert terminal data to Organization format
+          const terminalOrgs: Organization[] = response.results.map((terminal: any) => ({
+            id: terminal.id,
+            name: terminal.name,
+            type: OrganizationType.TERMINAL,
+            code: terminal.terminalCode || terminal.code,
+            isActive: true,
+            parentId: terminal.companyId || 'ORG001', // Link to demo company
+            address: {
+              address: terminal.address || '',
+              city: terminal.city || '',
+              state: terminal.state || '',
+              zipCode: terminal.zipCode || ''
+            },
+            contactInfo: {
+              email: terminal.email || '',
+              phone: terminal.phone || '',
+              address: {
+                address: terminal.address || '',
+                city: terminal.city || '',
+                state: terminal.state || '',
+                zipCode: terminal.zipCode || ''
+              }
+            },            settings: {
+              branding: {
+                logoUrl: '/favicon.svg',
+                primaryColor: '#3B82F6',
+                secondaryColor: '#1E40AF',
+                theme: 'light'
+              },
+              operational: {
+                timezone: 'America/Chicago',
+                dateFormat: 'MM/DD/YYYY',
+                timeFormat: '12',
+                currency: 'USD',
+                weightUnit: 'lbs',
+                distanceUnit: 'miles',
+                defaultLoadCapacity: 80000
+              },              notifications: {
+                emailEnabled: true,
+                smsEnabled: false,
+                pushEnabled: true,
+                maintenanceAlerts: true,
+                loadStatusUpdates: true,
+                emergencyAlerts: true,
+                preferences: {
+                  loadUpdates: true,
+                  maintenanceAlerts: true,
+                  dispatchNotifications: true
+                }
+              },              integrations: {
+                gpsProvider: 'internal',
+                eldProvider: 'internal',
+                accountingSystem: 'internal',
+                dispatchSystem: 'internal'
+              }
+            },
+            createdAt: new Date(terminal.createdAt),
+            updatedAt: new Date(terminal.updatedAt)
+          }));
+
+          // Combine with existing demo organizations (companies, divisions, etc)
+          setOrganizationHierarchy([...demoOrganizations, ...terminalOrgs]);
+        }      } catch (error: any) {
+        console.error('Failed to load terminals:', error);
+        if (error?.status === 401 || (error?.response?.status === 401)) {
+          console.log('🔒 OrganizationalContext: 401 error - user not authenticated, using demo data');
+          setOrganizationHierarchy(demoOrganizations); // Fallback to demo data
+          return;
+        }
+        setError('Failed to load terminal data');
+        setOrganizationHierarchy(demoOrganizations); // Fallback to demo data on any error
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTerminals();
+  }, [isAuthenticated]); // Re-run when authentication state changes
 
   const setCurrentOrganization = (orgId: string) => {
     const org = organizationHierarchy.find(o => o.id === orgId);

@@ -3,37 +3,92 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: var(--theme-background, #ffffff);
+  --foreground: var(--theme-primary, #002333);
+  
+  /* Default theme variables */
+  --color-primary: #002333;
+  --color-secondary: #159A9C;
+  --color-neutral: #64748b;
+  --color-accent: #0891b2;
+  --color-background: #ffffff;
+  --color-surface: #f8fafc;
+  --color-text: #0f172a;
+  --color-text-secondary: #64748b;
+  
+  /* RGB versions for alpha transparency */
+  --color-primary-rgb: 0, 35, 51;
+  --color-secondary-rgb: 21, 154, 156;
+  --color-accent-rgb: 8, 145, 178;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-background, #ffffff);
+  color: var(--color-text, #0f172a);
   font-family: Arial, Helvetica, sans-serif;
 }
 
 /* Mobile-first text contrast improvements */
 @layer utilities {
-  /* Improve text contrast on mobile devices */
+  /* Theme-aware background utilities */
+  .bg-theme-background {
+    background-color: var(--theme-background, #ffffff);
+  }
+  
+  .bg-theme-primary {
+    background-color: var(--theme-primary, #002333);
+  }
+  
+  .bg-theme-secondary {
+    background-color: var(--theme-secondary, #159A9C);
+  }
+  
+  .bg-theme-accent {
+    background-color: var(--theme-accent, #0891b2);
+  }
+  
+  /* Theme-aware text utilities */
+  .text-theme-primary {
+    color: var(--theme-primary, #002333);
+  }
+  
+  .text-theme-secondary {
+    color: var(--theme-secondary, #159A9C);
+  }
+  
+  .text-theme-neutral {
+    color: var(--theme-neutral, #64748b);
+  }
+  
+  .text-theme-accent {
+    color: var(--theme-accent, #0891b2);
+  }
+  
+  /* Theme-aware border utilities */
+  .border-theme-primary {
+    border-color: var(--theme-primary, #002333);
+  }
+  
+  .border-theme-secondary {
+    border-color: var(--theme-secondary, #159A9C);
+  }
+  
+  .border-theme-neutral {
+    border-color: var(--theme-neutral, #64748b);
+  }
+
+  /* Improve text contrast on mobile devices - using theme variables */
   @media (max-width: 768px) {
     .text-gray-500 {
-      color: rgb(55 65 81) !important; /* text-gray-700 equivalent */
+      color: var(--theme-primary, #002333) !important;
     }
     
     .text-gray-400 {
-      color: rgb(75 85 99) !important; /* text-gray-600 equivalent */
+      color: var(--theme-neutral, #64748b) !important;
     }
     
     .text-gray-300 {
-      color: rgb(107 114 128) !important; /* text-gray-500 equivalent */
+      color: var(--theme-neutral, #64748b) !important;
     }
   }
   
@@ -46,5 +101,82 @@ body {
     .mobile-content-spacing {
       padding-bottom: 0;
     }
+  }
+
+  /* Theme preview classes for dynamic colors */
+  .theme-primary-bg {
+    background-color: var(--launch-navy, #002333);
+  }
+  
+  .theme-secondary-bg {
+    background-color: var(--launch-teal, #159A9C);
+  }
+  
+  .theme-neutral-bg {
+    background-color: var(--launch-gray, #B4BEC9);
+  }
+  
+  .theme-accent-bg {
+    background-color: var(--launch-mint, #DEEFE7);
+  }
+  
+  .theme-background-bg {
+    background-color: var(--launch-white, #FFFFFF);
+  }
+
+  /* Landing page polygon clip path */
+  .polygon-clip {
+    clip-path: polygon(73.6% 51.7%, 91.7% 11.8%, 100% 46.4%, 97.4% 82.2%, 92.5% 84.9%, 75.7% 64%, 55.3% 47.5%, 46.5% 49.4%, 45% 62.9%, 50.3% 87.2%, 21.3% 64.1%, 0.1% 100%, 5.4% 51.1%, 21.4% 63.9%, 58.9% 0.2%, 73.6% 51.7%);
+  }
+
+  /* Floating animation for login form */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-4px);
+    }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }  /* Highway background overlay */
+  .highway-overlay {
+    background-image: url('/background/3PL_Getty1028215246.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    opacity: 0.33;
+    filter: grayscale(100%) contrast(1.2) brightness(0.9);
+    mix-blend-mode: multiply;
+  }
+  /* Accent color overlay for left column */
+  .accent-overlay-66 {
+    opacity: 0.66;
+  }  /* Login page background styles */
+  .login-bg-accent {
+    background-color: var(--color-accent);
+    opacity: 0.46;
+  }
+
+  .login-bg-image {
+    background-image: url('/background/3PL_Getty1028215246.webp');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    opacity: 0.4;
+    filter: brightness(1.1) contrast(0.9);
+  }  .login-gradient-overlay {
+    background: linear-gradient(
+      180deg,
+      rgba(var(--color-primary-rgb), 0.8) 0%,
+      rgba(var(--color-primary-rgb), 0.6) 15%,
+      rgba(var(--color-primary-rgb), 0.3) 35%,
+      rgba(var(--color-primary-rgb), 0.1) 50%,
+      transparent 65%,
+      transparent 100%
+    );
   }
 }

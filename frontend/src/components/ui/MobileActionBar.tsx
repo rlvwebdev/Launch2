@@ -9,9 +9,8 @@ export default function MobileActionBar({ children, className }: MobileActionBar
   return (
     <div className={cn(
       // Position fixed at bottom with proper spacing above bottom nav
-      "fixed bottom-20 left-0 right-0 md:relative md:bottom-auto md:mt-6",
-      // Background and styling
-      "bg-white border-t border-gray-200 md:border-0 md:bg-transparent",
+      "fixed bottom-20 left-0 right-0 md:relative md:bottom-auto md:mt-6",      // Background and styling
+      "bg-white border-t border-launch-gray md:border-0 md:bg-transparent",
       // Padding and shadows
       "px-4 py-3 md:px-0 md:py-0",
       "shadow-lg md:shadow-none",

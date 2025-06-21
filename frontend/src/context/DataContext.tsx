@@ -33,7 +33,8 @@ interface DataContextType {
     trailers: string | null;
     loads: string | null;
   };
-    // CRUD operations
+  
+  // Refresh operations
   refreshData: () => Promise<void>;
   refreshDrivers: () => Promise<void>;
   refreshTrucks: () => Promise<void>;
@@ -59,10 +60,10 @@ interface DataContextType {
   createLoad: (load: Omit<Load, 'id'>) => Promise<Load>;
   updateLoad: (id: string, updates: Partial<Load>) => Promise<Load>;
   deleteLoad: (id: string) => Promise<void>;
-  
-  // Organizational filtering methods
+    // Organizational filtering methods
   getFilteredDrivers: (orgFilter?: Partial<{companyId: string; divisionId: string; departmentId: string; terminalId: string}>) => Driver[];
   getFilteredTrucks: (orgFilter?: Partial<{companyId: string; divisionId: string; departmentId: string; terminalId: string}>) => Truck[];
+  getFilteredTrailers: (orgFilter?: Partial<{companyId: string; divisionId: string; departmentId: string; terminalId: string}>) => Trailer[];
   getFilteredLoads: (orgFilter?: Partial<{companyId: string; divisionId: string; departmentId: string; terminalId: string}>) => Load[];
   
   // Utility methods
@@ -83,7 +84,8 @@ interface DataProviderProps {
   children: ReactNode;
 }
 
-export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {  // State management
+export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
+  // State management
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [trucks, setTrucks] = useState<Truck[]>([]);
   const [trailers, setTrailers] = useState<Trailer[]>([]);
@@ -104,337 +106,370 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {  //
     trailers: null as string | null,
     loads: null as string | null,
   });
-
   // Helper function to update loading state
-  const setLoadingState = (key: keyof typeof loading, value: boolean) => {
+  const setLoadingState = useCallback((key: keyof typeof loading, value: boolean) => {
     setLoading(prev => ({ ...prev, [key]: value }));
-  };
+  }, []);
 
   // Helper function to update error state
-  const setErrorState = (key: keyof typeof errors, value: string | null) => {
-    setErrors(prev => ({ ...prev, [key]: value }));  };
-  
+  const setErrorState = useCallback((key: keyof typeof errors, value: string | null) => {
+    setErrors(prev => ({ ...prev, [key]: value }));
+  }, []);
+
   // Data fetching functions
-  const refreshDrivers = async () => {
+  const refreshDrivers = useCallback(async () => {
     setLoadingState('drivers', true);
     setErrorState('drivers', null);
       try {
-      console.log('🔄 Fetching drivers from API...');
-      const driversResponse = await apiClient.getDrivers();
-      console.log('📦 Raw drivers response:', driversResponse);
-      // Handle paginated response
-      const driversData = driversResponse.results || [];
-      console.log('📊 Drivers data array:', driversData.length, 'items');
+      console.log('🚀 DataContext: Fetching drivers from API');
       
-      // Convert date strings to Date objects to match TypeScript interface
-      const processedDrivers = driversData.map((driver, index) => {
-        try {
+      // Ensure API client has latest tokens
+      apiClient.reloadTokens();
+      
+      const response = await apiClient.getDrivers();
+      console.log('✅ DataContext: Received drivers data:', response);
+        if (response.results && response.results.length > 0) {
+        const processedDrivers = response.results.map((driver: any, index: number) => {
+          // Generate ID if not present
+          const driverId = driver.id || `driver-${index + 1}`;
+          
           return {
             ...driver,
-            licenseExpiry: new Date(driver.licenseExpiry),
-            hireDate: new Date(driver.hireDate),
-            createdAt: new Date(driver.createdAt),
-            updatedAt: new Date(driver.updatedAt),
+            id: driverId,
+            status: driver.status || 'available',
+            // Ensure required fields have defaults
+            firstName: driver.firstName || driver.first_name || 'Unknown',
+            lastName: driver.lastName || driver.last_name || 'Driver',
+            email: driver.email || `${driverId}@example.com`,
+            phone: driver.phone || '000-000-0000',
+            licenseNumber: driver.licenseNumber || driver.license_number || 'N/A',
           };
-        } catch (dateError) {
-          console.error(`❌ Error processing driver ${index}:`, driver, dateError);
-          throw dateError;
-        }
-      });
-      
-      setDrivers(processedDrivers);
-      console.log('✅ Successfully loaded', processedDrivers.length, 'drivers');
+        });
+        
+        setDrivers(processedDrivers);
+        console.log('✅ DataContext: Processed and set drivers:', processedDrivers);
+      } else {
+        console.warn('⚠️ DataContext: Invalid drivers response:', response);
+        setDrivers([]);
+      }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load drivers';
-      console.error('❌ Error loading drivers:', error);
-      setErrorState('drivers', errorMessage);
-    } finally {
+      console.error('❌ DataContext: Error fetching drivers:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch drivers';
+      setErrorState('drivers', errorMessage);    } finally {
       setLoadingState('drivers', false);
     }
-  };
-  const refreshTrucks = async () => {
+  }, [setErrorState, setLoadingState]);
+
+  const refreshTrucks = useCallback(async () => {
     setLoadingState('trucks', true);
     setErrorState('trucks', null);
-      try {
-      console.log('🔄 Fetching trucks from API...');
-      const trucksResponse = await apiClient.getTrucks();
-      console.log('📦 Raw trucks response:', trucksResponse);
-      // Handle paginated response
-      const trucksData = trucksResponse.results || [];
-      console.log('📊 Trucks data array:', trucksData.length, 'items');
-      
-      // Convert date strings to Date objects to match TypeScript interface
-      const processedTrucks = trucksData.map((truck, index) => {
-        try {
+    
+    try {
+      console.log('� DataContext: Fetching trucks from API');
+      const response = await apiClient.getTrucks();
+      console.log('✅ DataContext: Received trucks data:', response);
+        if (response.results && response.results.length >= 0) {
+        const processedTrucks = response.results.map((truck: any, index: number) => {
+          // Generate ID if not present
+          const truckId = truck.id || `truck-${index + 1}`;
+          
           return {
             ...truck,
-            lastMaintenance: truck.lastMaintenance ? new Date(truck.lastMaintenance) : new Date(),
-            nextMaintenanceDue: truck.nextMaintenanceDue ? new Date(truck.nextMaintenanceDue) : new Date(),
-            registrationExpiry: truck.registrationExpiry ? new Date(truck.registrationExpiry) : new Date(),
-            insuranceExpiry: truck.insuranceExpiry ? new Date(truck.insuranceExpiry) : new Date(),
-            createdAt: new Date(truck.createdAt),
-            updatedAt: new Date(truck.updatedAt),
+            id: truckId,
+            status: truck.status || 'available',
+            // Ensure required fields have defaults
+            truckNumber: truck.truckNumber || truck.truck_number || `T${String(index + 1).padStart(3, '0')}`,
+            make: truck.make || 'Unknown',
+            model: truck.model || 'Unknown',
+            year: truck.year || 2020,
           };
-        } catch (dateError) {
-          console.error(`❌ Error processing truck ${index}:`, truck, dateError);
-          throw dateError;
-        }
-      });
-      
-      setTrucks(processedTrucks);
-      console.log('✅ Successfully loaded', processedTrucks.length, 'trucks');
+        });
+        
+        setTrucks(processedTrucks);
+        console.log('✅ DataContext: Processed and set trucks:', processedTrucks);
+      } else {
+        console.warn('⚠️ DataContext: Invalid trucks response:', response);
+        setTrucks([]);
+      }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load trucks';
-      console.error('❌ Error loading trucks:', error);
-      setErrorState('trucks', errorMessage);} finally {
+      console.error('❌ DataContext: Error fetching trucks:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch trucks';
+      setErrorState('trucks', errorMessage);    } finally {
       setLoadingState('trucks', false);
     }
-  };
-
-  const refreshTrailers = async () => {
+  }, [setErrorState, setLoadingState]);
+  const refreshTrailers = useCallback(async () => {
     setLoadingState('trailers', true);
     setErrorState('trailers', null);
     
     try {
-      console.log('🔄 Fetching trailers from API...');
-      const trailersResponse = await apiClient.getTrailers();
-      // Handle paginated response
-      const trailersData = trailersResponse.results || [];
-        // Convert date strings to Date objects to match TypeScript interface
-      const processedTrailers = trailersData.map(trailer => ({
-        ...trailer,
-        lastMaintenance: trailer.lastMaintenance ? new Date(trailer.lastMaintenance) : new Date(),
-        nextMaintenanceDue: trailer.nextMaintenanceDue ? new Date(trailer.nextMaintenanceDue) : new Date(),
-        registrationExpiry: trailer.registrationExpiry ? new Date(trailer.registrationExpiry) : new Date(),
-        insuranceExpiry: trailer.insuranceExpiry ? new Date(trailer.insuranceExpiry) : undefined,
-        createdAt: new Date(trailer.createdAt),
-        updatedAt: new Date(trailer.updatedAt),
-      }));
+      console.log('� DataContext: Fetching trailers from API');
+      const response = await apiClient.getTrailers();
+      console.log('✅ DataContext: Received trailers data:', response);
       
-      setTrailers(processedTrailers);
-      console.log('✅ Successfully loaded', processedTrailers.length, 'trailers');
+      if (response.results && response.results.length >= 0) {
+        const processedTrailers = response.results.map((trailer: any, index: number) => {
+          // Generate ID if not present
+          const trailerId = trailer.id || `trailer-${index + 1}`;
+          
+          return {
+            ...trailer,
+            id: trailerId,
+            status: trailer.status || 'available',
+            // Ensure required fields have defaults
+            trailerNumber: trailer.trailerNumber || trailer.trailer_number || `TR${String(index + 1).padStart(3, '0')}`,
+            type: trailer.type || 'dry_van',
+            capacity: trailer.capacity || 48000,
+            company: trailer.company || 'Unknown Company',
+          };
+        });
+        
+        setTrailers(processedTrailers);
+        console.log('✅ DataContext: Processed and set trailers:', processedTrailers);
+      } else {
+        console.warn('⚠️ DataContext: Invalid trailers response:', response);
+        setTrailers([]);
+      }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load trailers';
-      console.error('❌ Error loading trailers:', errorMessage);
-      setErrorState('trailers', errorMessage);
-    } finally {
+      console.error('❌ DataContext: Error fetching trailers:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch trailers';
+      setErrorState('trailers', errorMessage);    } finally {
       setLoadingState('trailers', false);
     }
-  };
-
-  const refreshLoads = async () => {
+  }, [setErrorState, setLoadingState]);
+  const refreshLoads = useCallback(async () => {
     setLoadingState('loads', true);
     setErrorState('loads', null);
     
     try {
-      console.log('🔄 Fetching loads from API...');
-      const loadsResponse = await apiClient.getLoads();
-      // Handle paginated response
-      const loadsData = loadsResponse.results || [];
+      console.log('� DataContext: Fetching loads from API');
+      const response = await apiClient.getLoads();
+      console.log('✅ DataContext: Received loads data:', response);
       
-      // Convert date strings to Date objects to match TypeScript interface
-      const processedLoads = loadsData.map(load => ({
-        ...load,
-        pickupDate: new Date(load.pickupDate),
-        deliveryDate: new Date(load.deliveryDate),
-        createdAt: new Date(load.createdAt),
-        updatedAt: new Date(load.updatedAt),
-      }));
-      
-      setLoads(processedLoads);
-      console.log('✅ Successfully loaded', processedLoads.length, 'loads');
+      if (response.results && response.results.length >= 0) {
+        const processedLoads = response.results.map((load: any, index: number) => {
+          // Generate ID if not present
+          const loadId = load.id || `load-${index + 1}`;
+          
+          return {
+            ...load,
+            id: loadId,
+            status: load.status || 'planned',
+            // Ensure required fields have defaults
+            loadNumber: load.loadNumber || load.load_number || `L${String(index + 1).padStart(3, '0')}`,
+            shipper: load.shipper || 'Unknown Shipper',
+            destination: load.consignee || load.destination || 'Unknown Destination',
+            pickupLocation: load.pickupLocation || load.pickup_location || 'Unknown',
+            deliveryLocation: load.deliveryLocation || load.delivery_location || 'Unknown',
+            pickupDate: new Date(load.pickupDate || load.pickup_date || Date.now()),
+            deliveryDate: new Date(load.deliveryDate || load.delivery_date || Date.now()),
+            rate: parseFloat(load.rate || '0'),
+            miles: parseInt(load.miles || '0'),
+          };
+        });
+        
+        setLoads(processedLoads);
+        console.log('✅ DataContext: Processed and set loads:', processedLoads);
+      } else {
+        console.warn('⚠️ DataContext: No loads found, setting empty array');
+        setLoads([]);
+      }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load loads';
-      console.error('❌ Error loading loads:', errorMessage);
-      setErrorState('loads', errorMessage);
-    } finally {
+      console.error('❌ DataContext: Error fetching loads:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch loads';
+      setErrorState('loads', errorMessage);    } finally {
       setLoadingState('loads', false);
     }
-  };  const refreshData = async () => {
-    console.log('🔄 Refreshing all data from API...');
+  }, [setErrorState, setLoadingState]);
+
+  // Refresh all data
+  const refreshData = useCallback(async () => {
+    console.log('� DataContext: Refreshing all data');
     await Promise.all([
       refreshDrivers(),
       refreshTrucks(),
       refreshTrailers(),
-      refreshLoads()
+      refreshLoads(),
     ]);
-    console.log('✅ All data refreshed');
-  };
+    console.log('✅ DataContext: All data refreshed');
+  }, [refreshDrivers, refreshTrucks, refreshTrailers, refreshLoads]);
 
-  // CRUD operations for drivers
-  const createDriver = async (driverData: Omit<Driver, 'id'>): Promise<Driver> => {
-    try {
-      const newDriver = await apiClient.createDriver(driverData);
-      setDrivers(prev => [...prev, newDriver]);
-      return newDriver;
-    } catch (error) {
-      console.error('❌ Error creating driver:', error);
-      throw error;
-    }
+  // CRUD Operations (placeholder implementations)
+  const createDriver = async (driver: Omit<Driver, 'id'>): Promise<Driver> => {
+    // TODO: Implement real API call
+    const newDriver: Driver = {
+      ...driver,
+      id: `driver-${Date.now()}`,
+    };
+    setDrivers(prev => [...prev, newDriver]);
+    return newDriver;
   };
 
   const updateDriver = async (id: string, updates: Partial<Driver>): Promise<Driver> => {
-    try {
-      const updatedDriver = await apiClient.updateDriver(id, updates);
-      setDrivers(prev => prev.map(driver => 
-        driver.id === id ? updatedDriver : driver
-      ));
-      return updatedDriver;
-    } catch (error) {
-      console.error('❌ Error updating driver:', error);
-      throw error;
-    }
+    // TODO: Implement real API call
+    const updatedDriver = { ...drivers.find(d => d.id === id)!, ...updates };
+    setDrivers(prev => prev.map(d => d.id === id ? updatedDriver : d));
+    return updatedDriver;
   };
 
   const deleteDriver = async (id: string): Promise<void> => {
-    try {
-      await apiClient.deleteDriver(id);
-      setDrivers(prev => prev.filter(driver => driver.id !== id));
-    } catch (error) {
-      console.error('❌ Error deleting driver:', error);
-      throw error;
-    }
+    // TODO: Implement real API call
+    setDrivers(prev => prev.filter(d => d.id !== id));
   };
 
-  // CRUD operations for trucks
-  const createTruck = async (truckData: Omit<Truck, 'id'>): Promise<Truck> => {
-    try {
-      const newTruck = await apiClient.createTruck(truckData);
-      setTrucks(prev => [...prev, newTruck]);
-      return newTruck;
-    } catch (error) {
-      console.error('❌ Error creating truck:', error);
-      throw error;
-    }
+  const createTruck = async (truck: Omit<Truck, 'id'>): Promise<Truck> => {
+    // TODO: Implement real API call
+    const newTruck: Truck = {
+      ...truck,
+      id: `truck-${Date.now()}`,
+    };
+    setTrucks(prev => [...prev, newTruck]);
+    return newTruck;
   };
 
   const updateTruck = async (id: string, updates: Partial<Truck>): Promise<Truck> => {
-    try {
-      const updatedTruck = await apiClient.updateTruck(id, updates);
-      setTrucks(prev => prev.map(truck => 
-        truck.id === id ? updatedTruck : truck
-      ));
-      return updatedTruck;
-    } catch (error) {
-      console.error('❌ Error updating truck:', error);
-      throw error;
-    }
-  };
-  const deleteTruck = async (id: string): Promise<void> => {
-    try {
-      await apiClient.deleteTruck(id);
-      setTrucks(prev => prev.filter(truck => truck.id !== id));
-    } catch (error) {
-      console.error('❌ Error deleting truck:', error);
-      throw error;
-    }
+    // TODO: Implement real API call
+    const updatedTruck = { ...trucks.find(t => t.id === id)!, ...updates };
+    setTrucks(prev => prev.map(t => t.id === id ? updatedTruck : t));
+    return updatedTruck;
   };
 
-  // CRUD operations for trailers
+  const deleteTruck = async (id: string): Promise<void> => {
+    // TODO: Implement real API call
+    setTrucks(prev => prev.filter(t => t.id !== id));
+  };
+
   const createTrailer = async (trailer: Omit<Trailer, 'id'>): Promise<Trailer> => {
-    try {
-      const newTrailer = await apiClient.createTrailer(trailer);
-      setTrailers(prev => [...prev, newTrailer]);
-      return newTrailer;
-    } catch (error) {
-      console.error('❌ Error creating trailer:', error);
-      throw error;
-    }
+    // TODO: Implement real API call
+    const newTrailer: Trailer = {
+      ...trailer,
+      id: `trailer-${Date.now()}`,
+    };
+    setTrailers(prev => [...prev, newTrailer]);
+    return newTrailer;
   };
 
   const updateTrailer = async (id: string, updates: Partial<Trailer>): Promise<Trailer> => {
-    try {
-      const updatedTrailer = await apiClient.updateTrailer(id, updates);
-      setTrailers(prev => prev.map(trailer =>
-        trailer.id === id ? { ...trailer, ...updatedTrailer } : trailer
-      ));
-      return updatedTrailer;
-    } catch (error) {
-      console.error('❌ Error updating trailer:', error);
-      throw error;
-    }
+    // TODO: Implement real API call
+    const updatedTrailer = { ...trailers.find(t => t.id === id)!, ...updates };
+    setTrailers(prev => prev.map(t => t.id === id ? updatedTrailer : t));
+    return updatedTrailer;
   };
 
   const deleteTrailer = async (id: string): Promise<void> => {
-    try {
-      await apiClient.deleteTrailer(id);
-      setTrailers(prev => prev.filter(trailer => trailer.id !== id));
-    } catch (error) {
-      console.error('❌ Error deleting trailer:', error);
-      throw error;
-    }
+    // TODO: Implement real API call
+    setTrailers(prev => prev.filter(t => t.id !== id));
   };
 
-  // CRUD operations for loads
-  const createLoad = async (loadData: Omit<Load, 'id'>): Promise<Load> => {
-    try {
-      const newLoad = await apiClient.createLoad(loadData);
-      setLoads(prev => [...prev, newLoad]);
-      return newLoad;
-    } catch (error) {
-      console.error('❌ Error creating load:', error);
-      throw error;
-    }
+  const createLoad = async (load: Omit<Load, 'id'>): Promise<Load> => {
+    // TODO: Implement real API call
+    const newLoad: Load = {
+      ...load,
+      id: `load-${Date.now()}`,
+    };
+    setLoads(prev => [...prev, newLoad]);
+    return newLoad;
   };
 
   const updateLoad = async (id: string, updates: Partial<Load>): Promise<Load> => {
-    try {
-      const updatedLoad = await apiClient.updateLoad(id, updates);
-      setLoads(prev => prev.map(load => 
-        load.id === id ? updatedLoad : load
-      ));
-      return updatedLoad;
-    } catch (error) {
-      console.error('❌ Error updating load:', error);
-      throw error;
-    }
+    // TODO: Implement real API call
+    const updatedLoad = { ...loads.find(l => l.id === id)!, ...updates };
+    setLoads(prev => prev.map(l => l.id === id ? updatedLoad : l));
+    return updatedLoad;
   };
 
   const deleteLoad = async (id: string): Promise<void> => {
-    try {
-      await apiClient.deleteLoad(id);
-      setLoads(prev => prev.filter(load => load.id !== id));
-    } catch (error) {
-      console.error('❌ Error deleting load:', error);
-      throw error;
-    }
-  };
-  // Organizational filtering methods
-  const getFilteredDrivers = (orgFilter?: Partial<{companyId: string; divisionId: string; departmentId: string; terminalId: string}>): Driver[] => {
+    // TODO: Implement real API call
+    setLoads(prev => prev.filter(l => l.id !== id));
+  };  // Organizational filtering methods
+  const getFilteredDrivers = (orgFilter?: Partial<{companyId: string; divisionId: string; departmentId: string; terminalId: string}>) => {
     if (!orgFilter) return drivers;
     
     return drivers.filter(driver => {
-      const driverOrg = driver.organizationalContext || {};
-      return (!orgFilter?.companyId || driverOrg.companyId === orgFilter.companyId) &&
-             (!orgFilter?.divisionId || driverOrg.divisionId === orgFilter.divisionId) &&
-             (!orgFilter?.departmentId || driverOrg.departmentId === orgFilter.departmentId) &&
-             (!orgFilter?.terminalId || driverOrg.terminalId === orgFilter.terminalId);
+      if (!driver.organizationalContext) return true;
+      
+      if (orgFilter.terminalId) {
+        return driver.organizationalContext.terminalId === orgFilter.terminalId;
+      }
+      if (orgFilter.departmentId) {
+        return driver.organizationalContext.departmentId === orgFilter.departmentId;
+      }
+      if (orgFilter.divisionId) {
+        return driver.organizationalContext.divisionId === orgFilter.divisionId;
+      }
+      if (orgFilter.companyId) {
+        return driver.organizationalContext.companyId === orgFilter.companyId;
+      }
+      return true; // Show all if no filter
     });
   };
 
-  const getFilteredTrucks = (orgFilter?: Partial<{companyId: string; divisionId: string; departmentId: string; terminalId: string}>): Truck[] => {
+  const getFilteredTrucks = (orgFilter?: Partial<{companyId: string; divisionId: string; departmentId: string; terminalId: string}>) => {
     if (!orgFilter) return trucks;
     
     return trucks.filter(truck => {
-      const truckOrg = truck.organizationalContext || {};
-      return (!orgFilter?.companyId || truckOrg.companyId === orgFilter.companyId) &&
-             (!orgFilter?.divisionId || truckOrg.divisionId === orgFilter.divisionId) &&
-             (!orgFilter?.departmentId || truckOrg.departmentId === orgFilter.departmentId) &&
-             (!orgFilter?.terminalId || truckOrg.terminalId === orgFilter.terminalId);
+      if (!truck.organizationalContext) return true;
+      
+      if (orgFilter.terminalId) {
+        return truck.organizationalContext.terminalId === orgFilter.terminalId;
+      }
+      if (orgFilter.departmentId) {
+        return truck.organizationalContext.departmentId === orgFilter.departmentId;
+      }
+      if (orgFilter.divisionId) {
+        return truck.organizationalContext.divisionId === orgFilter.divisionId;
+      }
+      if (orgFilter.companyId) {
+        return truck.organizationalContext.companyId === orgFilter.companyId;
+      }
+      return true; // Show all if no filter
     });
   };
 
-  const getFilteredLoads = (orgFilter?: Partial<{companyId: string; divisionId: string; departmentId: string; terminalId: string}>): Load[] => {
+  const getFilteredTrailers = (orgFilter?: Partial<{companyId: string; divisionId: string; departmentId: string; terminalId: string}>) => {
+    if (!orgFilter) return trailers;
+    
+    return trailers.filter(trailer => {
+      if (!trailer.organizationalContext) return true;
+      
+      if (orgFilter.terminalId) {
+        return trailer.organizationalContext.terminalId === orgFilter.terminalId;
+      }
+      if (orgFilter.departmentId) {
+        return trailer.organizationalContext.departmentId === orgFilter.departmentId;
+      }
+      if (orgFilter.divisionId) {
+        return trailer.organizationalContext.divisionId === orgFilter.divisionId;
+      }
+      if (orgFilter.companyId) {
+        return trailer.organizationalContext.companyId === orgFilter.companyId;
+      }
+      return true; // Show all if no filter
+    });
+  };
+
+  const getFilteredLoads = (orgFilter?: Partial<{companyId: string; divisionId: string; departmentId: string; terminalId: string}>) => {
     if (!orgFilter) return loads;
     
     return loads.filter(load => {
-      const loadOrg = load.organizationalContext || {};
-      return (!orgFilter?.companyId || loadOrg.companyId === orgFilter.companyId) &&
-             (!orgFilter?.divisionId || loadOrg.divisionId === orgFilter.divisionId) &&
-             (!orgFilter?.departmentId || loadOrg.departmentId === orgFilter.departmentId) &&
-             (!orgFilter?.terminalId || loadOrg.terminalId === orgFilter.terminalId);
+      if (!load.organizationalContext) return true;
+      
+      if (orgFilter.terminalId) {
+        return load.organizationalContext.terminalId === orgFilter.terminalId;
+      }
+      if (orgFilter.departmentId) {
+        return load.organizationalContext.departmentId === orgFilter.departmentId;
+      }
+      if (orgFilter.divisionId) {
+        return load.organizationalContext.divisionId === orgFilter.divisionId;
+      }
+      if (orgFilter.companyId) {
+        return load.organizationalContext.companyId === orgFilter.companyId;
+      }
+      return true; // Show all if no filter
     });
   };
+
   // Utility function to clear all data (for testing/reset)
   const clearAllData = () => {
     setDrivers([]);
@@ -442,14 +477,17 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {  //
     setTrailers([]);
     setLoads([]);
     setErrors({ drivers: null, trucks: null, trailers: null, loads: null });
-  };  // Load initial data on mount
+  };
+
+  // Load initial data on mount
   useEffect(() => {
-    console.log('🚀 DataProvider: Initializing with Django backend API');
+    console.log('� DataProvider: Initializing with database API');
     refreshData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const contextValue: DataContextType = {    // Data state
+  const contextValue: DataContextType = {
+    // Data state
     drivers,
     trucks,
     trailers,
@@ -460,7 +498,8 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {  //
     
     // Error states
     errors,
-      // Refresh functions
+    
+    // Refresh functions
     refreshData,
     refreshDrivers,
     refreshTrucks,
@@ -480,14 +519,14 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {  //
     createLoad,
     updateLoad,
     deleteLoad,
-    
-    // Organizational filtering methods
+      // Organizational filtering methods
     getFilteredDrivers,
     getFilteredTrucks,
+    getFilteredTrailers,
     getFilteredLoads,
     
     // Utility methods
-    clearAllData,
+    clearAllData
   };
 
   return (

@@ -10,23 +10,48 @@ import { useOrganizational } from '@/context/OrganizationalContext';
 import { useData } from '@/context/DataContext';
 import { DriverStatus, ResourceType } from '@/types';
 import { PermissionChecker } from '@/utils/permissions';
+import PageHeader from '@/components/layout/PageHeader';
 
 export default function DriversPage() {
-  const { currentOrganization, currentUser } = useOrganizational();
+  const { currentOrganization, currentUser, getOrganizationalFilter } = useOrganizational();
   const { drivers } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
+  // Get organizational filter for current context
+  const organizationalFilter = getOrganizationalFilter();
+
+  // Filter data by selected terminal/organization first
+  const organizationFilteredDrivers = drivers.filter(driver => {
+    if (!driver.organizationalContext) return true;
+    
+    if (organizationalFilter.terminalId) {
+      return driver.organizationalContext.terminalId === organizationalFilter.terminalId;
+    }
+    if (organizationalFilter.departmentId) {
+      return driver.organizationalContext.departmentId === organizationalFilter.departmentId;
+    }
+    if (organizationalFilter.divisionId) {
+      return driver.organizationalContext.divisionId === organizationalFilter.divisionId;
+    }
+    if (organizationalFilter.companyId) {
+      return driver.organizationalContext.companyId === organizationalFilter.companyId;
+    }
+    return true; // Show all if no filter
+  });
+
   // Permission checking
   const permissionChecker = new PermissionChecker(currentUser);
   const canEdit = permissionChecker.canUpdate(ResourceType.DRIVERS, currentOrganization?.id);
-  const canDelete = permissionChecker.canDelete(ResourceType.DRIVERS, currentOrganization?.id);    const activeDrivers = drivers.filter(d => d.status === DriverStatus.ACTIVE).length;
-  const totalDrivers = drivers.length;
-  const inactiveDrivers = drivers.filter(d => d.status === DriverStatus.INACTIVE).length;
-  const onLeaveDrivers = drivers.filter(d => d.status === DriverStatus.ON_LEAVE).length;
-  const inTrainingDrivers = drivers.filter(d => d.status === DriverStatus.IN_TRAINING).length;
+  const canDelete = permissionChecker.canDelete(ResourceType.DRIVERS, currentOrganization?.id);
+  
+  const activeDrivers = organizationFilteredDrivers.filter(d => d.status === DriverStatus.ACTIVE).length;
+  const totalDrivers = organizationFilteredDrivers.length;
+  const inactiveDrivers = organizationFilteredDrivers.filter(d => d.status === DriverStatus.INACTIVE).length;
+  const onLeaveDrivers = organizationFilteredDrivers.filter(d => d.status === DriverStatus.ON_LEAVE).length;
+  const inTrainingDrivers = organizationFilteredDrivers.filter(d => d.status === DriverStatus.IN_TRAINING).length;
 
-  const filteredDrivers = drivers.filter(driver =>
+  const filteredDrivers = organizationFilteredDrivers.filter(driver =>
     searchTerm === '' ||
     driver.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     driver.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -35,85 +60,108 @@ export default function DriversPage() {
     driver.licenseNumber.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  return (    <div className="p-4 md:p-6 space-y-6">
-      {/* Header with Add Button and View Toggle */}
-      <div className="flex justify-between items-center">
-        <div>          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Users className="h-8 w-8 text-blue-600" />
-            Drivers
-          </h1>
-          <div className="flex items-center gap-2 mt-1">
-            <p className="text-gray-600">
-              Manage your driver roster and assignments
-            </p>            {currentOrganization && (
-              <div className="hidden md:flex items-center gap-1 text-sm text-gray-500">
-                <Building className="h-4 w-4" />
-                <span>{currentOrganization.name}</span>
-              </div>
-            )}
-          </div>        </div>        <div className="flex items-center gap-2">
-        </div>
+  const headerActions = (
+    <div className="flex items-center gap-2">
+      <div className="flex border border-gray-300 rounded-lg">
+        <button
+          onClick={() => setViewMode('grid')}
+          title="Grid view"
+          className={`p-2 ${viewMode === 'grid' ? 'bg-theme-primary text-white' : 'text-gray-600 hover:bg-gray-100'} rounded-l-lg`}
+        >
+          <Grid3X3 className="h-4 w-4" />
+        </button>
+        <button
+          onClick={() => setViewMode('list')}
+          title="List view"
+          className={`p-2 ${viewMode === 'list' ? 'bg-theme-primary text-white' : 'text-gray-600 hover:bg-gray-100'} rounded-r-lg`}
+        >
+          <List className="h-4 w-4" />
+        </button>
       </div>
+      {canEdit && (
+        <Link href="/drivers/add">
+          <Button variant="primary">
+            <UserPlus className="h-4 w-4 mr-2" />
+            Add Driver
+          </Button>
+        </Link>      )}
+    </div>
+  );
 
-      {/* Compact Stats and Search */}
-      <Card>
-        <CardContent className="p-4">          {/* Stats Row */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">{totalDrivers}</div>
-              <div className="text-sm text-gray-600">Total</div>
-            </div>            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{activeDrivers}</div>
-              <div className="text-sm text-gray-600">Active</div>
+  return (
+    <div className="space-y-6">
+      {/* Page Header with Terminal Selector */}
+      <PageHeader 
+        title="Drivers"
+        subtitle="Manage your driver roster and assignments"
+        icon={<Users className="h-8 w-8 text-blue-600" />}
+        actions={headerActions}
+      />
+
+      <div className="p-4 md:p-6 space-y-6">
+        {/* Compact Stats and Search */}
+        <Card>
+          <CardContent className="p-4">
+            {/* Stats Row */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900">{totalDrivers}</div>
+                <div className="text-sm text-gray-600">Total</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">{activeDrivers}</div>
+                <div className="text-sm text-gray-600">Active</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">{inTrainingDrivers}</div>
+                <div className="text-sm text-gray-600">In Training</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-600">{inactiveDrivers}</div>
+                <div className="text-sm text-gray-600">Inactive</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-yellow-600">{onLeaveDrivers}</div>
+                <div className="text-sm text-gray-600">On Leave</div>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{inTrainingDrivers}</div>
-              <div className="text-sm text-gray-600">In Training</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-600">{inactiveDrivers}</div>
-              <div className="text-sm text-gray-600">Inactive</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">{onLeaveDrivers}</div>
-              <div className="text-sm text-gray-600">On Leave</div>
-            </div>
-          </div>
+            
             {/* Search and Filter Row */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <input
-                type="text"
-                placeholder="Search drivers by name, ID, phone..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>            <Button variant="primary">
-              <Filter className="h-4 w-4 mr-2" />
-              Filters
-            </Button>
-            <div className="flex border border-gray-300 rounded-lg">
-              <button
-                onClick={() => setViewMode('grid')}
-                title="Grid view"
-                className={`p-2 ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
-              >
-                <Grid3X3 className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                title="List view"
-                className={`p-2 border-l border-gray-300 ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
-              >
-                <List className="h-4 w-4" />
-              </button>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <input
+                  type="text"
+                  placeholder="Search drivers by name, ID, phone..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <Button variant="primary">
+                <Filter className="h-4 w-4 mr-2" />
+                Filters
+              </Button>
+              <div className="flex border border-gray-300 rounded-lg">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  title="Grid view"
+                  className={`p-2 ${viewMode === 'grid' ? 'bg-theme-primary text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                >
+                  <Grid3X3 className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  title="List view"
+                  className={`p-2 border-l border-gray-300 ${viewMode === 'list' ? 'bg-theme-primary text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                >
+                  <List className="h-4 w-4" />
+                </button>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>      {/* Drivers List */}
-      {viewMode === 'grid' ? (
+          </CardContent>
+        </Card>        {/* Drivers List */}
+        {viewMode === 'grid' ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredDrivers.map((driver) => (
             <Card key={driver.id} className="hover:shadow-md transition-shadow">
@@ -162,10 +210,9 @@ export default function DriversPage() {
                           <Eye className="h-3 w-3 mr-1" />
                           View
                         </Button>
-                      </Link>
-                      {canEdit && (
+                      </Link>                      {canEdit && (
                         <Link href={`/drivers/${driver.id}`}>
-                          <Button size="sm" variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-50">
+                          <Button size="sm" variant="outline" className="border-theme-primary text-theme-primary hover:bg-theme-accent">
                             <Edit className="h-3 w-3 mr-1" />
                             Edit
                           </Button>
@@ -214,19 +261,18 @@ export default function DriversPage() {
                         <span className="flex items-center">
                           <TruckIcon className="h-4 w-4 mr-1" />
                           {driver.assignedTruckId}
-                        </span>
-                      ) : (
+                        </span>                      ) : (
                         <span className="text-gray-400">Unassigned</span>
-                      )}                    </td>
+                      )}
+                    </td>
                     <td className="py-3 px-4">
                       <Badge variant="status" status={driver.status} size="sm">
                         {driver.status.charAt(0).toUpperCase() + driver.status.slice(1).replace('-', ' ')}
                       </Badge>
                     </td>
                     <td className="py-3 px-4">
-                      <div className="flex gap-2">
-                        <Link href={`/drivers/${driver.id}`}>
-                          <Button size="sm" variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-50">
+                      <div className="flex gap-2">                        <Link href={`/drivers/${driver.id}`}>
+                          <Button size="sm" variant="outline" className="border-theme-primary text-theme-primary hover:bg-theme-accent">
                             <Eye className="h-3 w-3 mr-1" />
                             View
                           </Button>
@@ -240,11 +286,11 @@ export default function DriversPage() {
                           </Link>
                         )}
                       </div>
-                    </td>
-                  </tr>
+                    </td>                  </tr>
                 ))}
               </tbody>
-            </table>          </div>
+            </table>
+          </div>
         </Card>
       )}
 
@@ -255,10 +301,10 @@ export default function DriversPage() {
           <CardContent className="text-center py-12">
             <div className="text-green-700">
               <Users className="h-12 w-12 mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Driver Recruitment</h3>
-              <p className="text-sm mb-4">
+              <h3 className="text-lg font-medium mb-2">Driver Recruitment</h3>              <p className="text-sm mb-4">
                 Manage recruitment pipeline and attract new drivers to join your fleet.
-              </p>              <Button className="bg-green-600 hover:bg-green-700 text-white">
+              </p>
+              <Button className="bg-green-600 hover:bg-green-700 text-white">
                 <UserPlus className="h-4 w-4 mr-2" />
                 Recruitment Dashboard
               </Button>
@@ -267,20 +313,19 @@ export default function DriversPage() {
         </Card>
 
         {/* Driver Management */}
-        <Card className="bg-blue-50 border-blue-200">
+        <Card className="bg-theme-accent border-theme-accent">
           <CardContent className="text-center py-12">
             <div className="text-blue-700">
               <Users className="h-12 w-12 mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Driver Management</h3>
-              <p className="text-sm mb-4">
+              <h3 className="text-lg font-medium mb-2">Driver Management</h3>              <p className="text-sm mb-4">
                 Access HR services, training programs, and driver support tools.
-              </p>              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+              </p>              <Button className="bg-theme-primary hover:bg-theme-secondary text-white">
                 <Settings className="h-4 w-4 mr-2" />
                 Management Dashboard
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </CardContent>        </Card>
+      </div>
       </div>
     </div>
   );

@@ -71,22 +71,21 @@ export default function MobileActionDropdown({
           {/* Dropdown Content */}
           <div className={cn(
             // Mobile: Bottom sheet style
-            "fixed bottom-20 left-4 right-4 md:absolute md:bottom-auto md:left-auto md:right-0 md:top-full md:mt-2",
-            // Background and styling
-            "bg-white rounded-lg border border-gray-200 shadow-lg",
+            "fixed bottom-20 left-4 right-4 md:absolute md:bottom-auto md:left-auto md:right-0 md:top-full md:mt-2",            // Background and styling
+            "bg-white rounded-lg border border-launch-gray shadow-lg",
             // Z-index to stay above backdrop but below modals
             "z-50",
             // Width constraints
             "md:w-48 md:min-w-max"
           )}>
-            {/* Mobile header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 md:hidden">
-              <h3 className="text-lg font-medium text-gray-900">Actions</h3>
+            {/* Mobile header */}            <div className="flex items-center justify-between p-4 border-b border-launch-gray md:hidden">
+              <h3 className="text-lg font-medium text-launch-navy">Actions</h3>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1 hover:bg-gray-100 rounded"
+                className="p-1 hover:bg-launch-mint/20 rounded"
+                aria-label="Close actions menu"
               >
-                <X className="h-5 w-5 text-gray-500" />
+                <X className="h-5 w-5 text-launch-navy/70" />
               </button>
             </div>
             

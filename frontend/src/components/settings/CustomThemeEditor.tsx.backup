@@ -1,0 +1,846 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { CustomTheme, useTheme } from '@/context/ThemeContext';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Palette, Save, X, Eye, Lightbulb, Moon, Sun } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface ColorInputProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  description: string;
+}
+
+function ColorInput({ label, value, onChange, description }: ColorInputProps) {
+  return (
+    <div className="space-y-2">
+      <div className="space-y-1">
+        <label className="block text-sm font-medium text-[var(--theme-primary)]">{label}</label>
+        <p className="text-xs text-[var(--theme-neutral)]">{description}</p>
+      </div>
+      <div className="flex items-center gap-2">
+        <input
+          type="color"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-12 h-10 border border-[var(--theme-neutral)]/30 rounded cursor-pointer"
+          title={`Select ${label.toLowerCase()}`}
+        />
+        <input
+          type="text"
+          value={value.toUpperCase()}
+          onChange={(e) => onChange(e.target.value)}
+          className="flex-1 px-3 py-2 text-sm border border-[var(--theme-neutral)]/30 rounded focus:ring-2 focus:ring-[var(--theme-secondary)]/50 focus:border-transparent"
+          placeholder="#000000"
+          pattern="^#[0-9A-Fa-f]{6}$"
+        />
+      </div>
+    </div>
+  );
+}
+
+interface ThemePreviewProps {
+  theme: Partial<CustomTheme>;
+  name: string;
+}
+
+function ThemePreview({ theme, name }: ThemePreviewProps) {
+  if (!theme.colors) return null;
+
+  return (
+    <div className="space-y-4">
+      <h3 className="text-sm font-medium text-[var(--theme-primary)]">Live Preview</h3>
+      <div 
+        className="relative overflow-hidden border-2 border-[var(--theme-neutral)]/30 rounded-lg"
+        style={{ backgroundColor: theme.colors.background }}
+      >
+        {/* Header Bar */}
+        <div 
+          className="h-12 flex items-center px-4"
+          style={{ backgroundColor: theme.colors.primary }}
+        >
+          <div className="flex items-center space-x-3">
+            <div 
+              className="w-4 h-4 rounded-full"
+              style={{ backgroundColor: theme.colors.secondary }}
+            />
+            <div className="text-sm font-medium text-white">{name || 'Custom Theme'}</div>
+          </div>
+          <div className="ml-auto">
+            <Eye className="h-4 w-4 text-white/70" />
+          </div>
+        </div>
+        
+        {/* Content Area */}
+        <div className="p-4 space-y-3">
+          {/* Navigation */}
+          <div className="flex space-x-2">
+            <div 
+              className="px-3 py-1 text-xs text-white rounded"
+              style={{ backgroundColor: theme.colors.secondary }}
+            >
+              Dashboard
+            </div>
+            <div 
+              className="px-3 py-1 text-xs rounded"
+              style={{ 
+                backgroundColor: theme.colors.accent,
+                color: theme.colors.primary
+              }}
+            >
+              Drivers
+            </div>
+          </div>
+          
+          {/* Card */}
+          <div 
+            className="border rounded p-3 space-y-2"
+            style={{ 
+              backgroundColor: theme.colors.background,
+              borderColor: theme.colors.neutral + '40'
+            }}
+          >
+            <div 
+              className="h-3 w-20 rounded"
+              style={{ backgroundColor: theme.colors.primary }}
+            />
+            <div 
+              className="h-2 w-16 rounded"
+              style={{ backgroundColor: theme.colors.neutral }}
+            />
+            <div 
+              className="h-2 w-12 rounded"
+              style={{ backgroundColor: theme.colors.neutral + '60' }}
+            />
+          </div>
+          
+          {/* Button */}
+          <div 
+            className="inline-block px-4 py-2 text-xs text-white rounded"
+            style={{ backgroundColor: theme.colors.secondary }}
+          >
+            Primary Action
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function CustomThemeEditor() {
+  const { currentTheme, addCustomTheme, updateCustomTheme } = useTheme();
+  const [name, setName] = useState('');
+  const [colors, setColors] = useState({
+    primary: '#002333',
+    secondary: '#159A9C', 
+    neutral: '#64748b',
+    accent: '#0891b2',
+    background: '#ffffff',
+  });
+  const [isDark, setIsDark] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Initialize form when editing current theme
+  useEffect(() => {
+    if (currentTheme?.isCustom) {
+      setName(currentTheme.name);
+      setColors(currentTheme.colors);
+      setIsDark(currentTheme.isDark || false);
+      setIsEditing(true);
+      setEditingId(currentTheme.id);
+    }
+  }, [currentTheme]);
+
+  const updateColor = (colorKey: keyof typeof colors, value: string) => {
+    if (/^#[0-9A-F]{6}$/i.test(value) || value === '') {
+      setColors(prev => ({
+        ...prev,
+        [colorKey]: value,
+      }));
+    }
+  };
+
+  const handleSave = () => {
+    if (!name.trim()) {
+      alert('Please enter a theme name');
+      return;
+    }
+
+    const themeData = {
+      name,
+      colors,
+      isDark,
+      category: 'custom' as const,
+    };
+
+    if (isEditing && editingId) {
+      updateCustomTheme(editingId, themeData);
+    } else {
+      addCustomTheme(themeData);
+    }
+
+    // Reset form
+    setName('');
+    setColors({
+      primary: '#002333',
+      secondary: '#159A9C',
+      neutral: '#64748b', 
+      accent: '#0891b2',
+      background: '#ffffff',
+    });
+    setIsDark(false);
+    setIsEditing(false);
+    setEditingId(null);
+  };
+
+  const handleCancel = () => {
+    setName('');
+    setColors({
+      primary: '#002333',
+      secondary: '#159A9C',
+      neutral: '#64748b',
+      accent: '#0891b2', 
+      background: '#ffffff',
+    });
+    setIsDark(false);
+    setIsEditing(false);
+    setEditingId(null);
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Theme Editor */}
+      <Card>
+        <Card.Header>
+          <Card.Title className="flex items-center gap-2">
+            <Palette className="w-5 h-5" />
+            {isEditing ? 'Edit Theme' : 'Create Custom Theme'}
+          </Card.Title>
+          <Card.Description>
+            Design a custom theme that reflects your brand and preferences
+          </Card.Description>
+        </Card.Header>
+        <Card.Content className="space-y-6">
+          {/* Theme Name */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-[var(--theme-primary)]">
+              Theme Name
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-3 py-2 border border-[var(--theme-neutral)]/30 rounded focus:ring-2 focus:ring-[var(--theme-secondary)]/50 focus:border-transparent"
+              placeholder="My Custom Theme"
+            />
+          </div>
+
+          {/* Theme Mode */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-[var(--theme-primary)]">
+              Theme Mode
+            </label>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsDark(false)}
+                className={cn(
+                  'flex items-center gap-2 px-3 py-2 rounded border transition-colors',
+                  !isDark 
+                    ? 'bg-[var(--theme-secondary)]/10 border-[var(--theme-secondary)] text-[var(--theme-secondary)]'
+                    : 'border-[var(--theme-neutral)]/30 text-[var(--theme-neutral)] hover:border-[var(--theme-secondary)]/50'
+                )}
+              >
+                <Sun className="w-4 h-4" />
+                Light
+              </button>
+              <button
+                onClick={() => setIsDark(true)}
+                className={cn(
+                  'flex items-center gap-2 px-3 py-2 rounded border transition-colors',
+                  isDark 
+                    ? 'bg-[var(--theme-secondary)]/10 border-[var(--theme-secondary)] text-[var(--theme-secondary)]'
+                    : 'border-[var(--theme-neutral)]/30 text-[var(--theme-neutral)] hover:border-[var(--theme-secondary)]/50'
+                )}
+              >
+                <Moon className="w-4 h-4" />
+                Dark
+              </button>
+            </div>
+          </div>
+
+          {/* Color Inputs */}
+          <div className="space-y-4">
+            <ColorInput
+              label="Primary Color"
+              value={colors.primary}
+              onChange={(value) => updateColor('primary', value)}
+              description="Navigation background, main headers, primary buttons, key branding elements"
+            />
+            <ColorInput
+              label="Secondary Color"
+              value={colors.secondary}
+              onChange={(value) => updateColor('secondary', value)}
+              description="Active states, links, accent elements, secondary buttons, highlights"
+            />
+            <ColorInput
+              label="Neutral Color"
+              value={colors.neutral}
+              onChange={(value) => updateColor('neutral', value)}
+              description="Body text, borders, dividers, form inputs, subtle UI elements"
+            />
+            <ColorInput
+              label="Accent Color"
+              value={colors.accent}
+              onChange={(value) => updateColor('accent', value)}
+              description="Hover states, badges, call-to-action elements, interactive highlights"
+            />
+            <ColorInput
+              label="Background Color"
+              value={colors.background}
+              onChange={(value) => updateColor('background', value)}
+              description="Page background, card backgrounds, content areas, main surface"
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-3 pt-4 border-t border-[var(--theme-neutral)]/20">
+            <Button onClick={handleSave} className="flex items-center gap-2">
+              <Save className="w-4 h-4" />
+              {isEditing ? 'Update Theme' : 'Create Theme'}
+            </Button>
+            <Button variant="outline" onClick={handleCancel} className="flex items-center gap-2">
+              <X className="w-4 h-4" />
+              Cancel
+            </Button>
+          </div>
+        </Card.Content>
+      </Card>
+
+      {/* Preview */}
+      <div className="space-y-6">
+        <ThemePreview theme={{ colors }} name={name} />
+
+        {/* Tips */}
+        <Card>
+          <Card.Header>
+            <Card.Title className="flex items-center gap-2">
+              <Lightbulb className="w-5 h-5 text-yellow-500" />
+              Design Tips
+            </Card.Title>
+          </Card.Header>
+          <Card.Content className="space-y-3 text-sm text-[var(--theme-neutral)]">
+            <div className="flex gap-2">
+              <span className="text-[var(--theme-secondary)]">•</span>
+              <span>Use high contrast between text and background colors for better accessibility</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="text-[var(--theme-secondary)]">•</span>
+              <span>Your primary color should reflect your brand identity</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="text-[var(--theme-secondary)]">•</span>
+              <span>Keep accent colors subtle to avoid visual overwhelm</span>
+            </div>
+            <div className="flex gap-2">
+              <span className="text-[var(--theme-secondary)]">•</span>
+              <span>Test your theme in both light and dark modes if applicable</span>
+            </div>          </Card.Content>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+interface ThemeCardProps {
+  theme: Theme | CustomTheme;
+  isActive: boolean;
+  onSelect: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onDuplicate?: () => void;
+  onExport?: () => void;
+  showActions?: boolean;
+}
+
+function ThemeCard({ 
+  theme, 
+  isActive, 
+  onSelect, 
+  onEdit, 
+  onDelete, 
+  onDuplicate, 
+  onExport, 
+  showActions = true 
+}: ThemeCardProps) {
+  return (
+    <div
+      onClick={onSelect}
+      className={cn(
+        "relative cursor-pointer p-4 border-2 transition-all duration-200 hover:shadow-md",
+        isActive 
+          ? "border-[var(--theme-secondary)] bg-[var(--theme-accent)]/5" 
+          : "border-[var(--theme-neutral)]/20 hover:border-[var(--theme-secondary)]/50"
+      )}
+    >
+      {/* Theme Preview */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="text-sm font-semibold text-[var(--theme-primary)]">{theme.name}</div>
+            {isActive && <Check className="h-4 w-4 text-[var(--theme-secondary)]" />}
+          </div>
+          <div className="flex gap-1">
+            {theme.isDark && (
+              <span className="text-xs bg-gray-800 text-white px-2 py-1">Dark</span>
+            )}
+            {!theme.isDark && (
+              <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1">Light</span>
+            )}
+            {theme.category && (
+              <span className="text-xs bg-[var(--theme-accent)]/20 text-[var(--theme-primary)] px-2 py-1 capitalize">
+                {theme.category}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Color Information */}
+        <div className="space-y-2 text-xs">
+          <ColorSwatch color={theme.colors.primary} label="Primary" />
+          <ColorSwatch color={theme.colors.secondary} label="Secondary" />
+          <ColorSwatch color={theme.colors.neutral} label="Neutral" />
+          <ColorSwatch color={theme.colors.accent} label="Accent" />
+          <ColorSwatch color={theme.colors.background} label="Background" />
+        </div>
+
+        {/* Theme Usage Description */}
+        <div className="text-xs text-gray-600 bg-gray-50 p-2">
+          <strong>Business Ready:</strong> Optimized for professional environments with excellent contrast and accessibility.
+        </div>
+      </div>
+
+      {/* Actions */}
+      {showActions && (
+        <div className="absolute top-2 right-2 flex gap-1">
+          {onDuplicate && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDuplicate();
+              }}
+              className="p-1 bg-white/80 hover:bg-white text-[var(--theme-primary)]/70 hover:text-[var(--theme-primary)] transition-colors"
+              title="Duplicate theme"
+            >
+              <Copy className="h-3 w-3" />
+            </button>
+          )}
+          {onExport && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onExport();
+              }}
+              className="p-1 bg-white/80 hover:bg-white text-[var(--theme-primary)]/70 hover:text-[var(--theme-primary)] transition-colors"
+              title="Export theme"
+            >
+              <Download className="h-3 w-3" />
+            </button>
+          )}
+          {theme.isCustom && onEdit && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
+              className="p-1 bg-white/80 hover:bg-white text-[var(--theme-primary)]/70 hover:text-[var(--theme-primary)] transition-colors"
+              title="Edit theme"
+            >
+              <Edit3 className="h-3 w-3" />
+            </button>
+          )}
+          {theme.isCustom && onDelete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              className="p-1 bg-white/80 hover:bg-white text-red-500/70 hover:text-red-600 transition-colors"
+              title="Delete theme"
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function CustomThemeEditor() {
+  const { currentTheme, customThemes, setCurrentTheme, addCustomTheme, updateCustomTheme, deleteCustomTheme } = useTheme();
+  const [isCreating, setIsCreating] = useState(false);
+  const [editingTheme, setEditingTheme] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    colors: {
+      primary: '#002333',
+      secondary: '#159A9C',
+      neutral: '#B4BEC9',
+      accent: '#DEEFE7',
+      background: '#FFFFFF',
+    },
+  });
+
+  const allThemes = [...defaultThemes, ...customThemes];
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      colors: {
+        primary: '#002333',
+        secondary: '#159A9C',
+        neutral: '#B4BEC9',
+        accent: '#DEEFE7',
+        background: '#FFFFFF',
+      },
+    });
+  };
+
+  const handleStartCreate = () => {
+    resetForm();
+    setIsCreating(true);
+    setEditingTheme(null);
+  };
+
+  const handleStartEdit = (theme: CustomTheme) => {
+    setFormData({
+      name: theme.name,
+      colors: { ...theme.colors },
+    });
+    setEditingTheme(theme.id);
+    setIsCreating(false);
+  };
+
+  const handleSave = () => {
+    if (!formData.name.trim()) return;    if (isCreating) {
+      const newTheme = addCustomTheme(formData);
+      setCurrentTheme(newTheme);
+    } else if (editingTheme) {
+      updateCustomTheme(editingTheme, formData);
+    }
+
+    setIsCreating(false);
+    setEditingTheme(null);
+    resetForm();
+  };
+
+  const handleCancel = () => {
+    setIsCreating(false);
+    setEditingTheme(null);
+    resetForm();
+  };
+  const handleDelete = (themeId: string) => {
+    if (window.confirm('Are you sure you want to delete this custom theme?')) {
+      deleteCustomTheme(themeId);
+    }
+  };
+
+  const handleDuplicate = (theme: CustomTheme) => {
+    setFormData({
+      name: `${theme.name} (Copy)`,
+      colors: { ...theme.colors },
+    });
+    setIsCreating(true);
+    setEditingTheme(null);
+  };
+
+  const handleExportTheme = (theme: CustomTheme) => {
+    const themeData = {
+      name: theme.name,
+      colors: theme.colors,
+      createdAt: new Date().toISOString(),
+      version: '1.0'
+    };
+    
+    const blob = new Blob([JSON.stringify(themeData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${theme.name.toLowerCase().replace(/\s+/g, '-')}-theme.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportTheme = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const themeData = JSON.parse(e.target?.result as string);
+        if (themeData.name && themeData.colors) {
+          setFormData({
+            name: `${themeData.name} (Imported)`,
+            colors: themeData.colors,
+          });
+          setIsCreating(true);
+          setEditingTheme(null);
+        } else {
+          alert('Invalid theme file format');
+        }
+      } catch (error) {
+        alert('Error reading theme file');
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = ''; // Reset input
+  };
+
+  const updateColor = (colorKey: keyof typeof formData.colors, value: string) => {
+    // Validate hex color
+    if (/^#[0-9A-F]{6}$/i.test(value) || value === '') {
+      setFormData(prev => ({
+        ...prev,
+        colors: {
+          ...prev.colors,
+          [colorKey]: value,
+        },
+      }));
+    }
+  };
+  return (
+    <Card>      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-[var(--theme-primary)] flex items-center gap-2">
+              <Palette className="h-5 w-5 text-[var(--theme-secondary)]" />
+              Theme Manager
+            </h3>
+            <p className="text-sm text-gray-600 mt-1">
+              Create and customize business-oriented themes for your application
+            </p>
+          </div>
+          {!isCreating && !editingTheme && (
+            <div className="flex gap-2">
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleImportTheme}
+                className="hidden"
+                id="theme-import"
+                title="Import theme file"
+                aria-label="Import theme file"
+              />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => document.getElementById('theme-import')?.click()}
+              >
+                <Upload className="h-4 w-4 mr-1" />
+                Import
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleStartCreate}>
+                <Plus className="h-4 w-4 mr-1" />
+                Create Theme
+              </Button>
+            </div>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-6">        {/* Theme Editor Form */}
+        {(isCreating || editingTheme) && (
+          <div className="border border-[var(--theme-neutral)]/30 p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="font-medium text-[var(--theme-primary)]">
+                {isCreating ? 'Create New Theme' : 'Edit Theme'}
+              </h4>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={handleCancel}>
+                  <X className="h-4 w-4 mr-1" />
+                  Cancel
+                </Button>
+                <Button 
+                  variant="primary" 
+                  size="sm" 
+                  onClick={handleSave}
+                  disabled={!formData.name.trim()}
+                >
+                  <Check className="h-4 w-4 mr-1" />
+                  Save
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="theme-name" className="block text-sm font-medium text-[var(--theme-primary)] mb-1">
+                Theme Name
+              </label>
+              <input
+                id="theme-name"
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                className="w-full px-3 py-2 border border-[var(--theme-neutral)]/30 focus:ring-2 focus:ring-[var(--theme-secondary)]/50 focus:border-transparent"
+                placeholder="Enter theme name..."
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ColorInput
+                label="Primary Color"
+                value={formData.colors.primary}
+                onChange={(value) => updateColor('primary', value)}
+              />
+              <ColorInput
+                label="Secondary Color"
+                value={formData.colors.secondary}
+                onChange={(value) => updateColor('secondary', value)}
+              />
+              <ColorInput
+                label="Neutral Color"
+                value={formData.colors.neutral}
+                onChange={(value) => updateColor('neutral', value)}
+              />
+              <ColorInput
+                label="Accent Color"
+                value={formData.colors.accent}
+                onChange={(value) => updateColor('accent', value)}
+              />
+              <ColorInput
+                label="Background Color"
+                value={formData.colors.background}
+                onChange={(value) => updateColor('background', value)}
+                className="md:col-span-2"
+              />
+            </div>
+
+            {/* Live Preview */}
+            <div>
+              <label className="block text-sm font-medium text-[var(--theme-primary)] mb-2">Live Preview</label>
+              <ThemePreview
+                theme={{
+                  id: 'preview',
+                  name: formData.name || 'Preview',
+                  colors: formData.colors,
+                  isCustom: true,
+                  category: 'custom'
+                }}
+                showActions={false}
+              />
+            </div>
+          </div>
+        )}{/* Theme Selection Grid */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-medium text-[var(--theme-primary)]">Available Themes</h4>
+            <div className="text-sm text-gray-600">
+              {allThemes.length} themes ({customThemes.length} custom)
+            </div>
+          </div>
+          
+          {/* Theme Categories */}
+          <div className="space-y-6">
+            {/* Business Themes */}
+            <div>
+              <h5 className="text-sm font-medium text-gray-700 mb-3">Business Professional</h5>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {allThemes.filter(theme => theme.category === 'business' || theme.id === 'launch').map((theme) => (
+                  <ThemePreview
+                    key={theme.id}
+                    theme={theme}
+                    isActive={currentTheme.id === theme.id}
+                    onSelect={() => setCurrentTheme(theme)}
+                    onEdit={() => handleStartEdit(theme)}
+                    onDelete={() => handleDelete(theme.id)}
+                    onDuplicate={() => handleDuplicate(theme)}
+                    onExport={() => handleExportTheme(theme)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Modern/Creative Themes */}
+            <div>
+              <h5 className="text-sm font-medium text-gray-700 mb-3">Modern & Creative</h5>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {allThemes.filter(theme => theme.category === 'modern' || theme.category === 'creative').map((theme) => (
+                  <ThemePreview
+                    key={theme.id}
+                    theme={theme}
+                    isActive={currentTheme.id === theme.id}
+                    onSelect={() => setCurrentTheme(theme)}
+                    onEdit={() => handleStartEdit(theme)}
+                    onDelete={() => handleDelete(theme.id)}
+                    onDuplicate={() => handleDuplicate(theme)}
+                    onExport={() => handleExportTheme(theme)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Custom Themes */}
+            {customThemes.length > 0 && (
+              <div>
+                <h5 className="text-sm font-medium text-gray-700 mb-3">Custom Themes</h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {customThemes.map((theme) => (
+                    <ThemePreview
+                      key={theme.id}
+                      theme={theme}
+                      isActive={currentTheme.id === theme.id}
+                      onSelect={() => setCurrentTheme(theme)}
+                      onEdit={() => handleStartEdit(theme)}
+                      onDelete={() => handleDelete(theme.id)}
+                      onDuplicate={() => handleDuplicate(theme)}
+                      onExport={() => handleExportTheme(theme)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>        {/* Color Usage Guide */}
+        <div className="bg-[var(--theme-accent)]/10 border border-[var(--theme-accent)]/30 p-4">
+          <h4 className="font-medium text-[var(--theme-primary)] mb-2 flex items-center gap-2">
+            <Eye className="h-4 w-4" />
+            Color Usage Guide & Best Practices
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-[var(--theme-primary)]/80">
+            <div>
+              <div className="font-medium">Primary Color:</div>
+              <div>Navigation, headers, main brand elements. Should be your strongest brand color.</div>
+            </div>
+            <div>
+              <div className="font-medium">Secondary Color:</div>
+              <div>Links, active states, interactive elements. Complements the primary color.</div>
+            </div>
+            <div>
+              <div className="font-medium">Neutral Color:</div>
+              <div>Text, borders, form inputs. Should provide good readability contrast.</div>
+            </div>
+            <div>
+              <div className="font-medium">Accent Color:</div>
+              <div>Highlights, badges, hover states. Use sparingly for emphasis.</div>
+            </div>
+            <div className="md:col-span-2">
+              <div className="font-medium">Background Color:</div>
+              <div>Main surface color. White for light themes, dark colors for dark themes.</div>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-[var(--theme-accent)]/20">
+            <div className="text-xs text-gray-600">
+              <strong>Tip:</strong> For business themes, ensure sufficient contrast between text and background colors for accessibility compliance (WCAG 2.1 AA).
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

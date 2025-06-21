@@ -7,11 +7,11 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const buttonVariants = {
-  primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
-  secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
-  outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-blue-500',
-  ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500',
-  danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+  primary: 'bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent)]/90 focus:ring-[var(--color-accent)]/50 active:bg-[var(--color-accent)]',
+  secondary: 'bg-[var(--color-surface)] text-[var(--color-text)] border border-[var(--color-neutral)] hover:bg-[var(--color-neutral)]/20 focus:ring-[var(--color-accent)]/50 active:bg-[var(--color-accent)] active:text-white',
+  outline: 'border border-[var(--color-neutral)] bg-transparent text-[var(--color-text)] hover:bg-[var(--color-surface)] focus:ring-[var(--color-accent)]/50 active:bg-[var(--color-accent)] active:text-white',
+  ghost: 'bg-transparent text-[var(--color-text)] hover:bg-[var(--color-surface)] focus:ring-[var(--color-accent)]/50 active:bg-[var(--color-accent)] active:text-white',
+  danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500/50 active:bg-red-800',
 };
 
 const buttonSizes = {
@@ -20,7 +20,7 @@ const buttonSizes = {
   lg: 'px-6 py-3 text-base',
 };
 
-export default function Button({ 
+export function Button({ 
   variant = 'primary', 
   size = 'md', 
   className,
@@ -31,7 +31,7 @@ export default function Button({
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center rounded-lg font-medium transition-colors',
+        'inline-flex items-center justify-center font-medium transition-colors',
         'focus:outline-none focus:ring-2 focus:ring-offset-2',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         'min-h-[44px] md:min-h-[36px]', // Touch-friendly on mobile
@@ -46,3 +46,6 @@ export default function Button({
     </button>
   );
 }
+
+// Also export as default for backwards compatibility
+export default Button;

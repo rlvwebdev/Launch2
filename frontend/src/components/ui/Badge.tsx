@@ -8,7 +8,7 @@ interface BadgeProps {
   className?: string;
 }
 
-export default function Badge({ 
+export function Badge({ 
   children, 
   variant = 'default', 
   status,
@@ -21,10 +21,9 @@ export default function Badge({
     sm: 'px-2 py-0.5 text-xs',
     md: 'px-2.5 py-0.5 text-xs',
   };
-  
   const variantClasses = {
-    default: 'bg-gray-100 text-gray-800',
-    status: status ? getStatusColor(status) : 'bg-gray-100 text-gray-800',
+    default: 'bg-[var(--theme-accent)]/20 text-[var(--theme-primary)]',
+    status: status ? getStatusColor(status) : 'bg-[var(--theme-accent)]/20 text-[var(--theme-primary)]',
   };
 
   return (
@@ -40,3 +39,6 @@ export default function Badge({
     </span>
   );
 }
+
+// Also export as default for backwards compatibility
+export default Badge;

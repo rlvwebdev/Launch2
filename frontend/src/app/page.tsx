@@ -18,12 +18,88 @@ import {
   Container,
   GraduationCap
 } from 'lucide-react';
+import PageHeader from '@/components/layout/PageHeader';
 import { DriverStatus, TruckStatus, TrailerStatus, LoadStatus, OrganizationType } from '@/types';
 
 export default function HomePage() {
   const { drivers, trucks, trailers, loads } = useData();
-  const { currentOrganization, getOrganizationsByType } = useOrganizational();
+  const { currentOrganization, getOrganizationsByType, getOrganizationalFilter } = useOrganizational();
   const [selectedDateRange, setSelectedDateRange] = useState('today');
+
+  // Get organizational filter for current context
+  const organizationalFilter = getOrganizationalFilter();
+  // Filter data by selected terminal/organization
+  const filteredDrivers = drivers.filter(driver => {
+    if (!driver.organizationalContext) return true;
+    
+    if (organizationalFilter.terminalId) {
+      return driver.organizationalContext.terminalId === organizationalFilter.terminalId;
+    }
+    if (organizationalFilter.departmentId) {
+      return driver.organizationalContext.departmentId === organizationalFilter.departmentId;
+    }
+    if (organizationalFilter.divisionId) {
+      return driver.organizationalContext.divisionId === organizationalFilter.divisionId;
+    }
+    if (organizationalFilter.companyId) {
+      return driver.organizationalContext.companyId === organizationalFilter.companyId;
+    }
+    return true; // Show all if no filter
+  });
+
+  const filteredTrucks = trucks.filter(truck => {
+    if (!truck.organizationalContext) return true;
+    
+    if (organizationalFilter.terminalId) {
+      return truck.organizationalContext.terminalId === organizationalFilter.terminalId;
+    }
+    if (organizationalFilter.departmentId) {
+      return truck.organizationalContext.departmentId === organizationalFilter.departmentId;
+    }
+    if (organizationalFilter.divisionId) {
+      return truck.organizationalContext.divisionId === organizationalFilter.divisionId;
+    }
+    if (organizationalFilter.companyId) {
+      return truck.organizationalContext.companyId === organizationalFilter.companyId;
+    }
+    return true; // Show all if no filter
+  });
+
+  const filteredTrailers = trailers.filter(trailer => {
+    if (!trailer.organizationalContext) return true;
+    
+    if (organizationalFilter.terminalId) {
+      return trailer.organizationalContext.terminalId === organizationalFilter.terminalId;
+    }
+    if (organizationalFilter.departmentId) {
+      return trailer.organizationalContext.departmentId === organizationalFilter.departmentId;
+    }
+    if (organizationalFilter.divisionId) {
+      return trailer.organizationalContext.divisionId === organizationalFilter.divisionId;
+    }
+    if (organizationalFilter.companyId) {
+      return trailer.organizationalContext.companyId === organizationalFilter.companyId;
+    }
+    return true; // Show all if no filter
+  });
+
+  const filteredLoads = loads.filter(load => {
+    if (!load.organizationalContext) return true;
+    
+    if (organizationalFilter.terminalId) {
+      return load.organizationalContext.terminalId === organizationalFilter.terminalId;
+    }
+    if (organizationalFilter.departmentId) {
+      return load.organizationalContext.departmentId === organizationalFilter.departmentId;
+    }
+    if (organizationalFilter.divisionId) {
+      return load.organizationalContext.divisionId === organizationalFilter.divisionId;
+    }
+    if (organizationalFilter.companyId) {
+      return load.organizationalContext.companyId === organizationalFilter.companyId;
+    }
+    return true; // Show all if no filter
+  });
 
   // Get the current terminal name
   const getTerminalName = () => {
@@ -39,23 +115,25 @@ export default function HomePage() {
     
     // Fallback to company name or default
     return currentOrganization?.name || 'Launch Terminal';
-  };  // Calculate stats from live data (using correct backend enum values)
-  const activeDrivers = drivers.filter(d => d.status === DriverStatus.ACTIVE).length;
-  const inactiveDrivers = drivers.filter(d => d.status === DriverStatus.INACTIVE).length;
-  const onLeaveDrivers = drivers.filter(d => d.status === DriverStatus.ON_LEAVE).length;
-  const inTrainingDrivers = drivers.filter(d => d.status === DriverStatus.IN_TRAINING).length;
-  const terminatedDrivers = drivers.filter(d => d.status === DriverStatus.TERMINATED).length;
+  };  // Calculate stats from filtered data (using correct backend enum values)
+  const activeDrivers = filteredDrivers.filter(d => d.status === DriverStatus.ACTIVE).length;
+  const inactiveDrivers = filteredDrivers.filter(d => d.status === DriverStatus.INACTIVE).length;
+  const onLeaveDrivers = filteredDrivers.filter(d => d.status === DriverStatus.ON_LEAVE).length;
+  const inTrainingDrivers = filteredDrivers.filter(d => d.status === DriverStatus.IN_TRAINING).length;
+  const terminatedDrivers = filteredDrivers.filter(d => d.status === DriverStatus.TERMINATED).length;
   
-  const availableTrucks = trucks.filter(t => t.status === TruckStatus.AVAILABLE).length;
-  const assignedTrucks = trucks.filter(t => t.status === TruckStatus.ASSIGNED).length;
-  const maintenanceTrucks = trucks.filter(t => t.status === TruckStatus.MAINTENANCE).length;
-  const oosTrucks = trucks.filter(t => t.status === TruckStatus.OUT_OF_SERVICE).length;
-    const activeTrailers = trailers.length; // Total trailers count
-  const activeLoads = loads.filter(l => 
+  const availableTrucks = filteredTrucks.filter(t => t.status === TruckStatus.AVAILABLE).length;
+  const assignedTrucks = filteredTrucks.filter(t => t.status === TruckStatus.ASSIGNED).length;
+  const maintenanceTrucks = filteredTrucks.filter(t => t.status === TruckStatus.MAINTENANCE).length;
+  const oosTrucks = filteredTrucks.filter(t => t.status === TruckStatus.OUT_OF_SERVICE).length;
+  
+  const activeTrailers = filteredTrailers.length; // Total trailers count
+  const activeLoads = filteredLoads.filter(l => 
     l.status === LoadStatus.ASSIGNED || 
     l.status === LoadStatus.PICKED_UP || 
     l.status === LoadStatus.IN_TRANSIT
-  ).length;  const inTransitLoads = loads.filter(l => l.status === LoadStatus.IN_TRANSIT).length;
+  ).length;
+  const inTransitLoads = filteredLoads.filter(l => l.status === LoadStatus.IN_TRANSIT).length;
 
   // Safe date conversion utility
   const safeDate = (dateInput: any): Date => {
@@ -73,10 +151,9 @@ export default function HomePage() {
     console.warn('Unexpected date type in dashboard:', typeof dateInput, dateInput);
     return new Date();
   };
-
-  // Training metrics
-  const trainingDrivers = drivers.filter(d => d.status === DriverStatus.IN_TRAINING);
-  const completedTrainingThisMonth = drivers.filter(d => {
+  // Training metrics (using filtered data)
+  const trainingDrivers = filteredDrivers.filter(d => d.status === DriverStatus.IN_TRAINING);
+  const completedTrainingThisMonth = filteredDrivers.filter(d => {
     if (d.trainingCompletionDate) {
       const completionDate = safeDate(d.trainingCompletionDate);
       const currentDate = new Date();
@@ -84,7 +161,6 @@ export default function HomePage() {
              completionDate.getFullYear() === currentDate.getFullYear();
     }
     return false;  }).length;
-
   // Generate chart data based on selected date range
   const generateChartData = () => {
     const data = [];
@@ -126,7 +202,8 @@ export default function HomePage() {
     for (let i = 0; i < daysToGenerate; i++) {
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + i);
-        // Count loads for this specific day
+      
+      // Count loads for this specific day
       const loadsForDay = loads.filter(load => {
         try {
           const deliveryDate = safeDate(load.deliveryDate);
@@ -136,7 +213,20 @@ export default function HomePage() {
           return false;
         }
       }).length;
-        // Generate realistic data with some variation based on current metrics
+
+      // Count open loads (pending status) for this day
+      const openLoadsForDay = loads.filter(load => {
+        try {
+          const deliveryDate = safeDate(load.deliveryDate);
+          return deliveryDate.toDateString() === date.toDateString() && 
+                 load.status === LoadStatus.PENDING;
+        } catch (error) {
+          console.error('Error filtering open loads by date:', error, load);
+          return false;
+        }
+      }).length;
+      
+      // Generate realistic data with some variation based on current metrics
       const variation = Math.floor(Math.random() * 4) - 2; // -2 to +2 variation for other metrics
       
       // Check if this day is a weekend (Saturday = 6, Sunday = 0)
@@ -145,6 +235,7 @@ export default function HomePage() {
       data.push({
         date: date.toISOString().split('T')[0],
         loads: loadsForDay, // Use actual loads for the day
+        openLoads: openLoadsForDay, // Add open loads data
         drivers: Math.max(0, activeDrivers + inactiveDrivers + Math.floor(Math.random() * 4) - 2),
         trucks: Math.max(0, availableTrucks + Math.floor(Math.random() * 4) - 2),
         trailers: Math.max(0, activeTrailers + Math.floor(Math.random() * 4) - 2),
@@ -153,7 +244,7 @@ export default function HomePage() {
     }
     
     return data;
-  };  const chartData = generateChartData();
+  };const chartData = generateChartData();
   
   // Debug: Log chart data to see weekend detection
   console.log('Chart data with weekend detection:', chartData.map(d => ({
@@ -164,6 +255,10 @@ export default function HomePage() {
     loads: {
       label: "Loads",
       color: "#9333ea", // purple-600 - matches Loads card
+    },
+    openLoads: {
+      label: "Open Loads",
+      color: "#dc2626", // red-600 - for open/pending loads
     },
     drivers: {
       label: "Drivers",
@@ -177,7 +272,7 @@ export default function HomePage() {
       label: "Trailers",
       color: "#ea580c", // orange-600 - matches Trailers card
     },
-  };  // Get expiring items (within 90 days)
+  };// Get expiring items (within 90 days)
   const getExpiringItems = () => {
     const today = new Date();
     const ninetyDaysFromNow = new Date(today.getTime() + (90 * 24 * 60 * 60 * 1000));
@@ -263,25 +358,21 @@ export default function HomePage() {
     })
     .slice(0, 5);  return (
     <div className="min-h-screen">
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 p-4 md:p-6 pb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-0">
-              {getTerminalName()}
-            </h1>
-          </div>
-          <div>
-            <button 
-              onClick={() => window.location.href = '/reports'}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
-            >
-              <Activity className="h-4 w-4" />
-              Submit Status
-            </button>
-          </div>
-        </div>
-      </div>
+      {/* Page Header with Terminal Selector */}
+      <PageHeader
+        title="Dashboard"
+        subtitle="Operations overview and key metrics"
+        icon={<Activity className="h-8 w-8 text-blue-600" />}
+        actions={
+          <button 
+            onClick={() => window.location.href = '/reports'}
+            className="bg-theme-primary hover:bg-theme-secondary text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+          >
+            <Activity className="h-4 w-4" />
+            Submit Status
+          </button>
+        }
+      />
       
       {/* Main Content */}
       <div className="p-4 md:p-6 pt-0">{/* Operations Chart */}
@@ -387,14 +478,22 @@ export default function HomePage() {
                         }}
                       />
                     }
-                  />
-                  <Line
+                  />                  <Line
                     type="monotone"
                     dataKey="loads"
                     stroke={chartConfig.loads.color}
                     strokeWidth={2}
                     dot={false}
                     name={chartConfig.loads.label}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="openLoads"
+                    stroke={chartConfig.openLoads.color}
+                    strokeWidth={2}
+                    strokeDasharray="5 5"
+                    dot={false}
+                    name={chartConfig.openLoads.label}
                   />
                   <Line
                     type="monotone"
@@ -463,7 +562,7 @@ export default function HomePage() {
               </div>
             </CardContent>
           </Card>          {/* Driver Status */}
-          <Card className="!bg-blue-50 border-blue-100" padding="sm">
+          <Card className="!bg-theme-accent border-theme-accent" padding="sm">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
@@ -478,7 +577,7 @@ export default function HomePage() {
             </CardHeader>            <CardContent>              <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-600">In Training</span>
-                  <Badge variant="status" status="pending" className="bg-blue-100 text-blue-700">
+                  <Badge variant="status" status="pending" className="bg-theme-accent text-theme-primary">
                     {inTrainingDrivers}
                   </Badge>
                 </div>

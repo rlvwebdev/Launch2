@@ -2,6 +2,8 @@
 Serializers for companies app
 """
 from rest_framework import serializers
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from .models import Company, Division, Department, Terminal, CustomUser
 
 
@@ -89,3 +91,59 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
+
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    """Serializer for user registration"""
+    password = serializers.CharField(write_only=True, min_length=8)
+    password_confirm = serializers.CharField(write_only=True)
+    
+    class Meta:
+        model = CustomUser
+        fields = [
+            'email', 'password', 'password_confirm', 'first_name', 'last_name',
+            'phone', 'company', 'division', 'department', 'terminal', 'role'
+        ]
+    
+    def validate(self, attrs):
+        """Validate registration data"""
+        password = attrs.get('password')
+        password_confirm = attrs.pop('password_confirm', None)
+        
+        # Check password confirmation
+        if password != password_confirm:
+            raise serializers.ValidationError("Passwords do not match")
+        
+        # Validate password strength
+        try:
+            validate_password(password)
+        except ValidationError as e:
+            raise serializers.ValidationError({"password": list(e.messages)})
+        
+        # Validate email uniqueness
+        email = attrs.get('email')
+        if CustomUser.objects.filter(email=email).exists():
+            raise serializers.ValidationError({"email": "A user with this email already exists"})
+        
+        # Validate company exists
+        company = attrs.get('company')
+        if company and not Company.objects.filter(id=company.id, is_active=True).exists():
+            raise serializers.ValidationError({"company": "Invalid company"})
+        
+        return attrs
+    
+    def create(self, validated_data):
+        """Create new user account"""
+        password = validated_data.pop('password')
+        
+        # Set username to email if not provided
+        if not validated_data.get('username'):
+            validated_data['username'] = validated_data['email']
+        
+        # Create user
+        user = CustomUser.objects.create_user(
+            password=password,
+            **validated_data
+        )
+        
+        return user

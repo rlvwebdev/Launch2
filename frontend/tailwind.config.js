@@ -6,21 +6,45 @@ module.exports = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    extend: {
-      colors: {
-        // Launch brand colors
+    extend: {      colors: {        // Launch brand colors with new dark theme palette
+        // #fbbf24 - Honey Yellow (Primary Accent)
+        // #0f1419 - Very Dark Navy/Black (Primary)  
+        // #1e2936 - Darker Navy (Secondary)
+        // #94a3b8 - Slate-400 (Neutral Text)
+        // #111827 - Dark Gray (Background)
         primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
-          950: '#172554',
+          50: '#fef3c7',   // Light honey
+          100: '#fde68a',  // Lighter honey
+          200: '#fcd34d',  // Light yellow
+          300: '#fbbf24',  // Honey yellow (main accent)
+          400: '#f59e0b',  // Amber
+          500: '#0f1419',  // Very dark navy (main brand color)
+          600: '#1e2936',  // Darker navy
+          700: '#374151',  // Gray-700
+          800: '#1f2937',  // Gray-800
+          900: '#111827',  // Gray-900 (background)
+          950: '#030712',  // Gray-950
+        },
+        // Launch theme colors
+        launch: {
+          navy: '#0f1419',      // Very dark navy
+          darkNavy: '#1e2936',  // Darker navy
+          honey: '#fbbf24',     // Honey yellow
+          neutral: '#94a3b8',   // Slate-400
+          background: '#111827', // Dark gray background
+          // Legacy colors for compatibility
+          teal: '#159A9C',      // Legacy teal
+          gray: '#B4BEC9',      // Legacy gray
+          mint: '#DEEFE7',      // Legacy mint
+          white: '#FFFFFF',     // White
+        },
+        // Dynamic theme colors (using CSS custom properties)
+        theme: {
+          primary: 'var(--color-primary)',
+          secondary: 'var(--color-secondary)',
+          neutral: 'var(--color-neutral)',
+          accent: 'var(--color-accent)',
+          background: 'var(--color-background)',
         },
         // Status colors
         success: {

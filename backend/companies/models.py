@@ -98,7 +98,7 @@ class Terminal(BaseModel):
 class CustomUser(AbstractUser):
     """Extended user model"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='users')
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='users', null=True, blank=True)
     division = models.ForeignKey(Division, on_delete=models.SET_NULL, null=True, blank=True)
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True)
     terminal = models.ForeignKey(Terminal, on_delete=models.SET_NULL, null=True, blank=True)

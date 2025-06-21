@@ -8,49 +8,78 @@ import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import { Truck, Search, Filter, Calendar, Wrench, User, AlertTriangle, FileText, Edit, UserCheck, List, Grid3X3, Building } from 'lucide-react';
 import { useOrganizational } from '@/context/OrganizationalContext';
-import useOrganizationalData from '@/hooks/useOrganizationalData';
+import { useData } from '@/context/DataContext';
 import { TruckStatus } from '@/types';
+import PageHeader from '@/components/layout/PageHeader';
 
 export default function TrucksPage() {
-  const { currentOrganization } = useOrganizational();
-  const { trucks } = useOrganizationalData();
+  const { currentOrganization, getOrganizationalFilter } = useOrganizational();
+  const { trucks } = useData();
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
-  
-  const availableTrucks = trucks.filter(t => t.status === TruckStatus.AVAILABLE).length;
-  const inUseTrucks = trucks.filter(t => t.status === TruckStatus.ASSIGNED).length;
-  const maintenanceTrucks = trucks.filter(t => t.status === TruckStatus.MAINTENANCE).length;
-  const totalTrucks = trucks.length;
 
-  const filteredTrucks = trucks.filter(truck =>
+  // Get organizational filter for current context
+  const organizationalFilter = getOrganizationalFilter();
+
+  // Filter data by selected terminal/organization first
+  const organizationFilteredTrucks = trucks.filter(truck => {
+    if (!truck.organizationalContext) return true;
+    
+    if (organizationalFilter.terminalId) {
+      return truck.organizationalContext.terminalId === organizationalFilter.terminalId;
+    }
+    if (organizationalFilter.departmentId) {
+      return truck.organizationalContext.departmentId === organizationalFilter.departmentId;
+    }
+    if (organizationalFilter.divisionId) {
+      return truck.organizationalContext.divisionId === organizationalFilter.divisionId;
+    }
+    if (organizationalFilter.companyId) {
+      return truck.organizationalContext.companyId === organizationalFilter.companyId;
+    }
+    return true; // Show all if no filter
+  });
+  
+  const availableTrucks = organizationFilteredTrucks.filter(t => t.status === TruckStatus.AVAILABLE).length;
+  const inUseTrucks = organizationFilteredTrucks.filter(t => t.status === TruckStatus.ASSIGNED).length;
+  const maintenanceTrucks = organizationFilteredTrucks.filter(t => t.status === TruckStatus.MAINTENANCE).length;
+  const totalTrucks = organizationFilteredTrucks.length;
+
+  const filteredTrucks = organizationFilteredTrucks.filter(truck =>
     searchTerm === '' ||
     truck.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
     truck.make.toLowerCase().includes(searchTerm.toLowerCase()) ||
     truck.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
     truck.licensePlate.toLowerCase().includes(searchTerm.toLowerCase()) ||
     truck.vin.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-  return (
-    <div className="p-4 md:p-6 space-y-6">
-      {/* Header with Add Button and View Toggle */}
-      <div className="flex justify-between items-center">
-        <div>          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Truck className="h-8 w-8 text-blue-600" />
-            Trucks
-          </h1>
-          <div className="flex items-center gap-2 mt-1">
-            <p className="text-gray-600">
-              Manage your fleet and vehicle assignments
-            </p>            {currentOrganization && (
-              <div className="hidden md:flex items-center gap-1 text-sm text-gray-500">
-                <Building className="h-4 w-4" />
-                <span>{currentOrganization.name}</span>
-              </div>
-            )}
-          </div>        </div>        <div className="flex items-center gap-2">
-        </div>
-      </div>      {/* Compact Stats and Search */}
+  );  return (
+    <div className="space-y-6">
+      {/* Page Header with Terminal Selector */}
+      <PageHeader
+        title="Trucks"
+        subtitle="Manage your fleet and vehicle assignments"
+        icon={<Truck className="h-8 w-8 text-blue-600" />}
+        actions={
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grid3X3 className="h-4 w-4" />}
+            </button>
+            <Link
+              href="/trucks/add"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+            >
+              <Truck className="h-4 w-4" />
+              Add Truck
+            </Link>
+          </div>
+        }
+      />
+
+      <div className="p-4 md:p-6 pt-0">{/* Compact Stats and Search */}
       <Card>
         <CardContent className="p-4">
           {/* Stats Row */}
@@ -296,9 +325,9 @@ export default function TrucksPage() {
                 Renew
               </Button>
             </div>
-          </div>
-        </CardContent>
+          </div>        </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

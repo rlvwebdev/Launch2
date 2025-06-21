@@ -7,6 +7,7 @@ import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import { AlertTriangle, Plus, Search, Filter, Eye, Edit, Clock, MapPin, User, Truck, Package, Building } from 'lucide-react';
 import { useOrganizational } from '@/context/OrganizationalContext';
+import PageHeader from '@/components/layout/PageHeader';
 
 // Event interface
 interface Event {
@@ -267,34 +268,24 @@ export default function EventsPage() {
         return 'text-gray-600 bg-gray-100';
     }
   };
+  const headerActions = (
+    <Button variant="primary">
+      <Plus className="h-4 w-4 mr-2" />
+      Report Event
+    </Button>
+  );
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <AlertTriangle className="h-8 w-8 text-blue-600" />
-            Events
-          </h1>
-          <div className="flex items-center gap-2 mt-1">
-            <p className="text-gray-600">
-              Monitor and manage operational events and incidents
-            </p>            {currentOrganization && (
-              <div className="hidden md:flex items-center gap-1 text-sm text-gray-500">
-                <Building className="h-4 w-4" />
-                <span>{currentOrganization.name}</span>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="primary">
-            <Plus className="h-4 w-4 mr-2" />
-            Report Event
-          </Button>
-        </div>
-      </div>
+    <div className="space-y-6">
+      {/* Page Header with Terminal Selector */}
+      <PageHeader 
+        title="Events"
+        subtitle="Monitor and manage operational events and incidents"
+        icon={<AlertTriangle className="h-8 w-8 text-blue-600" />}
+        actions={headerActions}
+      />
+
+      <div className="p-4 md:p-6 space-y-6">
 
       {/* Stats and Filters */}
       <Card>
@@ -442,7 +433,7 @@ export default function EventsPage() {
             </Card>
           </Link>
         ))}
-      </div>
+      </div>      </div>
     </div>
   );
 }

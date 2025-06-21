@@ -42,7 +42,7 @@ function Card({ children, className, padding = 'md' }: CardProps) {
   return (
     <div 
       className={cn(
-        'bg-white rounded-lg border border-gray-200 shadow-sm',
+        'bg-[var(--color-surface)] border border-[var(--color-neutral)]/10 rounded-lg shadow-sm',
         paddingVariants[padding],
         className
       )}
@@ -54,7 +54,7 @@ function Card({ children, className, padding = 'md' }: CardProps) {
 
 function CardHeader({ children, className }: CardHeaderProps) {
   return (
-    <div className={cn('pb-3 border-b border-gray-200', className)}>
+    <div className={cn('pb-3 border-b border-[var(--color-neutral)]/10', className)}>
       {children}
     </div>
   );
@@ -70,7 +70,7 @@ function CardContent({ children, className }: CardContentProps) {
 
 function CardFooter({ children, className }: CardFooterProps) {
   return (
-    <div className={cn('pt-3 border-t border-gray-200', className)}>
+    <div className={cn('pt-3 border-t border-[var(--color-neutral)]/10', className)}>
       {children}
     </div>
   );
@@ -78,7 +78,7 @@ function CardFooter({ children, className }: CardFooterProps) {
 
 function CardTitle({ children, className }: CardTitleProps) {
   return (
-    <h3 className={cn('text-lg font-semibold text-gray-900', className)}>
+    <h3 className={cn('text-lg font-semibold text-white', className)}>
       {children}
     </h3>
   );
@@ -86,10 +86,17 @@ function CardTitle({ children, className }: CardTitleProps) {
 
 function CardDescription({ children, className }: CardDescriptionProps) {
   return (
-    <p className={cn('text-sm text-gray-600', className)}>
+    <p className={cn('text-sm text-[var(--color-neutral)]', className)}>
       {children}
     </p>
   );
 }
+
+// Assign sub-components as properties of Card
+Card.Header = CardHeader;
+Card.Content = CardContent;
+Card.Footer = CardFooter;
+Card.Title = CardTitle;
+Card.Description = CardDescription;
 
 export { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription };
