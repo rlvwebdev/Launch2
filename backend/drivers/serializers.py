@@ -6,7 +6,9 @@ from .models import Driver, DriverDocument
 
 
 class DriverSerializer(serializers.ModelSerializer):
-    """Serializer for Driver model"""    # Map Django snake_case fields to frontend camelCase
+    """Serializer for Driver model"""
+
+    # Map Django snake_case fields to frontend camelCase
     firstName = serializers.CharField(source='first_name')
     lastName = serializers.CharField(source='last_name')
     phoneNumber = serializers.CharField(source='phone_number')
@@ -31,9 +33,14 @@ class DriverSerializer(serializers.ModelSerializer):
     
     # Organizational context as nested object
     organizationalContext = serializers.SerializerMethodField()
-    
+      # Read-only fields
     full_name = serializers.ReadOnlyField()
     is_license_expired = serializers.ReadOnlyField()
+      # Tier-related fields
+    yearsOfExperience = serializers.ReadOnlyField(source='years_of_experience')
+    recommendedTier = serializers.ReadOnlyField(source='recommended_tier')
+    isEligibleForPromotion = serializers.ReadOnlyField(source='is_eligible_for_promotion')
+    tierDisplayName = serializers.ReadOnlyField(source='get_tier_display_name')
     
     def get_emergencyContact(self, obj):
         return {
@@ -47,18 +54,20 @@ class DriverSerializer(serializers.ModelSerializer):
             'companyId': str(obj.company.id) if obj.company else None,
             'divisionId': str(obj.division.id) if obj.division else None,
             'departmentId': str(obj.department.id) if obj.department else None,
-            'terminalId': str(obj.home_terminal.id) if obj.home_terminal else None        }
+            'terminalId': str(obj.home_terminal.id) if obj.home_terminal else None
+        }
     
     class Meta:
         model = Driver
         fields = [
             'id', 'firstName', 'lastName', 'full_name', 'email', 'phoneNumber',
-            'address', 'hireDate', 'status', 'licenseNumber', 'licenseExpiry',
+            'address', 'hireDate', 'tier', 'status', 'licenseNumber', 'licenseExpiry',
             'is_license_expired', 'fuelCard', 'emergencyContact',
             'trainingStatus', 'trainingStartDate', 'trainingCompletionDate',
             'trainingSupervisorId', 'trainingNotes',
             'assignedTruckId', 'homeTerminalId', 'supervisorId', 'accessLevel',
-            'organizationalContext', 'created_at', 'updated_at'
+            'organizationalContext', 'yearsOfExperience', 'recommendedTier', 
+            'isEligibleForPromotion', 'tierDisplayName', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 

@@ -127,27 +127,21 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
       apiClient.reloadTokens();
       
       const response = await apiClient.getDrivers();
-      console.log('✅ DataContext: Received drivers data:', response);
-        if (response.results && response.results.length > 0) {
-        const processedDrivers = response.results.map((driver: any, index: number) => {
-          // Generate ID if not present
-          const driverId = driver.id || `driver-${index + 1}`;
-          
-          return {
-            ...driver,
-            id: driverId,
-            status: driver.status || 'available',
-            // Ensure required fields have defaults
-            firstName: driver.firstName || driver.first_name || 'Unknown',
-            lastName: driver.lastName || driver.last_name || 'Driver',
-            email: driver.email || `${driverId}@example.com`,
-            phone: driver.phone || '000-000-0000',
-            licenseNumber: driver.licenseNumber || driver.license_number || 'N/A',
-          };
-        });
+      console.log('✅ DataContext: Received drivers data:', response);      if (response.results && Array.isArray(response.results)) {
+        // The backend already returns the correct field names, just use them directly
+        const processedDrivers = response.results.map((driver: any) => ({
+          ...driver,
+          // Ensure compatibility with existing frontend code
+          phone: driver.phoneNumber, // Some components might still use 'phone'
+          // Convert string dates to Date objects if needed
+          hireDate: driver.hireDate ? new Date(driver.hireDate) : null,
+          licenseExpiry: driver.licenseExpiry ? new Date(driver.licenseExpiry) : null,
+          trainingStartDate: driver.trainingStartDate ? new Date(driver.trainingStartDate) : null,
+          trainingCompletionDate: driver.trainingCompletionDate ? new Date(driver.trainingCompletionDate) : null,
+        }));
         
         setDrivers(processedDrivers);
-        console.log('✅ DataContext: Processed and set drivers:', processedDrivers);
+        console.log('✅ DataContext: Processed and set drivers:', processedDrivers.length, 'drivers');
       } else {
         console.warn('⚠️ DataContext: Invalid drivers response:', response);
         setDrivers([]);
@@ -167,26 +161,19 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     try {
       console.log('� DataContext: Fetching trucks from API');
       const response = await apiClient.getTrucks();
-      console.log('✅ DataContext: Received trucks data:', response);
-        if (response.results && response.results.length >= 0) {
-        const processedTrucks = response.results.map((truck: any, index: number) => {
-          // Generate ID if not present
-          const truckId = truck.id || `truck-${index + 1}`;
-          
-          return {
-            ...truck,
-            id: truckId,
-            status: truck.status || 'available',
-            // Ensure required fields have defaults
-            truckNumber: truck.truckNumber || truck.truck_number || `T${String(index + 1).padStart(3, '0')}`,
-            make: truck.make || 'Unknown',
-            model: truck.model || 'Unknown',
-            year: truck.year || 2020,
-          };
-        });
+      console.log('✅ DataContext: Received trucks data:', response);      if (response.results && Array.isArray(response.results)) {
+        // The backend already returns the correct field names, just use them directly
+        const processedTrucks = response.results.map((truck: any) => ({
+          ...truck,
+          // Convert string dates to Date objects if needed
+          lastMaintenanceDate: truck.lastMaintenanceDate ? new Date(truck.lastMaintenanceDate) : null,
+          nextMaintenanceDate: truck.nextMaintenanceDate ? new Date(truck.nextMaintenanceDate) : null,
+          registrationExpiry: truck.registrationExpiry ? new Date(truck.registrationExpiry) : null,
+          insuranceExpiry: truck.insuranceExpiry ? new Date(truck.insuranceExpiry) : null,
+        }));
         
         setTrucks(processedTrucks);
-        console.log('✅ DataContext: Processed and set trucks:', processedTrucks);
+        console.log('✅ DataContext: Processed and set trucks:', processedTrucks.length, 'trucks');
       } else {
         console.warn('⚠️ DataContext: Invalid trucks response:', response);
         setTrucks([]);
@@ -244,32 +231,24 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     try {
       console.log('� DataContext: Fetching loads from API');
       const response = await apiClient.getLoads();
-      console.log('✅ DataContext: Received loads data:', response);
-      
-      if (response.results && response.results.length >= 0) {
-        const processedLoads = response.results.map((load: any, index: number) => {
-          // Generate ID if not present
-          const loadId = load.id || `load-${index + 1}`;
-          
-          return {
-            ...load,
-            id: loadId,
-            status: load.status || 'planned',
-            // Ensure required fields have defaults
-            loadNumber: load.loadNumber || load.load_number || `L${String(index + 1).padStart(3, '0')}`,
-            shipper: load.shipper || 'Unknown Shipper',
-            destination: load.consignee || load.destination || 'Unknown Destination',
-            pickupLocation: load.pickupLocation || load.pickup_location || 'Unknown',
-            deliveryLocation: load.deliveryLocation || load.delivery_location || 'Unknown',
-            pickupDate: new Date(load.pickupDate || load.pickup_date || Date.now()),
-            deliveryDate: new Date(load.deliveryDate || load.delivery_date || Date.now()),
-            rate: parseFloat(load.rate || '0'),
-            miles: parseInt(load.miles || '0'),
-          };
-        });
+      console.log('✅ DataContext: Received loads data:', response);        if (response.results && Array.isArray(response.results)) {
+        // The backend already returns the correct field names, just use them directly
+        const processedLoads = response.results.map((load: any) => ({
+          ...load,
+          // Convert string dates to Date objects if needed
+          pickupDate: load.pickupDate ? new Date(load.pickupDate) : null,
+          deliveryDate: load.deliveryDate ? new Date(load.deliveryDate) : null,
+          actualPickupTime: load.actualPickupTime ? new Date(load.actualPickupTime) : null,
+          actualDeliveryTime: load.actualDeliveryTime ? new Date(load.actualDeliveryTime) : null,
+          estimatedDeliveryTime: load.estimatedDeliveryTime ? new Date(load.estimatedDeliveryTime) : null,
+          // Ensure numeric fields are properly typed
+          rate: parseFloat(load.rate || '0'),
+          miles: parseInt(load.miles || '0'),
+          weight: parseFloat(load.weight || '0'),
+        }));
         
         setLoads(processedLoads);
-        console.log('✅ DataContext: Processed and set loads:', processedLoads);
+        console.log('✅ DataContext: Processed and set loads:', processedLoads.length, 'loads');
       } else {
         console.warn('⚠️ DataContext: No loads found, setting empty array');
         setLoads([]);
@@ -387,18 +366,17 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     
     return drivers.filter(driver => {
       if (!driver.organizationalContext) return true;
-      
-      if (orgFilter.terminalId) {
-        return driver.organizationalContext.terminalId === orgFilter.terminalId;
+        if (orgFilter.terminalId) {
+        return driver.organizationalContext?.terminalId === orgFilter.terminalId;
       }
       if (orgFilter.departmentId) {
-        return driver.organizationalContext.departmentId === orgFilter.departmentId;
+        return driver.organizationalContext?.departmentId === orgFilter.departmentId;
       }
       if (orgFilter.divisionId) {
-        return driver.organizationalContext.divisionId === orgFilter.divisionId;
+        return driver.organizationalContext?.divisionId === orgFilter.divisionId;
       }
       if (orgFilter.companyId) {
-        return driver.organizationalContext.companyId === orgFilter.companyId;
+        return driver.organizationalContext?.companyId === orgFilter.companyId;
       }
       return true; // Show all if no filter
     });
@@ -409,18 +387,17 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     
     return trucks.filter(truck => {
       if (!truck.organizationalContext) return true;
-      
-      if (orgFilter.terminalId) {
-        return truck.organizationalContext.terminalId === orgFilter.terminalId;
+        if (orgFilter.terminalId) {
+        return truck.organizationalContext?.terminalId === orgFilter.terminalId;
       }
       if (orgFilter.departmentId) {
-        return truck.organizationalContext.departmentId === orgFilter.departmentId;
+        return truck.organizationalContext?.departmentId === orgFilter.departmentId;
       }
       if (orgFilter.divisionId) {
-        return truck.organizationalContext.divisionId === orgFilter.divisionId;
+        return truck.organizationalContext?.divisionId === orgFilter.divisionId;
       }
       if (orgFilter.companyId) {
-        return truck.organizationalContext.companyId === orgFilter.companyId;
+        return truck.organizationalContext?.companyId === orgFilter.companyId;
       }
       return true; // Show all if no filter
     });
@@ -431,18 +408,17 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     
     return trailers.filter(trailer => {
       if (!trailer.organizationalContext) return true;
-      
-      if (orgFilter.terminalId) {
-        return trailer.organizationalContext.terminalId === orgFilter.terminalId;
+        if (orgFilter.terminalId) {
+        return trailer.organizationalContext?.terminalId === orgFilter.terminalId;
       }
       if (orgFilter.departmentId) {
-        return trailer.organizationalContext.departmentId === orgFilter.departmentId;
+        return trailer.organizationalContext?.departmentId === orgFilter.departmentId;
       }
       if (orgFilter.divisionId) {
-        return trailer.organizationalContext.divisionId === orgFilter.divisionId;
+        return trailer.organizationalContext?.divisionId === orgFilter.divisionId;
       }
       if (orgFilter.companyId) {
-        return trailer.organizationalContext.companyId === orgFilter.companyId;
+        return trailer.organizationalContext?.companyId === orgFilter.companyId;
       }
       return true; // Show all if no filter
     });
@@ -453,18 +429,17 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     
     return loads.filter(load => {
       if (!load.organizationalContext) return true;
-      
-      if (orgFilter.terminalId) {
-        return load.organizationalContext.terminalId === orgFilter.terminalId;
+        if (orgFilter.terminalId) {
+        return load.organizationalContext?.terminalId === orgFilter.terminalId;
       }
       if (orgFilter.departmentId) {
-        return load.organizationalContext.departmentId === orgFilter.departmentId;
+        return load.organizationalContext?.departmentId === orgFilter.departmentId;
       }
       if (orgFilter.divisionId) {
-        return load.organizationalContext.divisionId === orgFilter.divisionId;
+        return load.organizationalContext?.divisionId === orgFilter.divisionId;
       }
       if (orgFilter.companyId) {
-        return load.organizationalContext.companyId === orgFilter.companyId;
+        return load.organizationalContext?.companyId === orgFilter.companyId;
       }
       return true; // Show all if no filter
     });

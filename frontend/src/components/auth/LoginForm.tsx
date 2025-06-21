@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
-import Button from '../ui/Button';
+import { useTheme } from '@/context/ThemeContext';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
@@ -35,14 +36,8 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
       [name]: type === 'checkbox' ? checked : value,
     }));
   };  return (
-    <Card className="w-full max-w-md mx-auto border-[var(--color-surface)] shadow-lg bg-[var(--color-surface)]/50 backdrop-blur-sm">      <CardHeader className="space-y-2 pb-6 text-center">
-        <CardTitle className="text-2xl font-black text-[var(--color-accent)]">
-          🚀 WELCOME BACK
-        </CardTitle>
-        <CardDescription className="text-[var(--color-text)] opacity-70">
-          Ready to hit the road? Sign in to your dashboard
-        </CardDescription>
-      </CardHeader><CardContent>
+    <Card className="w-full max-w-md mx-auto border-[var(--color-surface)] shadow-lg bg-[var(--color-surface)]/78 backdrop-blur-sm">
+      <CardContent className="pt-6">
         <form onSubmit={handleSubmit} className="space-y-6">{error && (
             <div className="bg-red-900/50 border border-red-700/50 text-red-200 p-3 rounded-lg">
               <p className="text-red-200 text-sm">{error}</p>

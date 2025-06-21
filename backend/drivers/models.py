@@ -4,19 +4,29 @@ Driver models for Launch TMS
 from django.db import models
 from companies.models import BaseModel, Company, Division, Department, Terminal
 import uuid
+from datetime import date
+from dateutil.relativedelta import relativedelta
 
 
 class Driver(BaseModel):
     """Driver model"""
+    
+    # Tier choices
+    TIER_CHOICES = [
+        ('tier_1', 'Tier 1 (0-2 years)'),
+        ('tier_2', 'Tier 2 (2-4 years)'),
+        ('tier_3', 'Tier 3 (5-8 years)'),
+        ('tier_4', 'Tier 4 (8+ years)'),
+    ]
     
     # Personal information
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(blank=True)
     phone_number = models.CharField(max_length=20)
-    address = models.TextField(blank=True)
-      # Employment information
+    address = models.TextField(blank=True)    # Employment information
     hire_date = models.DateField()
+    tier = models.CharField(max_length=10, choices=TIER_CHOICES, blank=True, null=True, help_text="Driver tier based on experience")
     status = models.CharField(max_length=20, choices=[
         ('active', 'Active'),
         ('inactive', 'Inactive'),
@@ -63,8 +73,7 @@ class Driver(BaseModel):
         ('read_only', 'Read Only'),
         ('department', 'Department'),
         ('division', 'Division'),
-        ('company', 'Company'),
-    ], default='read_only')
+        ('company', 'Company'),    ], default='read_only')
     
     class Meta:
         unique_together = ['company', 'license_number']
@@ -81,6 +90,46 @@ class Driver(BaseModel):
     def is_license_expired(self):
         from django.utils import timezone
         return self.license_expiry < timezone.now().date()
+    
+    @property
+    def years_of_experience(self):
+        """Calculate years of experience from hire date"""
+        today = date.today()
+        delta = relativedelta(today, self.hire_date)
+        return round(delta.years + delta.months / 12.0, 1)
+    
+    @property
+    def recommended_tier(self):
+        """Calculate recommended tier based on years of experience"""
+        years = self.years_of_experience
+        if years >= 8:
+            return 'tier_4'
+        elif years >= 5:
+            return 'tier_3'
+        elif years >= 2:
+            return 'tier_2'
+        else:
+            return 'tier_1'
+    
+    @property
+    def is_eligible_for_promotion(self):
+        """Check if driver is eligible for tier promotion"""
+        return self.tier != self.recommended_tier
+    
+    def get_tier_display_name(self):
+        """Get user-friendly tier display name"""
+        tier_names = {
+            'tier_1': 'Tier 1 (0-2 years)',
+            'tier_2': 'Tier 2 (2-4 years)', 
+            'tier_3': 'Tier 3 (5-8 years)',
+            'tier_4': 'Tier 4 (8+ years)',
+        }
+        return tier_names.get(self.tier or '', 'No Tier Assigned')
+    
+    def update_tier_to_recommended(self):
+        """Update driver's tier to the recommended tier"""
+        self.tier = self.recommended_tier
+        self.save(update_fields=['tier'])
 
 
 class DriverDocument(BaseModel):

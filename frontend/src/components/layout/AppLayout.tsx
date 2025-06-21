@@ -15,9 +15,8 @@ function AppLayoutContent({ children }: AppLayoutProps) {
   const { isCollapsed } = useSidebar();
   const { isAuthenticated } = useAuth();
   const pathname = usePathname();
-  
-  // Check if current route should show navigation
-  const showNavigation = isAuthenticated && !pathname.startsWith('/auth');
+    // Check if current route should show navigation
+  const showNavigation = isAuthenticated && !pathname.startsWith('/auth') && !pathname.startsWith('/docs');
   
   if (!showNavigation) {
     return (

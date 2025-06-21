@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import * as XLSX from 'xlsx';
+import * as ExcelJS from 'exceljs';
 import { Driver, Truck, Load, DriverStatus, TruckStatus, LoadStatus } from '@/types';
 
 // Interface definitions for Excel row parsing
@@ -71,12 +71,12 @@ export async function POST(request: NextRequest) {
 
     if (!file.name.toLowerCase().endsWith('.xlsx')) {
       return NextResponse.json({ error: 'Invalid file type. Please upload an Excel file (.xlsx)' }, { status: 400 });
-    }
-
-    // Convert file to buffer
+    }    // Convert file to buffer
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);    // Parse Excel file
-    const workbook = XLSX.read(buffer, { type: 'buffer' });
+
+    // Parse Excel file
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(arrayBuffer);
 
     const result = {
       drivers: [] as Driver[],
@@ -96,10 +96,19 @@ export async function POST(request: NextRequest) {
       if (!name || typeof name !== 'string') return '';
       return name.replace(/\*/g, '').trim();
     };    // Helper function to find header row and clean data
-    const parseSheetWithHeaders = (sheet: XLSX.WorkSheet, expectedHeaders: string[]) => {
-      const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as unknown[][];
+    const parseSheetWithHeaders = (sheet: ExcelJS.Worksheet, expectedHeaders: string[]) => {
+      const rawData: unknown[][] = [];
       let headerRowIndex = -1;
       const cleanedData: Record<string, unknown>[] = [];
+
+      // Convert ExcelJS worksheet to array format
+      sheet.eachRow((row, rowNumber) => {
+        const rowData: unknown[] = [];
+        row.eachCell((cell, colNumber) => {
+          rowData[colNumber - 1] = cell.value;
+        });
+        rawData.push(rowData);
+      });
 
       // Find the row that contains the headers
       for (let i = 0; i < rawData.length; i++) {
@@ -140,11 +149,10 @@ export async function POST(request: NextRequest) {
       }
 
       return { headers: cleanedHeaders, data: cleanedData };
-    };
-
-    // Parse Drivers sheet
-    if (workbook.SheetNames.includes('Drivers')) {
-      try {        const driversSheet = workbook.Sheets['Drivers'];
+    };    // Parse Drivers sheet
+    const driversSheet = workbook.getWorksheet('Drivers');
+    if (driversSheet) {
+      try {
         const expectedHeaders = ['Driver ID', 'First Name', 'Last Name', 'License Number', 'Status'];
         const { data: driversData } = parseSheetWithHeaders(driversSheet, expectedHeaders);
           driversData.forEach((row: Record<string, unknown>, index: number) => {
@@ -191,11 +199,10 @@ export async function POST(request: NextRequest) {
       } catch (error) {
         result.errors.push(`Error parsing Drivers sheet: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
-    }
-
-    // Parse Trucks sheet
-    if (workbook.SheetNames.includes('Trucks')) {
-      try {        const trucksSheet = workbook.Sheets['Trucks'];
+    }    // Parse Trucks sheet
+    const trucksSheet = workbook.getWorksheet('Trucks');
+    if (trucksSheet) {
+      try {
         const expectedHeaders = ['Truck ID', 'Make', 'Model', 'Status'];
         const { data: trucksData } = parseSheetWithHeaders(trucksSheet, expectedHeaders);
         
@@ -240,11 +247,10 @@ export async function POST(request: NextRequest) {
       } catch (error) {
         result.errors.push(`Error parsing Trucks sheet: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
-    }
-
-    // Parse Loads sheet
-    if (workbook.SheetNames.includes('Loads')) {
-      try {        const loadsSheet = workbook.Sheets['Loads'];
+    }    // Parse Loads sheet
+    const loadsSheet = workbook.getWorksheet('Loads');
+    if (loadsSheet) {
+      try {
         const expectedHeaders = ['Load ID', 'Load Number', 'Shipper'];
         const { data: loadsData } = parseSheetWithHeaders(loadsSheet, expectedHeaders);
         

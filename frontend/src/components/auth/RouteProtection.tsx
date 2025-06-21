@@ -9,7 +9,7 @@ interface RouteProtectionProps {
   children: React.ReactNode;
 }
 
-const publicRoutes = ['/auth', '/auth/reset-password'];
+const publicRoutes = ['/auth', '/auth/reset-password', '/docs'];
 
 export function RouteProtection({ children }: RouteProtectionProps) {
   const { isAuthenticated, isLoading } = useAuth();

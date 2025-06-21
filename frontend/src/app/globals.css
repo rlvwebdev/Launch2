@@ -6,7 +6,7 @@
   --background: var(--theme-background, #ffffff);
   --foreground: var(--theme-primary, #002333);
   
-  /* Default theme variables */
+  /* Default blue business theme variables with full scale */
   --color-primary: #002333;
   --color-secondary: #159A9C;
   --color-neutral: #64748b;
@@ -15,6 +15,45 @@
   --color-surface: #f8fafc;
   --color-text: #0f172a;
   --color-text-secondary: #64748b;
+  
+  /* Enhanced accent color scale (Blue Business Theme default) */
+  --accent-50: #eff6ff;
+  --accent-100: #dbeafe;
+  --accent-200: #bfdbfe;
+  --accent-300: #93c5fd;
+  --accent-400: #60a5fa;
+  --accent-500: #3b82f6;   /* Primary accent */
+  --accent-600: #2563eb;
+  --accent-700: #1d4ed8;
+  --accent-800: #1e40af;
+  --accent-900: #1e3a8a;
+  --accent-950: #172554;
+  
+  /* Enhanced primary color scale */
+  --primary-50: #f8fafc;
+  --primary-100: #f1f5f9;
+  --primary-200: #e2e8f0;
+  --primary-300: #cbd5e1;
+  --primary-400: #94a3b8;
+  --primary-500: #002333;   /* Main primary */
+  --primary-600: #001a26;
+  --primary-700: #001419;
+  --primary-800: #000d0f;
+  --primary-900: #000708;
+  --primary-950: #000506;
+  
+  /* Enhanced secondary color scale */
+  --secondary-50: #f0fdfa;
+  --secondary-100: #ccfbf1;
+  --secondary-200: #99f6e4;
+  --secondary-300: #5eead4;
+  --secondary-400: #2dd4bf;
+  --secondary-500: #159A9C;   /* Main secondary */
+  --secondary-600: #0d7377;
+  --secondary-700: #0f5c5f;
+  --secondary-800: #134e4a;
+  --secondary-900: #042f2e;
+  --secondary-950: #022020;
   
   /* RGB versions for alpha transparency */
   --color-primary-rgb: 0, 35, 51;
@@ -28,11 +67,69 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Dark mode styles */
+.dark {
+  --color-background: #0f172a;
+  --color-surface: #1e293b;
+  --color-text: #f8fafc;
+  --color-text-secondary: #cbd5e1;
+  --color-neutral: #475569;
+}
+
+.dark body {
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
 /* Mobile-first text contrast improvements */
 @layer utilities {
-  /* Theme-aware background utilities */
-  .bg-theme-background {
+  /* Enhanced card and surface utilities */  .card-base {
+    @apply bg-white rounded-lg border border-neutral-200 shadow-card;
+  }
+    .card-elevated {
+    @apply bg-white rounded-lg border border-neutral-200 shadow-md;
+  }
+    .card-accent {
+    @apply bg-gradient-to-br from-primary-50 to-primary-100 border border-primary-200 rounded-lg shadow-glow;
+  }
+    .card-primary {
+    @apply bg-gradient-to-br from-primary-50 to-primary-100 border border-primary-200 rounded-lg shadow-glow;
+  }
+    .card-hover {
+    @apply transition-all duration-200 hover:shadow-card-hover hover:-translate-y-0.5;
+  }
+  
+  /* Enhanced button utilities */  .btn-accent {
+    @apply bg-primary-500 text-white border-0 rounded-lg px-4 py-2 font-medium shadow-sm hover:shadow-md transition-all duration-200;
+  }
+    .btn-accent-outline {
+    @apply bg-transparent text-primary-600 border border-primary-300 rounded-lg px-4 py-2 font-medium hover:bg-primary-50 transition-all duration-200;
+  }
+  .btn-primary {
+    @apply bg-gradient-to-r from-primary-500 to-primary-600 text-white border-0 rounded-lg px-4 py-2 font-medium shadow-sm hover:shadow-md transition-all duration-200;
+  }
+  
+  /* Enhanced surface utilities */
+  .surface-base {
+    @apply bg-white border border-gray-200;
+  }
+    .surface-elevated {
+    @apply bg-white border border-gray-200 shadow-elevated;
+  }
+    .surface-accent {
+    @apply bg-primary-50 border border-primary-200;
+  }
+  
+  .surface-primary {
+    @apply bg-primary-50 border border-primary-200;
+  }
+
+  /* Theme-aware background utilities */  .bg-theme-background {
     background-color: var(--theme-background, #ffffff);
+  }
+  
+  .bg-theme-surface {
+    background-color: var(--theme-surface, #f8fafc);
   }
   
   .bg-theme-primary {
@@ -59,9 +156,64 @@ body {
   .text-theme-neutral {
     color: var(--theme-neutral, #64748b);
   }
-  
-  .text-theme-accent {
+    .text-theme-accent {
     color: var(--theme-accent, #0891b2);
+  }
+  
+  .text-theme-text {
+    color: var(--theme-text, #0f172a);
+  }  .text-theme-text-secondary {
+    color: var(--theme-text-secondary, #64748b);
+  }
+  
+  /* Wide layout utilities for high-resolution displays */
+  .container-wide {
+    width: 100%;
+    max-width: none;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  
+  @media (min-width: 640px) {
+    .container-wide {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .container-wide {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+  
+  @media (min-width: 1280px) {
+    .container-wide {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+  
+  @media (min-width: 1536px) {
+    .container-wide {
+      padding-left: 3rem;
+      padding-right: 3rem;
+    }
+  }
+  
+  @media (min-width: 1920px) {
+    .container-wide {
+      padding-left: 4rem;
+      padding-right: 4rem;
+    }
+  }
+  
+  @media (min-width: 2560px) {
+    .container-wide {
+      padding-left: 5rem;
+      padding-right: 5rem;
+    }
   }
   
   /* Theme-aware border utilities */

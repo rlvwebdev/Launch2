@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 import { 
   ArrowLeft, 
   Edit, 
@@ -37,6 +37,24 @@ export default function DriverDetailPage() {
 
   const driverId = params.id as string;
   const driver = drivers.find(d => d.id === driverId);
+
+  // Helper function to map DriverStatus to Badge status
+  const getDriverBadgeStatus = (status: DriverStatus) => {
+    switch (status) {
+      case DriverStatus.ACTIVE:
+        return 'active';
+      case DriverStatus.INACTIVE:
+        return 'inactive';
+      case DriverStatus.IN_TRAINING:
+        return 'warning';
+      case DriverStatus.ON_LEAVE:
+        return 'neutral';
+      case DriverStatus.TERMINATED:
+        return 'error';
+      default:
+        return 'neutral';
+    }
+  };
 
   // Permission checking
   const permissionChecker = new PermissionChecker(currentUser);
@@ -151,8 +169,7 @@ export default function DriverDetailPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">Basic Information</h2>
-              <Badge variant="status" status={displayValue('status') as DriverStatus}>
+              <h2 className="text-lg font-semibold text-gray-900">Basic Information</h2>                <Badge status={getDriverBadgeStatus(displayValue('status') as DriverStatus)} variant="default">
                 {(displayValue('status') as string).charAt(0).toUpperCase() + (displayValue('status') as string).slice(1).replace('-', ' ')}
               </Badge>
             </div>
@@ -201,7 +218,7 @@ export default function DriverDetailPage() {
                   <option value={DriverStatus.TERMINATED}>Terminated</option>
                 </select>
               ) : (
-                <Badge variant="status" status={driver.status}>
+                <Badge status={getDriverBadgeStatus(driver.status)} variant="default">
                   {driver.status.charAt(0).toUpperCase() + driver.status.slice(1).replace('-', ' ')}
                 </Badge>
               )}

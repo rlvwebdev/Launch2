@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
+import { Button } from '@/components/ui/Button';
 import { Truck, ArrowLeft, Save } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { TruckStatus } from '@/types';

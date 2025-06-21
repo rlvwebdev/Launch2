@@ -2,7 +2,7 @@
 
 import { useData } from '@/context/DataContext';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
+import { Badge } from '@/components/ui/Badge';
 import { CheckCircle, XCircle, RefreshCw, Database } from 'lucide-react';
 import Button from '@/components/ui/Button';
 
@@ -58,8 +58,9 @@ export default function DataConnectionTestPage() {
               </div>
             </CardHeader>
             <CardContent>              <Badge 
-                variant={hasData && !hasErrors ? 'status' : 'default'}
-                className="w-full justify-center text-white bg-green-500"
+                status={hasData && !hasErrors ? 'success' : 'error'}
+                variant="default"
+                className="w-full justify-center"
               >
                 {hasData && !hasErrors ? '✅ Connected to Django API' : '❌ Connection Issues'}
               </Badge>
@@ -88,7 +89,11 @@ export default function DataConnectionTestPage() {
             <CardHeader className="pb-3">
               <h3 className="font-semibold text-gray-900">Loading Status</h3>
             </CardHeader>
-            <CardContent>              <Badge variant={isLoading ? 'status' : 'default'}>
+            <CardContent>
+              <Badge 
+                status={isLoading ? 'pending' : 'success'}
+                variant="default"
+              >
                 {isLoading ? '🔄 Loading...' : '✅ Ready'}
               </Badge>
             </CardContent>

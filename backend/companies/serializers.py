@@ -45,7 +45,8 @@ class DepartmentSerializer(serializers.ModelSerializer):
 
 
 class TerminalSerializer(serializers.ModelSerializer):
-    """Serializer for Terminal model"""
+    """Serializer for Terminal model with nested department/division/company info"""
+    department = serializers.SerializerMethodField()
     
     class Meta:
         model = Terminal
@@ -55,6 +56,31 @@ class TerminalSerializer(serializers.ModelSerializer):
             'manager_email', 'is_active', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
+    
+    def get_department(self, obj):
+        """Return nested department/division/company information"""
+        if not obj.department:
+            return None
+        
+        department = obj.department
+        division = department.division if department else None
+        company = division.company if division else None
+        
+        return {
+            'id': str(department.id),
+            'name': department.name,
+            'code': department.code,
+            'division': {
+                'id': str(division.id) if division else None,
+                'name': division.name if division else None,
+                'code': division.code if division else None,
+                'company': {
+                    'id': str(company.id) if company else None,
+                    'name': company.name if company else None,
+                    'code': company.code if company else None,
+                }
+            } if division else None
+        }
 
 
 class UserSerializer(serializers.ModelSerializer):

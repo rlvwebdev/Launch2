@@ -9,7 +9,7 @@ from rest_framework_simplejwt.views import (
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 # Import ViewSets (we'll create these next)
-from companies.views import CompanyViewSet, DivisionViewSet, DepartmentViewSet, TerminalViewSet, UserViewSet, public_companies
+from companies.views import CompanyViewSet, DivisionViewSet, DepartmentViewSet, TerminalViewSet, UserViewSet, public_companies, organization_hierarchy
 from companies.auth_views import (
     login_view,
     register_user,
@@ -43,9 +43,11 @@ router.register(r'loads', LoadViewSet)
 urlpatterns = [
     # Health check
     path('health/', health_check, name='health_check'),
-    
-    # Public endpoints (no authentication required)
+      # Public endpoints (no authentication required)
     path('companies/public/', public_companies, name='public_companies'),
+    
+    # Organization hierarchy with statistics
+    path('organizations/hierarchy/', organization_hierarchy, name='organization_hierarchy'),
     
     # Authentication
     path('auth/login/', login_view, name='login'),

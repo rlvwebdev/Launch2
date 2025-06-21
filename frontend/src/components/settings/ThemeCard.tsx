@@ -105,20 +105,15 @@ export function ThemeCard({
         <div className="flex items-center justify-between mb-2">
           <h3 className="font-medium text-sm text-[var(--color-primary)]">
             {theme.name}
-          </h3>
-          <div className="flex gap-1">
-            {theme.isDark ? (
-              <span className="text-xs bg-[var(--color-background)] text-white px-2 py-0.5 rounded">
-                Dark
-              </span>
-            ) : (
-              <span className="text-xs bg-[var(--color-neutral)]/20 text-white px-2 py-0.5 rounded">
-                Light
-              </span>
-            )}
+          </h3>          <div className="flex gap-1">
             {theme.category && (
               <span className="text-xs bg-[var(--color-accent)]/20 text-[var(--color-accent)] px-2 py-0.5 rounded capitalize">
                 {theme.category}
+              </span>
+            )}
+            {theme.isCustom && (
+              <span className="text-xs bg-[var(--color-secondary)]/20 text-[var(--color-secondary)] px-2 py-0.5 rounded">
+                Custom
               </span>
             )}
           </div>

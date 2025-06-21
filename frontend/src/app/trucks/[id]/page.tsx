@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import BadgeLegacy from '@/components/ui/BadgeLegacy';
+const Badge = BadgeLegacy;
+import { Input } from '@/components/ui/Input';
 import { 
   ArrowLeft, 
   Edit, 
@@ -185,31 +187,32 @@ export default function TruckDetailPage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Make</label>
+            <div className="grid gap-4 sm:grid-cols-2">              <div>
                 {isEditing ? (
-                  <input
-                    type="text"
+                  <Input
+                    label="Make"
                     value={displayValue('make') as string}
                     onChange={(e) => handleInputChange('make', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 ) : (
-                  <p className="text-gray-900">{truck.make}</p>
+                  <>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Make</label>
+                    <p className="text-gray-900">{truck.make}</p>
+                  </>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
                 {isEditing ? (
-                  <input
-                    type="text"
+                  <Input
+                    label="Model"
                     value={displayValue('model') as string}
                     onChange={(e) => handleInputChange('model', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 ) : (
-                  <p className="text-gray-900">{truck.model}</p>
+                  <>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
+                    <p className="text-gray-900">{truck.model}</p>
+                  </>
                 )}
               </div>
             </div>

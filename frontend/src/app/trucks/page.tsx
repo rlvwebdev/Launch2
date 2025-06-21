@@ -3,330 +3,678 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
-import { Truck, Search, Filter, Calendar, Wrench, User, AlertTriangle, FileText, Edit, UserCheck, List, Grid3X3, Building } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import { Input } from '@/components/ui/Input';
+import { TrucksDataTable } from '@/components/ui/TrucksDataTable';
+import { StatusIndicator } from '@/components/ui/StatusIndicator';
+import { 
+  TruckIcon, 
+  CalendarIcon, 
+  WrenchScrewdriverIcon,
+  UserIcon,
+  ExclamationTriangleIcon,
+  DocumentTextIcon,
+  PencilIcon,
+  CheckIcon,
+  BuildingStorefrontIcon,
+  MagnifyingGlassIcon,
+  Squares2X2Icon,
+  ListBulletIcon,
+  AdjustmentsHorizontalIcon,
+  PlusIcon
+} from '@heroicons/react/24/outline';
+import { 
+  TruckIcon as TruckIconSolid,
+  UserIcon as UserIconSolid,
+  WrenchScrewdriverIcon as WrenchIconSolid,
+  ExclamationTriangleIcon as AlertIconSolid
+} from '@heroicons/react/24/solid';
 import { useOrganizational } from '@/context/OrganizationalContext';
 import { useData } from '@/context/DataContext';
+import useOrganizationalData from '@/hooks/useOrganizationalData';
 import { TruckStatus } from '@/types';
 import PageHeader from '@/components/layout/PageHeader';
+import { cn } from '@/lib/utils';
 
-export default function TrucksPage() {
-  const { currentOrganization, getOrganizationalFilter } = useOrganizational();
-  const { trucks } = useData();
-  const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
+// Modern stat card component with Tailwind UI design
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  subtitle?: string;
+  change?: {
+    value: string;
+    trend: 'up' | 'down' | 'neutral';
+  };
+  icon: React.ReactNode;
+  iconColor: string;
+  href?: string;
+}
 
-  // Get organizational filter for current context
-  const organizationalFilter = getOrganizationalFilter();
-
-  // Filter data by selected terminal/organization first
-  const organizationFilteredTrucks = trucks.filter(truck => {
-    if (!truck.organizationalContext) return true;
-    
-    if (organizationalFilter.terminalId) {
-      return truck.organizationalContext.terminalId === organizationalFilter.terminalId;
-    }
-    if (organizationalFilter.departmentId) {
-      return truck.organizationalContext.departmentId === organizationalFilter.departmentId;
-    }
-    if (organizationalFilter.divisionId) {
-      return truck.organizationalContext.divisionId === organizationalFilter.divisionId;
-    }
-    if (organizationalFilter.companyId) {
-      return truck.organizationalContext.companyId === organizationalFilter.companyId;
-    }
-    return true; // Show all if no filter
-  });
+function StatCard({ title, value, subtitle, change, icon, iconColor, href }: StatCardProps) {
+  const CardWrapper = href ? 'button' : 'div';
   
-  const availableTrucks = organizationFilteredTrucks.filter(t => t.status === TruckStatus.AVAILABLE).length;
-  const inUseTrucks = organizationFilteredTrucks.filter(t => t.status === TruckStatus.ASSIGNED).length;
-  const maintenanceTrucks = organizationFilteredTrucks.filter(t => t.status === TruckStatus.MAINTENANCE).length;
-  const totalTrucks = organizationFilteredTrucks.length;
-
-  const filteredTrucks = organizationFilteredTrucks.filter(truck =>
-    searchTerm === '' ||
-    truck.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    truck.make.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    truck.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    truck.licensePlate.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    truck.vin.toLowerCase().includes(searchTerm.toLowerCase())
-  );  return (
-    <div className="space-y-6">
-      {/* Page Header with Terminal Selector */}
-      <PageHeader
-        title="Trucks"
-        subtitle="Manage your fleet and vehicle assignments"
-        icon={<Truck className="h-8 w-8 text-blue-600" />}
-        actions={
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grid3X3 className="h-4 w-4" />}
-            </button>
-            <Link
-              href="/trucks/add"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
-            >
-              <Truck className="h-4 w-4" />
-              Add Truck
-            </Link>
+  return (
+    <Card className={cn(
+      'transition-all duration-200',
+      href && 'hover:shadow-md hover:scale-[1.02] cursor-pointer'
+    )}>
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">
+              {title}
+            </p>
+            <p className="mt-2 text-3xl font-bold text-gray-900">
+              {value}
+            </p>
+            {subtitle && (
+              <p className="mt-1 text-sm text-gray-500">
+                {subtitle}
+              </p>
+            )}
+            {change && (
+              <div className="mt-2 flex items-center text-sm">
+                <span className={cn(
+                  'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium',
+                  change.trend === 'up' && 'bg-green-100 text-green-800',
+                  change.trend === 'down' && 'bg-red-100 text-red-800',
+                  change.trend === 'neutral' && 'bg-gray-100 text-gray-800'
+                )}>
+                  {change.value}
+                </span>
+              </div>
+            )}
           </div>
-        }
-      />
+          <div className={cn('flex-shrink-0 p-3 rounded-lg', iconColor)}>
+            {icon}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
-      <div className="p-4 md:p-6 pt-0">{/* Compact Stats and Search */}
-      <Card>
-        <CardContent className="p-4">
-          {/* Stats Row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">{totalTrucks}</div>
-              <div className="text-sm text-gray-600">Total</div>
+// Truck card component with Tailwind UI design
+interface TruckCardProps {
+  truck: any;
+  onEdit?: () => void;
+  onAssign?: () => void;
+  onViewDocuments?: () => void;
+}
+
+function TruckCard({ truck, onEdit, onAssign, onViewDocuments }: TruckCardProps) {
+  const needsMaintenance = new Date(truck.nextMaintenanceDue) < new Date();
+  const registrationExpiring = new Date(truck.registrationExpiry) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  
+  const getStatusColor = (status: TruckStatus) => {
+    switch (status) {
+      case TruckStatus.AVAILABLE:
+        return 'bg-green-100 text-green-800';
+      case TruckStatus.ASSIGNED:
+        return 'bg-blue-100 text-blue-800';
+      case TruckStatus.MAINTENANCE:
+        return 'bg-orange-100 text-orange-800';
+      case TruckStatus.OUT_OF_SERVICE:
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  return (
+    <Link href={`/trucks/${truck.id}`}>
+      <Card className="group relative overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer">
+        {/* Status indicator stripe */}
+        <div className={cn(
+          'absolute inset-x-0 top-0 h-1',
+          truck.status === TruckStatus.AVAILABLE && 'bg-green-500',
+          truck.status === TruckStatus.ASSIGNED && 'bg-blue-500',
+          truck.status === TruckStatus.MAINTENANCE && 'bg-orange-500',
+          truck.status === TruckStatus.OUT_OF_SERVICE && 'bg-red-500'
+        )} />
+        
+        <CardHeader className="pb-4">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center space-x-3">
+              <div className={cn(
+                'flex h-10 w-10 items-center justify-center rounded-lg',
+                truck.status === TruckStatus.AVAILABLE && 'bg-green-100',
+                truck.status === TruckStatus.ASSIGNED && 'bg-blue-100',
+                truck.status === TruckStatus.MAINTENANCE && 'bg-orange-100',
+                truck.status === TruckStatus.OUT_OF_SERVICE && 'bg-red-100'
+              )}>
+                <TruckIconSolid className={cn(
+                  'h-6 w-6',
+                  truck.status === TruckStatus.AVAILABLE && 'text-green-600',
+                  truck.status === TruckStatus.ASSIGNED && 'text-blue-600',
+                  truck.status === TruckStatus.MAINTENANCE && 'text-orange-600',
+                  truck.status === TruckStatus.OUT_OF_SERVICE && 'text-red-600'
+                )} />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                  {truck.id}
+                </h3>
+                <p className="text-sm text-gray-600">{truck.make} {truck.model} • {truck.year}</p>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{availableTrucks}</div>
-              <div className="text-sm text-gray-600">Available</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{inUseTrucks}</div>
-              <div className="text-sm text-gray-600">In Use</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">{maintenanceTrucks}</div>
-              <div className="text-sm text-gray-600">Maintenance</div>
+            <div className="flex flex-col items-end space-y-2">
+              <Badge className={getStatusColor(truck.status)}>
+                {truck.status.charAt(0).toUpperCase() + truck.status.slice(1).replace(/_/g, ' ')}
+              </Badge>
+              {(needsMaintenance || registrationExpiring) && (
+                <Badge className="bg-red-100 text-red-800">
+                  <ExclamationTriangleIcon className="h-3 w-3 mr-1" />
+                  Alert
+                </Badge>
+              )}
             </div>
           </div>
-            {/* Search and Filter Row */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <input
-                type="text"
-                placeholder="Search trucks by ID, make, model..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>            <Button variant="primary">
-              <Filter className="h-4 w-4 mr-2" />
-              Filters
-            </Button>
-            <div className="flex border border-gray-300 rounded-lg">
-              <button
-                onClick={() => setViewMode('grid')}
-                title="Grid view"
-                className={`p-2 ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+        </CardHeader>
+        
+        <CardContent className="space-y-4">          {/* Vehicle Details Grid */}
+          <dl className="grid grid-cols-2 gap-4">
+            <div>
+              <dt className="text-sm font-medium text-gray-500">License Plate</dt>
+              <dd className="mt-1 text-sm font-semibold text-gray-900">{truck.licensePlate}</dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Color</dt>
+              <dd className="mt-1 text-sm font-semibold text-gray-900">{truck.color}</dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Mileage</dt>
+              <dd className="mt-1 text-sm font-semibold text-gray-900">{truck.mileage.toLocaleString()} mi</dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-gray-500">VIN</dt>
+              <dd className="mt-1 text-xs font-mono text-gray-900">{truck.vin.slice(-8)}</dd>
+            </div>
+          </dl>
+
+          {/* Driver Assignment */}
+          {truck.assignedDriverId && (
+            <div className="flex items-center space-x-2 rounded-lg bg-blue-50 p-3">
+              <UserIconSolid className="h-5 w-5 text-blue-600" />
+              <div>
+                <p className="text-sm font-medium text-blue-900">Assigned Driver</p>
+                <p className="text-sm text-blue-700">Driver {truck.assignedDriverId}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Maintenance & Registration Status */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <WrenchScrewdriverIcon className="h-4 w-4 text-gray-400" />
+                <span className="text-sm text-gray-600">Next Maintenance</span>
+              </div>
+              <span className={cn(
+                'text-sm font-medium',
+                needsMaintenance ? 'text-red-600' : 'text-gray-900'
+              )}>
+                {new Date(truck.nextMaintenanceDue).toLocaleDateString()}
+              </span>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <DocumentTextIcon className="h-4 w-4 text-gray-400" />
+                <span className="text-sm text-gray-600">Registration</span>
+              </div>
+              <span className={cn(
+                'text-sm font-medium',
+                registrationExpiring ? 'text-red-600' : 'text-gray-900'
+              )}>
+                {new Date(truck.registrationExpiry).toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+            <span className="text-xs text-gray-500">
+              Last Service: {new Date(truck.lastMaintenance).toLocaleDateString()}
+            </span>
+            <div className="flex space-x-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onEdit?.();
+                }}
+                className="opacity-0 group-hover:opacity-100 transition-opacity"
               >
-                <Grid3X3 className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                title="List view"
-                className={`p-2 border-l border-gray-300 ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                <PencilIcon className="h-3 w-3" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onAssign?.();
+                }}
+                className="opacity-0 group-hover:opacity-100 transition-opacity"
               >
-                <List className="h-4 w-4" />
-              </button>
+                <CheckIcon className="h-3 w-3" />
+              </Button>
             </div>
           </div>
         </CardContent>
-      </Card>      {/* Trucks List */}
-      {viewMode === 'grid' ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredTrucks.map((truck) => {
-            const needsMaintenance = new Date(truck.nextMaintenanceDue) < new Date();
-            const registrationExpiring = new Date(truck.registrationExpiry) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-            
-            return (
-              <Link key={truck.id} href={`/trucks/${truck.id}`}>
-                <Card className="hover:shadow-md transition-shadow cursor-pointer"><CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {truck.id}
-                    </h3>
-                    <p className="text-sm text-gray-600">{truck.make} {truck.model} • {truck.year}</p>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <Badge variant="status" status={truck.status}>
-                      {truck.status.charAt(0).toUpperCase() + truck.status.slice(1).replace('-', ' ')}
-                    </Badge>
-                    {(needsMaintenance || registrationExpiring) && (
-                      <Badge variant="default" className="bg-red-100 text-red-800">
-                        <AlertTriangle className="h-3 w-3 mr-1" />
-                        Alert
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-500">License:</span>
-                    <div className="font-medium">{truck.licensePlate}</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Color:</span>
-                    <div className="font-medium">{truck.color}</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Mileage:</span>
-                    <div className="font-medium">{truck.mileage.toLocaleString()} mi</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">VIN:</span>
-                    <div className="font-medium text-xs">{truck.vin.slice(-6)}</div>
-                  </div>
-                </div>
-
-                {truck.assignedDriverId && (
-                  <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded">
-                    <User className="h-4 w-4 mr-2" />
-                    Assigned to: Driver {truck.assignedDriverId}
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500 flex items-center">
-                      <Wrench className="h-4 w-4 mr-1" />
-                      Next Maintenance:
-                    </span>
-                    <span className={needsMaintenance ? 'text-red-600 font-medium' : 'text-gray-700'}>
-                      {new Date(truck.nextMaintenanceDue).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500 flex items-center">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      Registration:
-                    </span>
-                    <span className={registrationExpiring ? 'text-red-600 font-medium' : 'text-gray-700'}>
-                      {new Date(truck.registrationExpiry).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-gray-200">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-500">
-                      Last Service: {new Date(truck.lastMaintenance).toLocaleDateString()}
-                    </span>                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-50">
-                        <Edit className="h-3 w-3 mr-1" />
-                        Edit
-                      </Button>
-                      <Button size="sm" variant="outline" className="border-green-300 text-green-600 hover:bg-green-50">
-                        <UserCheck className="h-3 w-3 mr-1" />
-                        Assign
-                      </Button>
-                      <Button size="sm" variant="outline" className="border-gray-300 text-gray-600 hover:bg-gray-50">
-                        <FileText className="h-3 w-3 mr-1" />
-                        Documents
-                      </Button>
-                    </div>
-                  </div>                </div>
-              </CardContent>            </Card>
-              </Link>
-          );
-        })}
-        </div>
-      ) : (
-        <Card>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-medium text-gray-700">Truck</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700">License</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700">Status</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700">Driver</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700">Mileage</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredTrucks.map((truck) => (
-                  <tr key={truck.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4">
-                      <div className="font-medium text-gray-900">
-                        {truck.id}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {truck.make} {truck.model} • {truck.year}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{truck.licensePlate}</td>
-                    <td className="py-3 px-4">
-                      <Badge variant="status" status={truck.status} size="sm">
-                        {truck.status.charAt(0).toUpperCase() + truck.status.slice(1).replace('-', ' ')}
-                      </Badge>
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-600">
-                      {truck.assignedDriverId ? (
-                        <span className="flex items-center">
-                          <User className="h-4 w-4 mr-1" />
-                          Driver {truck.assignedDriverId}
-                        </span>
-                      ) : (
-                        <span className="text-gray-400">Unassigned</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{truck.mileage.toLocaleString()} mi</td>
-                    <td className="py-3 px-4">
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-50">
-                          <Edit className="h-3 w-3 mr-1" />
-                          Edit
-                        </Button>
-                        <Button size="sm" variant="outline" className="border-green-300 text-green-600 hover:bg-green-50">
-                          <UserCheck className="h-3 w-3 mr-1" />
-                          Assign
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      )}
-
-      {/* Maintenance Alerts */}
-      <Card>
-        <CardHeader>
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-orange-600" />
-            Maintenance Alerts
-          </h3>
-        </CardHeader>
-        <CardContent>          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
-              <div>
-                <p className="font-medium text-orange-800">2814 - Kenworth T680</p>
-                <p className="text-sm text-orange-600">Scheduled maintenance overdue by 5 days</p>
-              </div>
-              <Button size="sm" variant="outline">
-                Schedule
-              </Button>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-              <div>
-                <p className="font-medium text-yellow-800">2813A - Peterbilt 579</p>
-                <p className="text-sm text-yellow-600">Registration expires in 15 days</p>
-              </div>
-              <Button size="sm" variant="outline">
-                Renew
-              </Button>
-            </div>
-          </div>        </CardContent>
       </Card>
+    </Link>
+  );
+}
+
+// Truck table row component
+function TruckTableRow({ truck }: { truck: any }) {
+  const getStatusColor = (status: TruckStatus) => {
+    switch (status) {
+      case TruckStatus.AVAILABLE:
+        return 'bg-green-100 text-green-800';
+      case TruckStatus.ASSIGNED:
+        return 'bg-blue-100 text-blue-800';
+      case TruckStatus.MAINTENANCE:
+        return 'bg-orange-100 text-orange-800';
+      case TruckStatus.OUT_OF_SERVICE:
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  return (
+    <tr className="hover:bg-gray-50 transition-colors duration-150">
+      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+        <div className="flex items-center">
+          <div className="h-10 w-10 flex-shrink-0">
+            <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
+              <TruckIcon className="h-5 w-5 text-gray-600" />
+            </div>
+          </div>
+          <div className="ml-4">
+            <div className="font-medium text-gray-900">{truck.id}</div>
+            <div className="text-gray-500">{truck.make} {truck.model} • {truck.year}</div>
+          </div>
+        </div>
+      </td>
+      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900 font-medium">
+        {truck.licensePlate}
+      </td>
+      <td className="whitespace-nowrap px-3 py-4 text-sm">
+        <Badge className={getStatusColor(truck.status)}>
+          {truck.status.charAt(0).toUpperCase() + truck.status.slice(1).replace(/_/g, ' ')}
+        </Badge>
+      </td>
+      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
+        {truck.assignedDriverId ? (
+          <div className="flex items-center">
+            <UserIcon className="h-4 w-4 mr-2 text-gray-400" />
+            Driver {truck.assignedDriverId}
+          </div>
+        ) : (
+          <span className="text-gray-400">Unassigned</span>
+        )}
+      </td>
+      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-900">
+        {truck.mileage.toLocaleString()} mi
+      </td>
+      <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+        <div className="flex space-x-2">
+          <Button size="sm" variant="outline">
+            <PencilIcon className="h-3 w-3 mr-1" />
+            Edit
+          </Button>
+          <Button size="sm" variant="outline">
+            <CheckIcon className="h-3 w-3 mr-1" />
+            Assign
+          </Button>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+export default function TrucksPage() {
+  const { currentOrganization, getOrganizationalFilter, getOrganizationsByType } = useOrganizational();
+  const { trucks } = useData(); // Use updated DataContext
+  const router = useRouter();
+  
+  const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [makeFilter, setMakeFilter] = useState<string>('all');
+  const [terminalFilter, setTerminalFilter] = useState<string>('all');
+
+  // Get organizational data and filter options
+  const terminals = getOrganizationsByType('TERMINAL');
+  const availableTerminals = Array.from(new Set(trucks.map(t => t.homeTerminalId).filter(Boolean)));
+  const terminalOptions = terminals.filter(t => availableTerminals.includes(t.id));
+  
+  // Get unique makes for filtering
+  const availableMakes = Array.from(new Set(trucks.map(t => t.make).filter(Boolean))).sort();
+
+  // Advanced filtering with multiple criteria
+  const filteredTrucks = trucks.filter(truck => {
+    // Search filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      const searchMatch = 
+        truck.truckNumber?.toLowerCase().includes(searchLower) ||
+        truck.make?.toLowerCase().includes(searchLower) ||
+        truck.model?.toLowerCase().includes(searchLower) ||
+        truck.plateNumber?.toLowerCase().includes(searchLower) ||
+        truck.vin?.toLowerCase().includes(searchLower);
+      
+      if (!searchMatch) return false;
+    }
+
+    // Status filter
+    if (statusFilter !== 'all' && truck.status !== statusFilter) {
+      return false;
+    }
+
+    // Make filter
+    if (makeFilter !== 'all' && truck.make !== makeFilter) {
+      return false;
+    }
+
+    // Terminal filter
+    if (terminalFilter !== 'all') {
+      const truckTerminalId = truck.homeTerminalId || truck.organizationalContext?.terminalId;
+      if (truckTerminalId !== terminalFilter) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+  
+  // Calculate comprehensive statistics
+  const stats = {
+    total: filteredTrucks.length,
+    available: filteredTrucks.filter(t => t.status === TruckStatus.AVAILABLE).length,
+    assigned: filteredTrucks.filter(t => t.status === TruckStatus.ASSIGNED).length,
+    maintenance: filteredTrucks.filter(t => t.status === TruckStatus.MAINTENANCE).length,
+    outOfService: filteredTrucks.filter(t => t.status === TruckStatus.OUT_OF_SERVICE).length,
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">      <PageHeader
+        title="Fleet Management"
+        subtitle="Manage your truck fleet and vehicle assignments"
+        actions={
+          <div className="flex items-center space-x-3">
+            <div className="flex rounded-md shadow-sm">
+              <Button
+                type="button"
+                variant={viewMode === 'grid' ? 'primary' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+                className="rounded-r-none"
+              >
+                <Squares2X2Icon className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant={viewMode === 'list' ? 'primary' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="rounded-l-none"
+              >
+                <ListBulletIcon className="h-4 w-4" />
+              </Button>
+            </div>
+            <Button variant="outline" size="sm">
+              <AdjustmentsHorizontalIcon className="h-4 w-4 mr-2" />
+              Filters
+            </Button>
+            <Link href="/trucks/add">
+              <Button>
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Add Truck
+              </Button>
+            </Link>
+          </div>
+        }
+      />      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Modern Filter Section */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            {/* Search and Filters */}
+            <div className="flex flex-col sm:flex-row gap-4 flex-1">
+              {/* Search Input */}
+              <div className="relative flex-1 max-w-md">
+                <input
+                  type="text"
+                  placeholder="Search trucks by number, make, model, plate..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                </div>
+              </div>
+
+              {/* Status Filter */}
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                aria-label="Filter by truck status"
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value="all">All Status</option>
+                <option value="available">Available</option>
+                <option value="assigned">Assigned</option>
+                <option value="maintenance">Maintenance</option>
+                <option value="out_of_service">Out of Service</option>
+              </select>
+
+              {/* Make Filter */}
+              <select
+                value={makeFilter}
+                onChange={(e) => setMakeFilter(e.target.value)}
+                aria-label="Filter by truck make"
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value="all">All Makes</option>
+                {availableMakes.map((make) => (
+                  <option key={make} value={make}>
+                    {make}
+                  </option>
+                ))}
+              </select>
+
+              {/* Terminal Filter */}
+              <select
+                value={terminalFilter}
+                onChange={(e) => setTerminalFilter(e.target.value)}
+                aria-label="Filter by terminal"
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value="all">All Terminals</option>
+                {terminalOptions.map((terminal) => (
+                  <option key={terminal.id} value={terminal.id}>
+                    {terminal.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant={viewMode === 'list' ? 'solid' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+              >
+                <ListBulletIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'grid' ? 'solid' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+              >
+                <Squares2X2Icon className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Filter Summary */}
+          <div className="mt-4 flex items-center gap-4 text-sm text-gray-600">
+            <span>Showing {filteredTrucks.length} of {trucks.length} trucks</span>
+            {searchTerm && (
+              <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                Search: &quot;{searchTerm}&quot;
+              </span>
+            )}
+            {statusFilter !== 'all' && (
+              <span className="bg-green-100 text-green-700 px-2 py-1 rounded">
+                Status: {statusFilter.replace('_', ' ')}
+              </span>
+            )}
+            {makeFilter !== 'all' && (
+              <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                Make: {makeFilter}
+              </span>
+            )}
+            {terminalFilter !== 'all' && (
+              <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded">
+                Terminal: {terminalOptions.find(t => t.id === terminalFilter)?.name}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Enhanced Stats Overview */}
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 mb-8">
+          <StatCard
+            title="Total"
+            value={stats.total}
+            subtitle="Fleet vehicles"
+            icon={<TruckIconSolid className="h-5 w-5 text-white" />}
+            iconColor="bg-gray-500"
+          />
+          <StatCard
+            title="Available"
+            value={stats.available}
+            subtitle="Ready for dispatch"
+            icon={<TruckIconSolid className="h-5 w-5 text-white" />}
+            iconColor="bg-green-500"
+          />
+          <StatCard
+            title="Assigned"
+            value={stats.assigned}
+            subtitle="Currently deployed"
+            icon={<UserIconSolid className="h-5 w-5 text-white" />}
+            iconColor="bg-blue-500"
+          />
+          <StatCard
+            title="Maintenance"
+            value={stats.maintenance}
+            subtitle="Under maintenance"
+            icon={<WrenchIconSolid className="h-5 w-5 text-white" />}
+            iconColor="bg-yellow-500"
+          />
+          <StatCard
+            title="Out of Service"
+            value={stats.outOfService}
+            subtitle="Not operational"
+            icon={<AlertIconSolid className="h-5 w-5 text-white" />}
+            iconColor="bg-red-500"          />
+        </div>
+
+        {/* Trucks Display */}
+        {viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredTrucks.map((truck) => (
+              <TruckCard
+                key={truck.id}
+                truck={truck}
+                onEdit={() => router.push(`/trucks/${truck.id}/edit`)}
+                onAssign={() => console.log('Assign driver to truck', truck.id)}
+                onViewDocuments={() => console.log('View documents for truck', truck.id)}
+              />
+            ))}
+          </div>
+        ) : (
+          <TrucksDataTable 
+            trucks={filteredTrucks}
+            onView={(truck) => router.push(`/trucks/${truck.id}`)}
+            onEdit={(truck) => router.push(`/trucks/${truck.id}/edit`)}
+            onAssignDriver={(truck) => console.log('Assign driver to truck', truck.id)}
+          />
+        )}
+
+        {/* Maintenance Alerts Section */}
+        {(maintenanceTrucks > 0 || filteredTrucks.some(truck => 
+          new Date(truck.nextMaintenanceDue) < new Date() || 
+          new Date(truck.registrationExpiry) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        )) && (
+          <Card className="mt-8">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <ExclamationTriangleIcon className="h-5 w-5 text-orange-600" />
+                <span>Maintenance & Compliance Alerts</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {filteredTrucks
+                  .filter(truck => 
+                    new Date(truck.nextMaintenanceDue) < new Date() ||
+                    new Date(truck.registrationExpiry) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                  )
+                  .map((truck) => {
+                    const needsMaintenance = new Date(truck.nextMaintenanceDue) < new Date();
+                    const registrationExpiring = new Date(truck.registrationExpiry) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+                    
+                    return (
+                      <div
+                        key={truck.id}
+                        className={cn(
+                          'flex items-center justify-between p-4 rounded-lg',
+                          needsMaintenance ? 'bg-red-50 border border-red-200' : 'bg-yellow-50 border border-yellow-200'
+                        )}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <AlertIconSolid className={cn(
+                            'h-5 w-5',
+                            needsMaintenance ? 'text-red-600' : 'text-yellow-600'
+                          )} />
+                          <div>
+                            <p className={cn(
+                              'font-medium',
+                              needsMaintenance ? 'text-red-900' : 'text-yellow-900'
+                            )}>
+                              {truck.id} - {truck.make} {truck.model}
+                            </p>
+                            <p className={cn(
+                              'text-sm',
+                              needsMaintenance ? 'text-red-700' : 'text-yellow-700'
+                            )}>
+                              {needsMaintenance 
+                                ? `Maintenance overdue since ${new Date(truck.nextMaintenanceDue).toLocaleDateString()}`
+                                : `Registration expires ${new Date(truck.registrationExpiry).toLocaleDateString()}`
+                              }
+                            </p>
+                          </div>
+                        </div>
+                        <Button size="sm" variant="outline">
+                          {needsMaintenance ? 'Schedule Service' : 'Renew Registration'}
+                        </Button>
+                      </div>
+                    );
+                  })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

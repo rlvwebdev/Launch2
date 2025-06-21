@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '@/context/ThemeContext';
 import Button from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card';
@@ -51,15 +51,9 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
   };
 
   const passwordsMatch = formData.password === formData.password_confirm || formData.password_confirm === '';  return (
-    <Card className="w-full mx-auto border-[var(--color-surface)] shadow-lg bg-[var(--color-surface)]/50 backdrop-blur-sm lg:max-w-none">      <CardHeader className="space-y-2 pb-6 text-center">
-        <CardTitle className="text-2xl font-black text-[var(--color-accent)]">
-          🚛 Join the Launch Fleet!
-        </CardTitle>
-        <CardDescription className="text-[var(--color-text)] opacity-70">
-          Start your journey with our transportation management platform
-        </CardDescription>
-      </CardHeader>
-      <CardContent>        <form onSubmit={handleSubmit} className="space-y-6">
+    <Card className="w-full mx-auto border-[var(--color-surface)] shadow-lg bg-[var(--color-surface)]/78 backdrop-blur-sm lg:max-w-none">
+      <CardContent className="pt-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg dark:bg-red-900/20 dark:border-red-800/30 dark:text-red-300">
               <p className="text-sm">{error}</p>
@@ -233,18 +227,24 @@ export function RegisterForm({ onToggleMode }: RegisterFormProps) {
                 )}
               </div>
             </div>
-          </div>
-
-          <Button
+          </div>          <Button
             type="submit"
-            className="w-full bg-[var(--color-accent)] hover:bg-[var(--color-accent)]/90 text-[var(--color-background)] font-semibold py-2.5 transition-all duration-200 shadow-lg hover:shadow-[var(--color-accent)]/20"
+            className="w-full bg-[var(--color-accent)] hover:bg-[var(--color-accent)]/90 text-[var(--color-background)] font-black py-3 text-xl uppercase tracking-wide transition-all duration-200 shadow-lg hover:shadow-[var(--color-accent)]/20 border-0 transform hover:scale-[1.02] active:scale-[0.98]"
             disabled={isLoading || !passwordsMatch}
             style={{ 
-              backgroundColor: 'var(--color-accent)',
-              color: 'var(--color-background)'
+              color: 'var(--color-background)', 
+              fontWeight: '900',
+              backgroundColor: 'var(--color-accent)'
             }}
           >
-            {isLoading ? 'Creating account...' : 'Create Account'}
+            {isLoading ? (
+              <div className="flex items-center justify-center space-x-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--color-background)]"></div>
+                <span>CREATING ACCOUNT...</span>
+              </div>
+            ) : (
+              'CREATE ACCOUNT'
+            )}
           </Button>
 
           <div className="text-center pt-4 border-t border-[var(--color-surface)]">

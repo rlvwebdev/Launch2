@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Badge from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import BadgeLegacy from '@/components/ui/BadgeLegacy';
+
+const Badge = BadgeLegacy;
 import { Container, ArrowLeft, Edit, Save, X, Trash2, Calendar, Wrench, AlertTriangle, User, FileText } from 'lucide-react';
 import { useOrganizational } from '@/context/OrganizationalContext';
 import useOrganizationalData from '@/hooks/useOrganizationalData';

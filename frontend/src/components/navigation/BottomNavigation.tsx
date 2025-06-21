@@ -110,15 +110,14 @@ export default function BottomNavigation() {
 
   return (
     <>      {/* More Menu Overlay */}
-      {showMoreMenu && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" onClick={() => setShowMoreMenu(false)}>
-          <div className="absolute bottom-20 left-4 right-4 bg-[var(--theme-background)] border border-[var(--theme-neutral)]/20 shadow-xl overflow-hidden">
+      {showMoreMenu && (        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" onClick={() => setShowMoreMenu(false)}>
+          <div className="absolute bottom-20 left-4 right-4 bg-[var(--color-surface)] border border-[var(--color-neutral)]/30 shadow-xl overflow-hidden backdrop-blur-sm rounded-lg">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-[var(--theme-neutral)]/20 bg-[var(--theme-primary)]">
-              <h3 className="text-lg font-semibold text-white">More Options</h3>
+            <div className="flex items-center justify-between p-4 border-b border-[var(--color-neutral)]/20 bg-[var(--color-surface)]">
+              <h3 className="text-lg font-semibold text-[var(--color-text)]">More Options</h3>
               <button
                 onClick={() => setShowMoreMenu(false)}
-                className="p-2 text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                className="p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text)] hover:bg-[var(--color-accent)]/10 transition-colors rounded"
                 aria-label="Close more options menu"
               >
                 <X className="h-5 w-5" />
@@ -138,12 +137,11 @@ export default function BottomNavigation() {
                       <Link
                         key={item.id}
                         href={item.path}
-                        onClick={() => setShowMoreMenu(false)}
-                        className={cn(
-                          'flex flex-col items-center justify-center p-4 m-1 transition-all duration-200 text-sm font-medium border border-[var(--theme-neutral)]/20 hover:shadow-md',
+                        onClick={() => setShowMoreMenu(false)}                        className={cn(
+                          'flex flex-col items-center justify-center p-4 m-1 transition-all duration-200 text-sm font-medium border border-[var(--color-neutral)]/20 hover:shadow-md rounded-lg',
                           isActive 
-                            ? 'bg-[var(--theme-secondary)] text-white border-[var(--theme-secondary)]' 
-                            : 'text-[var(--theme-primary)] hover:bg-[var(--theme-accent)]/10 hover:text-[var(--theme-secondary)] hover:border-[var(--theme-secondary)]/30'
+                            ? 'bg-[var(--color-accent)] text-white border-[var(--color-accent)]' 
+                            : 'text-[var(--color-text)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)] hover:border-[var(--color-accent)]/30 bg-[var(--color-background)]'
                         )}
                       >
                         <Icon 
@@ -158,10 +156,9 @@ export default function BottomNavigation() {
                   
                   {/* Logout Button */}
                   <button
-                    onClick={handleLogout}
-                    className={cn(
-                      'flex flex-col items-center justify-center p-4 m-1 transition-all duration-200 text-sm font-medium border border-[var(--theme-neutral)]/20 hover:shadow-md',
-                      'text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300'
+                    onClick={handleLogout}                    className={cn(
+                      'flex flex-col items-center justify-center p-4 m-1 transition-all duration-200 text-sm font-medium border border-[var(--color-neutral)]/20 hover:shadow-md rounded-lg',
+                      'text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300 bg-[var(--color-background)]'
                     )}
                   >
                     <LogOut 
@@ -184,13 +181,12 @@ export default function BottomNavigation() {
                       <Link
                         key={item.id}
                         href={item.path}
-                        onClick={() => setShowMoreMenu(false)}
-                        className={cn(
+                        onClick={() => setShowMoreMenu(false)}                        className={cn(
                           'flex items-center w-full px-6 py-4 transition-all duration-200 text-sm font-medium border-r-4',
                           isActive 
-                            ? 'bg-[var(--theme-secondary)] text-white border-r-[var(--theme-accent)]' 
-                            : 'text-[var(--theme-primary)] hover:bg-[var(--theme-accent)]/10 hover:text-[var(--theme-secondary)] border-r-transparent',
-                          index !== secondaryNavItems.length - 1 && 'border-b border-[var(--theme-neutral)]/10'
+                            ? 'bg-[var(--color-accent)] text-white border-r-[var(--color-accent)]' 
+                            : 'text-[var(--color-text)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)] border-r-transparent',
+                          index !== secondaryNavItems.length - 1 && 'border-b border-[var(--color-neutral)]/10'
                         )}
                       >
                         <Icon 
@@ -205,10 +201,9 @@ export default function BottomNavigation() {
                   
                   {/* Logout Button */}
                   <button
-                    onClick={handleLogout}
-                    className={cn(
+                    onClick={handleLogout}                    className={cn(
                       'flex items-center w-full px-6 py-4 transition-all duration-200 text-sm font-medium border-r-4',
-                      'text-red-600 hover:bg-red-50 hover:text-red-700 border-r-transparent border-t border-[var(--theme-neutral)]/10'
+                      'text-red-600 hover:bg-red-50 hover:text-red-700 border-r-transparent border-t border-[var(--color-neutral)]/10'
                     )}
                   >
                     <LogOut 
@@ -224,7 +219,7 @@ export default function BottomNavigation() {
             </div>
           </div>
         </div>
-      )}{/* Bottom Navigation */}      <nav className="fixed bottom-0 left-0 right-0 border-t bg-[var(--theme-primary)] border-[var(--theme-primary)]/20 px-0 py-0 md:hidden z-30">
+      )}{/* Bottom Navigation */}      <nav className="fixed bottom-0 left-0 right-0 border-t bg-[var(--color-surface)] border-[var(--color-neutral)]/20 px-0 py-0 md:hidden z-30 shadow-xl shadow-black/10 backdrop-blur-sm">
         <div className="flex items-center max-w-lg mx-auto">
           {/* Primary Navigation Items */}
           {primaryNavItems.map((item) => {
@@ -234,12 +229,11 @@ export default function BottomNavigation() {
             return (
               <Link
                 key={item.id}
-                href={item.path}
-                className={cn(
+                href={item.path}                className={cn(
                   'flex flex-col items-center justify-center transition-all duration-200 text-sm font-medium flex-1 py-3 px-2 border-t-4',
                   isActive 
-                    ? 'bg-[var(--theme-secondary)] text-white border-t-[var(--theme-accent)]' 
-                    : 'text-white/70 hover:bg-white/10 hover:text-white border-t-transparent'
+                    ? 'bg-[var(--color-accent)]/20 text-[var(--color-accent)] border-t-[var(--color-accent)]' 
+                    : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)] border-t-transparent'
                 )}
               >
                 <Icon 
@@ -255,12 +249,11 @@ export default function BottomNavigation() {
 
           {/* More Button */}
           <button
-            onClick={() => setShowMoreMenu(!showMoreMenu)}
-            className={cn(
+            onClick={() => setShowMoreMenu(!showMoreMenu)}            className={cn(
               'flex flex-col items-center justify-center transition-all duration-200 text-sm font-medium flex-1 py-3 px-2 border-t-4',
               showMoreMenu || isAnySecondaryActive 
-                ? 'bg-[var(--theme-secondary)] text-white border-t-[var(--theme-accent)]' 
-                : 'text-white/70 hover:bg-white/10 hover:text-white border-t-transparent'
+                ? 'bg-[var(--color-accent)]/20 text-[var(--color-accent)] border-t-[var(--color-accent)]' 
+                : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-accent)]/10 hover:text-[var(--color-accent)] border-t-transparent'
             )}
           >
             <MoreHorizontal 

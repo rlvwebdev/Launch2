@@ -239,6 +239,38 @@ export default function EventsPage() {
     }
   };
 
+  // Helper function to map severity to badge status
+  const getSeverityStatus = (severity: string): 'success' | 'warning' | 'error' | 'info' | 'neutral' => {
+    switch (severity) {
+      case 'low':
+        return 'success';
+      case 'medium':
+        return 'warning';
+      case 'high':
+        return 'warning';
+      case 'critical':
+        return 'error';
+      default:
+        return 'neutral';
+    }
+  };
+
+  // Helper function to map event status to badge status
+  const getEventStatus = (status: string): 'success' | 'warning' | 'error' | 'info' | 'neutral' => {
+    switch (status) {
+      case 'open':
+        return 'error';
+      case 'in_progress':
+        return 'info';
+      case 'resolved':
+        return 'success';
+      case 'closed':
+        return 'neutral';
+      default:
+        return 'neutral';
+    }
+  };
+
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'low':
@@ -358,18 +390,12 @@ export default function EventsPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       {getEventTypeIcon(event.type)}
-                      <h3 className="text-lg font-semibold text-gray-900">{event.title}</h3>
-                      <Badge 
-                        variant="status" 
-                        status={event.severity}
-                        className={getSeverityColor(event.severity)}
+                      <h3 className="text-lg font-semibold text-gray-900">{event.title}</h3>                      <Badge 
+                        status={getSeverityStatus(event.severity)}
                       >
                         {event.severity.charAt(0).toUpperCase() + event.severity.slice(1)}
                       </Badge>
-                      <Badge 
-                        variant="status" 
-                        status={event.status}
-                        className={getStatusColor(event.status)}
+                      <Badge                        status={getEventStatus(event.status)}
                       >
                         {event.status.charAt(0).toUpperCase() + event.status.slice(1).replace('_', ' ')}
                       </Badge>

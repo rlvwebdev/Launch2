@@ -10,85 +10,125 @@ export interface Driver {
   id: string;
   firstName: string;
   lastName: string;
+  full_name?: string;
   licenseNumber: string;
-  licenseExpiry: Date;
+  licenseExpiry: Date | string;
+  is_license_expired?: boolean;
   phoneNumber: string;
+  phone?: string; // Alias for phoneNumber
   email?: string;
   address?: string;
   fuelCard: string;
   assignedTruckId?: string;
   status: DriverStatus;
-  hireDate: Date;
+  hireDate: Date | string;
+  // Tier information (computed from hire date)
+  tier?: DriverTier;
+  yearsOfExperience?: number;
+  recommendedTier?: DriverTier;
+  isEligibleForPromotion?: boolean;
+  tierDisplayName?: string;
   // Training information
   trainingStatus?: TrainingStatus;
-  trainingStartDate?: Date;
-  trainingCompletionDate?: Date;
+  trainingStartDate?: Date | string;
+  trainingCompletionDate?: Date | string;
   trainingSupervisorId?: string;
   trainingNotes?: string;
-  emergencyContact: {
+  emergencyContact?: {
     name: string;
     phone: string;
     relationship: string;
   };
   // ORGANIZATIONAL CONTEXT
-  organizationalContext: OrganizationalContext;
+  organizationalContext?: OrganizationalContext;
   homeTerminalId?: string;
   supervisorId?: string;
-  accessLevel: PermissionScope;
+  accessLevel?: PermissionScope;
   // API metadata
-  createdAt: Date;
-  updatedAt: Date;
+  created_at?: Date | string;
+  updated_at?: Date | string;
+  createdAt?: Date | string; // Alias
+  updatedAt?: Date | string; // Alias
 }
 
 export interface Truck {
   id: string;
+  truckNumber?: string;
   make: string;
   model: string;
   year: number;
-  licensePlate: string;
+  licensePlate?: string;
+  plateNumber?: string; // Backend field name
   vin: string;
-  color: string;
+  color?: string;
+  fuelType?: string;
   assignedDriverId?: string;
   status: TruckStatus;
   mileage: number;
-  lastMaintenance: Date;
-  nextMaintenanceDue: Date;  registrationExpiry: Date;  insuranceExpiry: Date;
+  lastMaintenanceDate?: Date | string;
+  nextMaintenanceDate?: Date | string;
+  lastMaintenance?: Date; // Legacy field
+  nextMaintenanceDue?: Date; // Legacy field
+  registrationExpiry?: Date | string;
+  insuranceExpiry?: Date | string;
   maintenanceNotes?: string;
   currentLoad?: string; // Current load ID
+  isAssigned?: boolean;
   // ORGANIZATIONAL CONTEXT
-  organizationalContext: OrganizationalContext;
+  organizationalContext?: OrganizationalContext;
   homeTerminalId?: string;
   assignedTerminalId?: string;
   // API metadata
-  createdAt: Date;
-  updatedAt: Date;
+  created_at?: Date | string;
+  updated_at?: Date | string;
+  createdAt?: Date; // Legacy
+  updatedAt?: Date; // Legacy
 }
 
 export interface Load {
   id: string;
   loadNumber: string;
-  bolNumber: string; // Bill of Lading number
+  bolNumber?: string; // Bill of Lading number
   shipper: string;   // Shipper company name
-  receiver?: string; // Receiver company name
-  pickupLocation: Location;
-  deliveryLocation: Location;
+  consignee?: string; // Consignee company name  
+  receiver?: string; // Receiver company name (legacy)
+  pickupLocation?: Location | string;
+  deliveryLocation?: Location | string;
+  pickupAddress?: string; // Backend field
+  deliveryAddress?: string; // Backend field
   assignedDriverId?: string;
   assignedTruckId?: string;
+  assignedTrailerId?: string;
   status: LoadStatus;
-  cargoDescription: string;  weight: number; // in pounds
+  commodity?: string; // Backend field
+  cargoDescription?: string; // Legacy field
+  weight: number; // in pounds
   distance?: number; // in miles
+  miles?: number; // Backend field name
   origin?: string; // Origin address string
   destination?: string; // Destination address string
   estimatedTransitTime?: number; // in hours
-  pickupDate: Date;
-  deliveryDate: Date;  rate: number;  notes?: string;
+  pickupDate: Date | string;
+  deliveryDate: Date | string;
+  rate: number;
+  notes?: string;
+  customerNotes?: string; // Backend field
+  internalNotes?: string; // Backend field
   specialInstructions?: string;
   hazmat?: boolean;
-  events: LoadEvent[]; // Historic events (spills, contamination, NCR, etc.)
-  createdAt: Date;
-  updatedAt: Date;
+  temperature?: number | null;
+  // Status tracking
+  actualPickupTime?: Date | string | null;
+  actualDeliveryTime?: Date | string | null;
+  estimatedDeliveryTime?: Date | string | null;
+  events?: LoadEvent[]; // Historic events (spills, contamination, NCR, etc.)
+  // API metadata
+  created_at?: Date | string;
+  updated_at?: Date | string;
+  createdAt?: Date; // Legacy
+  updatedAt?: Date; // Legacy
   // ORGANIZATIONAL CONTEXT
-  organizationalContext: OrganizationalContext;
+  organizationalContext?: OrganizationalContext;
   originTerminalId?: string;
   destinationTerminalId?: string;
   customerId?: string;
@@ -157,6 +197,13 @@ export enum TrainingStatus {
   IN_PROGRESS = 'in_progress',
   COMPLETED = 'completed',
   SUSPENDED = 'suspended'
+}
+
+export enum DriverTier {
+  TIER_1 = 'tier_1', // 0-2 years
+  TIER_2 = 'tier_2', // 2-4 years
+  TIER_3 = 'tier_3', // 5-8 years
+  TIER_4 = 'tier_4'  // 8+ years
 }
 
 export enum TruckStatus {

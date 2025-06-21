@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
+import { Button } from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import { 
   ArrowLeft, 
@@ -35,6 +35,28 @@ export default function LoadDetailPage() {
   const { updateLoad, deleteLoad } = useData();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<Load>>({});
+
+  // Helper function to map LoadStatus to Badge status
+  const getLoadBadgeStatus = (status: LoadStatus): 'success' | 'warning' | 'error' | 'info' | 'neutral' | 'pending' | 'active' => {
+    switch (status) {
+      case LoadStatus.PENDING:
+        return 'pending';
+      case LoadStatus.ASSIGNED:
+        return 'info';
+      case LoadStatus.PICKED_UP:
+        return 'active';
+      case LoadStatus.IN_TRANSIT:
+        return 'active';
+      case LoadStatus.DELIVERING:
+        return 'warning';
+      case LoadStatus.DELIVERED:
+        return 'success';
+      case LoadStatus.CANCELLED:
+        return 'error';
+      default:
+        return 'neutral';
+    }
+  };
 
   const loadId = params.id as string;
   const load = loads.find(l => l.id === loadId);
@@ -182,8 +204,7 @@ export default function LoadDetailPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">Load Information</h2>
-              <Badge variant="status" status={displayValue('status') as LoadStatus}>
+              <h2 className="text-lg font-semibold text-gray-900">Load Information</h2>              <Badge status={getLoadBadgeStatus(displayValue('status') as LoadStatus)}>
                 {(displayValue('status') as string).charAt(0).toUpperCase() + (displayValue('status') as string).slice(1).replace('-', ' ')}
               </Badge>
             </div>

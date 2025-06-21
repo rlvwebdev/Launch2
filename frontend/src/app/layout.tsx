@@ -7,12 +7,14 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import AppLayout from "@/components/layout/AppLayout";
+import ProfessionalLayout from "@/components/layout/ProfessionalLayout";
 import { DataProvider } from "@/context/DataContext";
 import { OrganizationalProvider } from "@/context/OrganizationalContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { SettingsProvider } from "@/context/SettingsContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { SearchProvider } from "@/context/SearchContext";
+import { TerminalProvider } from "@/context/TerminalContext";
 import { RouteProtection } from "@/components/auth/RouteProtection";
 
 const geistSans = Geist({
@@ -45,15 +47,18 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}      >        <ThemeProvider>
           <AuthProvider>
             <RouteProtection>
-              <SettingsProvider>
-                <OrganizationalProvider>
-                  <DataProvider>
-                    <AppLayout>
-                      {children}
-                    </AppLayout>
-                  </DataProvider>
-                </OrganizationalProvider>
-              </SettingsProvider>
+              <TerminalProvider>
+                <SettingsProvider>
+                  <OrganizationalProvider>
+                    <DataProvider>
+                      <SearchProvider>
+                      <ProfessionalLayout>
+                        {children}
+                      </ProfessionalLayout>                      </SearchProvider>
+                    </DataProvider>
+                  </OrganizationalProvider>
+                </SettingsProvider>
+              </TerminalProvider>
             </RouteProtection>
           </AuthProvider>
         </ThemeProvider>

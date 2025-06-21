@@ -36,9 +36,11 @@ import { useTheme, defaultThemes } from '@/context/ThemeContext';
 import { useSettings } from '@/context/SettingsContext';
 import { useAuth } from '@/context/AuthContext';
 import { useOrganizational } from '@/context/OrganizationalContext';
-import { Card } from '@/components/ui/Card';
+import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
+import BadgeLegacy from '@/components/ui/BadgeLegacy';
+
+const Badge = BadgeLegacy;
 import { ThemeCard } from '@/components/settings/ThemeCard';
 import CustomThemeEditor from '@/components/settings/CustomThemeEditor';
 import { OrganizationType } from '@/types';
@@ -56,7 +58,7 @@ const tabs = [
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('appearance');
-  const { currentTheme, setCurrentTheme, customThemes, addCustomTheme, updateCustomTheme, deleteCustomTheme } = useTheme();
+  const { currentTheme, setCurrentTheme, customThemes, addCustomTheme, updateCustomTheme, deleteCustomTheme, availableThemes, isDarkMode, toggleDarkMode, setDarkMode } = useTheme();
   const { preferences, updatePreferences } = useSettings();
   const { logout, updateProfile, user } = useAuth();
   const { 
@@ -101,14 +103,11 @@ export default function SettingsPage() {
 
   // Get all themes (default + custom)
   const allThemes = [...defaultThemes, ...customThemes];
-  
-  // Group themes by category
+    // Group themes by category - only business and custom themes are available
   const themeCategories = {
     business: allThemes.filter(theme => theme.category === 'business'),
-    modern: allThemes.filter(theme => theme.category === 'modern'),
-    creative: allThemes.filter(theme => theme.category === 'creative'),
     custom: customThemes,
-  };  const handleMobileMenuLayoutChange = (layout: 'list' | 'grid') => {
+  };const handleMobileMenuLayoutChange = (layout: 'list' | 'grid') => {
     updatePreferences({ mobileMenuLayout: layout });
   };
   const handleThemeSelect = async (theme: any) => {
@@ -141,12 +140,11 @@ export default function SettingsPage() {
       deleteCustomTheme(themeId);
     }
   };
-
   const handleDuplicateTheme = (theme: any) => {
     const newTheme = addCustomTheme({
       name: `${theme.name} (Copy)`,
       colors: { ...theme.colors },
-      isDark: theme.isDark,
+      accentScale: { ...theme.accentScale },
       category: 'custom',
     });
     setCurrentTheme(newTheme);
@@ -171,11 +169,13 @@ export default function SettingsPage() {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const themeData = JSON.parse(e.target?.result as string);
-          const importedTheme = addCustomTheme({
+          const themeData = JSON.parse(e.target?.result as string);          const importedTheme = addCustomTheme({
             name: `${themeData.name} (Imported)`,
             colors: themeData.colors,
-            isDark: themeData.isDark,
+            accentScale: themeData.accentScale || {
+              50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1', 400: '#94a3b8',
+              500: themeData.colors.accent, 600: '#475569', 700: '#334155', 800: '#1e293b', 900: '#0f172a', 950: '#020617'
+            },
             category: 'custom',
           });
           setCurrentTheme(importedTheme);
@@ -384,19 +384,59 @@ export default function SettingsPage() {
                   theme={editingThemeId ? customThemes.find(t => t.id === editingThemeId) : undefined}
                 />
               </div>
-            ) : (
-              <>
+            ) : (              <>
+                {/* Theme Mode Selector */}
                 <Card>
-                  <Card.Header>
-                    <Card.Title className="flex items-center gap-2">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Palette className="w-5 h-5" />
+                      Business Theme Selection
+                    </CardTitle>
+                    <CardDescription>
+                      Choose from professional business themes designed for logistics operations
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {availableThemes.map((theme) => (
+                        <button
+                          key={theme.id}
+                          onClick={() => setCurrentTheme(theme)}
+                          className={`p-4 border rounded-lg text-left transition-all ${
+                            currentTheme.id === theme.id
+                              ? 'border-[var(--theme-accent)] bg-[var(--theme-accent)]/10'
+                              : 'border-[var(--theme-neutral)]/30 hover:border-[var(--theme-accent)]/50'
+                          }`}
+                        >                          <div className="flex items-center gap-2 mb-3">
+                            <div 
+                              className="w-4 h-4 rounded-full border border-gray-300"
+                              style={{ backgroundColor: theme.colors?.primary || 'var(--color-primary)' }}
+                            />
+                            <div 
+                              className="w-4 h-4 rounded-full border border-gray-300"
+                              style={{ backgroundColor: theme.colors?.accent || 'var(--color-accent)' }}
+                            />
+                          </div>
+                          <h3 className="font-medium text-[var(--theme-text)] mb-1">{theme.name}</h3>
+                          <p className="text-sm text-[var(--theme-text-secondary)] capitalize">
+                            {theme.category} theme
+                          </p>
+                        </button>
+                      ))}                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
                       <Palette className="w-5 h-5" />
                       Theme Gallery
-                    </Card.Title>
-                    <Card.Description>
+                    </CardTitle>
+                    <CardDescription>
                       Choose from our curated collection of professional themes or create your own
-                    </Card.Description>
-                  </Card.Header>
-                  <Card.Content className="space-y-6">
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
                     {/* Theme Actions */}
                     <div className="flex flex-wrap gap-3">
                       <Button
@@ -429,58 +469,13 @@ export default function SettingsPage() {
                             key={theme.id}
                             theme={theme}
                             isActive={currentTheme.id === theme.id}
-                            onSelect={() => handleThemeSelect(theme)}
-                            onDuplicate={() => handleDuplicateTheme(theme)}
+                            onSelect={() => handleThemeSelect(theme)}                            onDuplicate={() => handleDuplicateTheme(theme)}
                             onExport={() => handleExportTheme(theme)}
                             showActions={!theme.isCustom}
                           />
                         ))}
                       </div>
                     </div>
-
-                    {/* Modern Themes */}
-                    {themeCategories.modern.length > 0 && (
-                      <div>
-                        <h3 className="text-lg font-semibold text-[var(--theme-primary)] mb-4">
-                          Modern Themes
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {themeCategories.modern.map((theme) => (
-                            <ThemeCard
-                              key={theme.id}
-                              theme={theme}
-                              isActive={currentTheme.id === theme.id}
-                              onSelect={() => handleThemeSelect(theme)}
-                              onDuplicate={() => handleDuplicateTheme(theme)}
-                              onExport={() => handleExportTheme(theme)}
-                              showActions={!theme.isCustom}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Creative Themes */}
-                    {themeCategories.creative.length > 0 && (
-                      <div>
-                        <h3 className="text-lg font-semibold text-[var(--theme-primary)] mb-4">
-                          Creative Themes
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {themeCategories.creative.map((theme) => (
-                            <ThemeCard
-                              key={theme.id}
-                              theme={theme}
-                              isActive={currentTheme.id === theme.id}
-                              onSelect={() => handleThemeSelect(theme)}
-                              onDuplicate={() => handleDuplicateTheme(theme)}
-                              onExport={() => handleExportTheme(theme)}
-                              showActions={!theme.isCustom}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
 
                     {/* Custom Themes */}
                     {themeCategories.custom.length > 0 && (
@@ -520,67 +515,77 @@ export default function SettingsPage() {
                           Create Your First Theme
                         </Button>                      </div>
                     )}
-                  </Card.Content>
+                  </CardContent>
+                </Card>                {/* Theme Mode Settings */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Monitor className="w-5 h-5" />
+                      Display Mode
+                    </CardTitle>
+                    <CardDescription>
+                      Switch between light and dark modes for optimal viewing comfort
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {isDarkMode ? (
+                          <Moon className="w-5 h-5 text-[var(--theme-accent)]" />
+                        ) : (
+                          <Sun className="w-5 h-5 text-[var(--theme-accent)]" />
+                        )}
+                        <div>
+                          <h4 className="font-medium text-[var(--theme-text)]">
+                            {isDarkMode ? 'Dark Mode' : 'Light Mode'}
+                          </h4>
+                          <p className="text-sm text-[var(--theme-text-secondary)]">
+                            {isDarkMode 
+                              ? 'Dark backgrounds with light text for reduced eye strain'
+                              : 'Light backgrounds with dark text for optimal readability'
+                            }
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={toggleDarkMode}
+                        variant="outline"
+                        className="flex items-center gap-2"
+                      >
+                        {isDarkMode ? (
+                          <>
+                            <Sun className="w-4 h-4" />
+                            Switch to Light
+                          </>
+                        ) : (
+                          <>
+                            <Moon className="w-4 h-4" />
+                            Switch to Dark
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </CardContent>
                 </Card>
 
-                {/* Theme Mode Settings */}
-                <Card>
-                  <Card.Header>
-                    <Card.Title className="flex items-center gap-2">
-                      <Monitor className="w-5 h-5" />
-                      Display Preferences
-                    </Card.Title>
-                    <Card.Description>
-                      Configure how themes appear across different modes
-                    </Card.Description>
-                  </Card.Header>
-                  <Card.Content className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">
-                        Theme Mode
-                      </label>
-                      <div className="flex gap-3">
-                        {[
-                          { value: 'light', label: 'Light', icon: Sun },
-                          { value: 'dark', label: 'Dark', icon: Moon },
-                          { value: 'system', label: 'System', icon: Monitor },
-                        ].map(({ value, label, icon: Icon }) => (
-                          <button
-                            key={value}
-                            onClick={() => handleThemeChange(value as any)}
-                            className={`flex items-center gap-2 px-4 py-3 rounded-lg border transition-colors ${
-                              currentTheme.isDark && value === 'dark'
-                                ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-700 dark:text-blue-300'
-                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700'
-                            }`}
-                          >
-                            <Icon className="w-4 h-4" />
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </Card.Content>
-                </Card>
               </>
             )}
           </div>
         );
 
       case 'ui-ux':
-        return (
-          <div className="space-y-6">
+        return (          <div className="space-y-6">
             <Card>
-              <Card.Header>
-                <Card.Title className="flex items-center gap-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <Smartphone className="w-5 h-5" />
                   Mobile Interface
-                </Card.Title>
-                <Card.Description>
+                </CardTitle>
+                <CardDescription>
                   Configure mobile-specific interface preferences
-                </Card.Description>
-              </Card.Header>
-              <Card.Content className="space-y-4">
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div>                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">
                     &ldquo;More&rdquo; Menu Layout
                   </label>
@@ -601,29 +606,29 @@ export default function SettingsPage() {
                         {label}
                       </button>
                     ))}
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  </div>                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                     Controls how additional menu items are displayed on mobile devices
                   </p>
                 </div>
-              </Card.Content>
-            </Card>
+              </CardContent>            </Card>
           </div>
-        );      case 'account':
+        );
+        
+      case 'account':
         return (
           <div className="space-y-6">
             {/* User Profile Card */}
             <Card>
-              <Card.Header>
-                <Card.Title className="flex items-center gap-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <User className="w-5 h-5" />
                   Profile Information
-                </Card.Title>
-                <Card.Description>
+                </CardTitle>
+                <CardDescription>
                   Manage your account details and contact information
-                </Card.Description>
-              </Card.Header>
-              <Card.Content className="space-y-6">
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
                 <div className="flex items-start gap-4">
                   {/* Avatar placeholder */}
                   <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white text-xl font-bold">
@@ -734,24 +739,23 @@ export default function SettingsPage() {
                   {saveMessage && (
                     <p className={`text-sm ${saveMessage.includes('successfully') ? 'text-green-600' : 'text-red-600'}`}>
                       {saveMessage}
-                    </p>
-                  )}
+                    </p>                  )}
                 </div>
-              </Card.Content>
+              </CardContent>
             </Card>
 
             {/* Roles & Permissions Card */}
             <Card>
-              <Card.Header>
-                <Card.Title className="flex items-center gap-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <Shield className="w-5 h-5" />
                   Roles & Permissions
-                </Card.Title>
-                <Card.Description>
+                </CardTitle>
+                <CardDescription>
                   Your current access levels and organizational assignments
-                </Card.Description>
-              </Card.Header>
-              <Card.Content className="space-y-6">
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
                 {/* Organization Access */}
                 <div>
                   <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">Organization Access</h4>
@@ -845,7 +849,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
-              </Card.Content>
+              </CardContent>
             </Card>
           </div>
         );      case 'organization':
@@ -874,16 +878,16 @@ export default function SettingsPage() {
             {/* Current Organization Context */}
             {currentOrganization && (
               <Card>
-                <Card.Header>
-                  <Card.Title className="flex items-center gap-2">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
                     {getOrgIcon(currentOrganization.type)}
                     Current Organization
-                  </Card.Title>
-                  <Card.Description>
+                  </CardTitle>
+                  <CardDescription>
                     Your active organizational context
-                  </Card.Description>
-                </Card.Header>
-                <Card.Content>
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
                       {getOrgIcon(currentOrganization.type)}
@@ -923,22 +927,22 @@ export default function SettingsPage() {
                       {currentOrganization.isActive ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
-                </Card.Content>
+                </CardContent>
               </Card>
             )}
 
             {/* Organization Hierarchy */}
             <Card>
-              <Card.Header>
-                <Card.Title className="flex items-center gap-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <Building2 className="w-5 h-5" />
                   Organization Hierarchy
-                </Card.Title>
-                <Card.Description>
+                </CardTitle>
+                <CardDescription>
                   Browse and manage your organizational structure
-                </Card.Description>
-              </Card.Header>
-              <Card.Content className="space-y-6">
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
                 {/* Companies */}
                 {companies.length > 0 && (
                   <div>
@@ -1081,21 +1085,21 @@ export default function SettingsPage() {
                     Need to manage organizational structure? All organization management features are available in this Settings panel under the Organization tab.
                   </p>
                 </div>
-              </Card.Content>
+              </CardContent>
             </Card>
 
             {/* Organization Settings */}
             <Card>
-              <Card.Header>
-                <Card.Title className="flex items-center gap-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <SettingsIcon className="w-5 h-5" />
                   Organization Settings
-                </Card.Title>
-                <Card.Description>
+                </CardTitle>
+                <CardDescription>
                   Configure organization-wide preferences and policies
-                </Card.Description>
-              </Card.Header>
-              <Card.Content className="space-y-4">                <div>
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">                <div>
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
                     Company Name
                   </label>
@@ -1138,7 +1142,7 @@ export default function SettingsPage() {
                     </p>
                   )}
                 </div>
-              </Card.Content>
+              </CardContent>
             </Card>
           </div>
         );
@@ -1147,16 +1151,16 @@ export default function SettingsPage() {
         return (
           <div className="space-y-6">
             <Card>
-              <Card.Header>
-                <Card.Title className="flex items-center gap-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <Bell className="w-5 h-5" />
                   Notification Preferences
-                </Card.Title>
-                <Card.Description>
+                </CardTitle>
+                <CardDescription>
                   Control how and when you receive notifications
-                </Card.Description>
-              </Card.Header>
-              <Card.Content className="space-y-4">                {[
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">                {[
                   { id: 'email', label: 'Email Notifications', description: 'Receive updates via email' },
                   { id: 'push', label: 'Push Notifications', description: 'Browser push notifications' },
                   { id: 'sms', label: 'SMS Notifications', description: 'Text message alerts for critical updates' },
@@ -1194,7 +1198,7 @@ export default function SettingsPage() {
                     </p>
                   )}
                 </div>
-              </Card.Content>
+              </CardContent>
             </Card>
           </div>
         );
@@ -1203,16 +1207,16 @@ export default function SettingsPage() {
         return (
           <div className="space-y-6">
             <Card>
-              <Card.Header>
-                <Card.Title className="flex items-center gap-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <Shield className="w-5 h-5" />
                   Security Settings
-                </Card.Title>
-                <Card.Description>
+                </CardTitle>
+                <CardDescription>
                   Manage your account security and access controls
-                </Card.Description>
-              </Card.Header>
-              <Card.Content className="space-y-4">
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div>
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">
                     API Key
@@ -1236,7 +1240,7 @@ export default function SettingsPage() {
                   <Button variant="outline">Change Password</Button>
                   <Button variant="outline">Enable Two-Factor Authentication</Button>
                 </div>
-              </Card.Content>
+              </CardContent>
             </Card>
           </div>
         );
@@ -1245,16 +1249,16 @@ export default function SettingsPage() {
         return (
           <div className="space-y-6">
             <Card>
-              <Card.Header>
-                <Card.Title className="flex items-center gap-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <Database className="w-5 h-5" />
                   Data Management
-                </Card.Title>
-                <Card.Description>
+                </CardTitle>
+                <CardDescription>
                   Import, export, and manage your application data
-                </Card.Description>
-              </Card.Header>
-              <Card.Content className="space-y-4">
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="flex gap-3">
                   <Button variant="outline" className="flex items-center gap-2">
                     <Download className="w-4 h-4" />
@@ -1278,7 +1282,7 @@ export default function SettingsPage() {
                     />
                   </label>
                 </div>
-              </Card.Content>
+              </CardContent>
             </Card>
           </div>
         );
@@ -1287,16 +1291,16 @@ export default function SettingsPage() {
         return (
           <div className="space-y-6">
             <Card>
-              <Card.Header>
-                <Card.Title className="flex items-center gap-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <SettingsIcon className="w-5 h-5" />
                   System Information
-                </Card.Title>
-                <Card.Description>
+                </CardTitle>
+                <CardDescription>
                   Application version and system details
-                </Card.Description>
-              </Card.Header>
-              <Card.Content className="space-y-4">
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Version</p>
@@ -1316,7 +1320,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <Button variant="outline">Check for Updates</Button>
-              </Card.Content>
+              </CardContent>
             </Card>
           </div>
         );
@@ -1364,7 +1368,7 @@ export default function SettingsPage() {
         </div>        {/* Logout Section */}
         <div className="mt-12 pt-8 border-t border-[var(--color-neutral)]/10">
           <Card className="bg-red-50 border-red-200 shadow-sm hover:shadow-md transition-shadow duration-200">
-            <Card.Content className="py-8">
+            <CardContent className="py-8">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
@@ -1386,7 +1390,7 @@ export default function SettingsPage() {
                   Sign Out
                 </Button>
               </div>
-            </Card.Content>
+            </CardContent>
           </Card>
         </div>
       </div>
